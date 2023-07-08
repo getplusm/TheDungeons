@@ -1,0 +1,69 @@
+Schematic:
+  # Если true, то схематика будет рандомно
+  # Если false, то будет по списку
+  Random: true
+  List:
+    - "dungeon.schem" # Внимание! Схематика должна содержать блок из Chest.Material и должна находится в папке /schematics/!
+# Материал сундука
+Chest:
+  Material: CHEST
+# Эффекты наложения на игроков в радиусе 15 блоков
+Effects:
+  Enable: true
+  List:
+    SLOW:
+      Duration: 25
+      Amplifier: 1
+    POISON:
+      Duration: 25
+      Amplifier: 1
+# Тип открытия данжа. Есть два типа, click - откроет после клика и timer - по истечению времени
+OpenType: CLICK
+# Мир появления
+World: world
+# Название данжа
+Name: "&6Little Dungeon"
+# Дроп в сундуке
+Rewards:
+  List:
+    # случайное название
+    first:
+      # настройка предмета
+      Item:
+        Material: DIAMOND
+        Name: "Diaaaamond"
+        Amount: 1
+      # шанс этого предмета
+      Chance: 100
+      # максимальное количество
+      Max_Amount: 16
+      # минимальное количество
+      Min_Amount: 3
+    second:
+      Item:
+        Material: EMERALD
+        Amount: 1
+      Chance: 100
+      Max_Amount: 5
+      Min_Amount: 1
+    third:
+      Item:
+        Material: COAL
+        Amount: 1
+      Chance: 100
+      Max_Amount: 128
+      Min_Amount: 30
+# Ключи которыми можно открыть данж
+Key:
+  Ids:
+    - "default"
+# Настройка времени
+Timer:
+  # Время перезарядки (частота появления)
+  Refresh: 300
+  # Время ожидания (периодичность появления)
+  Wait: 60
+  # Время до открытия данжа
+  Open: 15
+  # Время до закрытия
+  Close: 15

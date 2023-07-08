@@ -1,0 +1,8 @@
+name: Dungeon
+version: '${version}'
+main: t.me.p1azmer.plugin.dungeons.DungeonPlugin
+api-version: '1.16'
+softdepend:
+  - HolographicDisplays
+  - WorldEdit
+  - WorldGuard
