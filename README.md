@@ -12,10 +12,10 @@
 - [PLAZMER-ENGINE](https://github.com/getplusm/Engine)
 
 ![Dependencies Image](https://cdn.discordapp.com/attachments/810884357543165963/1130617182359928933/depend.png)
-**required**
+  <br>**required**
 - [HolographicDisplays](https://dev.bukkit.org/projects/holographic-displays/files) or [DecentHolograms](https://www.spigotmc.org/resources/decentholograms-1-8-1-20-1-papi-support-no-dependencies.96927/)
 - [WorldEdit](https://dev.bukkit.org/projects/worldedit/files) or [FAWE](https://www.spigotmc.org/resources/fastasyncworldedit.13932/)
-**support**
+  <br><br>**support**
 - WorldGuard
 - MMOItems
 - ItemsAdder
