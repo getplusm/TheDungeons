@@ -7,6 +7,7 @@ import java.util.function.Function;
 public class Placeholders extends t.me.p1azmer.engine.utils.Placeholders {
 
     public static final String GENERIC_AMOUNT = "%amount%";
+    public static final String GENERIC_TIME = "%time%";
 
     public static final String DUNGEON_NAME = "%dungeon_name%";
     public static final String DUNGEON_ID = "%dungeon_id%";
@@ -16,9 +17,6 @@ public class Placeholders extends t.me.p1azmer.engine.utils.Placeholders {
     public static final String DUNGEON_KEY_NAMES = "%dungeon_key_names%";
     public static final String EDITOR_HOLOGRAM_TEXT = "%dungeon_editor_hologram_text%";
     public static final Function<DungeonChestState, String> DUNGEON_HOLOGRAM_MESSAGES = var -> "%dungeon_hologram_" + var + "_messages%";
-//    public static final String DUNGEON_HOLOGRAM_CHEST_TEXT_OPEN = "%dungeon_hologram_chest_text_open%";
-//    public static final String DUNGEON_HOLOGRAM_CHEST_TEXT_CLOSE = "%dungeon_hologram_chest_text_close%";
-//    public static final String DUNGEON_HOLOGRAM_CHEST_TEXT_WAIT = "%dungeon_hologram_chest_text_wait%";
     public static final String DUNGEON_HOLOGRAM_CHEST_OFFSET_Y = "%dungeon_hologram_chest_offset_y%";
 
     // settings
@@ -47,15 +45,9 @@ public class Placeholders extends t.me.p1azmer.engine.utils.Placeholders {
     public static final String DUNGEON_SETTINGS_MOBS = "%dungeon_settings_mobs%";
 
     // chest states
+    public static final Function<DungeonChestState, String> DUNGEON_CHEST_STATE_TIME = var -> "%dungeon_chest_state_" + var + "_time%";
     public static final String DUNGEON_CHEST_STATE_NAME = "%dungeon_state_name%";
-    // stages
-    public static final String DUNGEON_STAGE_FREEZE = "%dungeon_stage_freeze%";
-    public static final String DUNGEON_STAGE_WAITING = "%dungeon_stage_waiting%";
-    public static final String DUNGEON_STAGE_SPAWN= "%dungeon_stage_spawn%";
-    public static final String DUNGEON_STAGE_CLOSED = "%dungeon_stage_closed%";
-    public static final String DUNGEON_STAGE_OPEN = "%dungeon_stage_open%";
-    public static final String DUNGEON_STAGE_CANCEL = "%dungeon_stage_cancel%";
-    public static final String DUNGEON_STAGE_REBOOT = "%dungeon_stage_reboot%";
+    public static final String DUNGEON_CHEST_NEXT_STATE_IN = "%dungeon_chest_next_state_in%";
 
 
     // key

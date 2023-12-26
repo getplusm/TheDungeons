@@ -13,5 +13,5 @@ public interface HologramHandler extends Loadable {
 
     void delete(@NotNull Dungeon dungeon);
 
-    void update(@NotNull DungeonChestBlock dungeonChestBlock, int time);
+    void update(@NotNull DungeonChestBlock dungeonChestBlock);
 }

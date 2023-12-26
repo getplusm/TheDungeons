@@ -22,7 +22,6 @@ public class StageSettings implements IPlaceholderMap {
     public static StageSettings read(@NotNull JYML cfg, @NotNull String path) {
         Map<DungeonStage, Integer> map = new HashMap<>();
         if (!cfg.contains(path+".Map")){
-            map.put(DungeonStage.FREEZE, 10);
             map.putAll(Map.of(
                     DungeonStage.FREEZE, 10,
                     DungeonStage.CHECK, 10,

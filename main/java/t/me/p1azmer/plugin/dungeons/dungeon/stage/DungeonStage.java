@@ -97,7 +97,7 @@ public enum DungeonStage {
             return;
         }
         dungeon.setStage(stage);
-        if (stage.isRemoved() || stage.isCancelled()) {
+        if (stage.isRemoved() || stage.isCancelled() && (dungeon.getModuleManager().getModule(ChestModule.class).isPresent() && dungeon.getModuleManager().getModule(ChestModule.class).get().getActiveChests().isEmpty())) {
             dungeon.getModuleManager().getModules().forEach(AbstractModule::deactivate);
         }
         plugin.sendDebug("Call the dungeon '" + dungeon.getId() + "' from " + from + ". Change state to " + stage.name() + " from " + dungeon.getStage().name());

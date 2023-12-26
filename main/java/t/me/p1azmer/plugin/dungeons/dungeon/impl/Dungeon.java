@@ -22,6 +22,7 @@ import t.me.p1azmer.plugin.dungeons.api.mob.MobList;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonRegion;
 import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonReward;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.settings.DungeonChestSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.editor.DungeonMainEditor;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleManager;
@@ -51,6 +52,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     private PartySettings partySettings;
     private ModuleSettings moduleSettings;
     private StageSettings stageSettings;
+    private DungeonChestSettings dungeonChestSettings;
     private EffectSettings effectSettings;
 
     private Map<String, DungeonReward> rewardMap;
@@ -100,6 +102,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         this.setPartySettings(PartySettings.read(this, cfg, "Party"));
         this.setModuleSettings(ModuleSettings.read(cfg, "Settings.Modules"));
         this.setStageSettings(StageSettings.read(cfg, "Settings.Stages"));
+        this.setDungeonChestSettings(DungeonChestSettings.read(cfg, "Settings.Chest"));
         this.setEffectSettings(EffectSettings.read(cfg, "Effects"));
 
         if (this.getSettings().getChestMaterial().isAir()) {
@@ -165,6 +168,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         this.getPartySettings().write(cfg, "Party");
         this.getModuleSettings().write(cfg, "Settings.Modules");
         this.getStageSettings().write(cfg, "Settings.Stages");
+        this.getDungeonChestSettings().write(cfg, "Settings.Chest");
         this.getEffectSettings().write(cfg, "Effects");
 
         cfg.set("Rewards.List", null);
@@ -216,6 +220,11 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     @NotNull
     public StageSettings getStageSettings() {
         return stageSettings;
+    }
+
+    @NotNull
+    public DungeonChestSettings getDungeonChestSettings() {
+        return dungeonChestSettings;
     }
 
     public EffectSettings getEffectSettings() {
@@ -375,6 +384,10 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
 
     public void setStageSettings(@NotNull StageSettings stageSettings) {
         this.stageSettings = stageSettings;
+    }
+
+    public void setDungeonChestSettings(@NotNull DungeonChestSettings dungeonChestSettings) {
+        this.dungeonChestSettings = dungeonChestSettings;
     }
 
     public void setEffectSettings(EffectSettings effectSettings) {

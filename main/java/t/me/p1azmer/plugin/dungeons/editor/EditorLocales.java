@@ -124,6 +124,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .emptyLine()
             .currentHeader()
             .textRaw(Placeholders.EDITOR_HOLOGRAM_TEXT)
+            .emptyLine()
             .click(LMB, "Add Line")
             .click(RMB, "Remove Line")
             .click(SHIFT_RMB, "Clear " + RED + "(No Undo)")

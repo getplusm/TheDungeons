@@ -2,11 +2,11 @@ package t.me.p1azmer.plugin.dungeons.dungeon.editor.settings;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import t.me.p1azmer.engine.api.editor.EditorLocale;
 import t.me.p1azmer.engine.api.menu.AutoPaged;
 import t.me.p1azmer.engine.api.menu.click.ItemClick;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
@@ -100,16 +100,17 @@ public class HologramSettingsEditor extends EditorMenu<DungeonPlugin, HologramSe
     public ItemClick getObjectClick(@NotNull DungeonChestState state) {
         return (viewer, event) -> {
             Player player = viewer.getPlayer();
-            if (event.isShiftClick() && event.isRightClick()) {
+            if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {
+                if (this.object.getMessages(state).isEmpty()) return;
+
                 this.object.setStateMessages(state, new ArrayList<>());
                 this.save(viewer);
                 return;
             }
-
-            if (event.isLeftClick()) {
+            if (event.getClick().equals(ClickType.LEFT)) {
                 EditorManager.prompt(player, plugin.getMessage(Lang.Editor_Hologram_Text).getLocalized());
                 EditorManager.startEdit(player, wrapper -> {
-                    String message = wrapper.getTextRaw();
+                    String message = wrapper.getText();
                     List<String> current = this.object.getMessages(state);
                     current.add(message);
                     this.object.setStateMessages(state, current);
@@ -119,9 +120,10 @@ public class HologramSettingsEditor extends EditorMenu<DungeonPlugin, HologramSe
                 plugin.runTask(task -> player.closeInventory());
                 return;
             }
-            if (event.isRightClick()) {
+            if (event.getClick().equals(ClickType.RIGHT)) {
                 List<String> current = this.object.getMessages(state);
                 if (current.isEmpty()) return;
+
                 current.remove(current.size() + 1);
                 this.object.setStateMessages(state, current);
                 this.save(viewer);

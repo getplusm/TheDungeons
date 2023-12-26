@@ -9,8 +9,8 @@ public enum DungeonChestState implements IPlaceholderMap {
 
     WAITING,
     COOLDOWN,
-    OPENED,
     CLOSED,
+    OPENED,
     DELETED,
     ;
 

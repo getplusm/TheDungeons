@@ -28,7 +28,6 @@ import t.me.p1azmer.plugin.dungeons.dungeon.settings.PartySettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 import t.me.p1azmer.plugin.dungeons.generator.config.GeneratorConfig;
 import t.me.p1azmer.plugin.dungeons.integration.region.RegionHandlerWG;
-import t.me.p1azmer.plugin.dungeons.task.DungeonChestTickTask;
 import t.me.p1azmer.plugin.dungeons.task.DungeonTickTask;
 
 import java.util.*;
@@ -36,7 +35,6 @@ import java.util.stream.Collectors;
 
 public class DungeonManager extends AbstractManager<DungeonPlugin> {
     private Map<String, Dungeon> dungeonMap;
-    private DungeonChestTickTask chestTickTask;
     private DungeonTickTask dungeonTickTask;
 
     public DungeonManager(@NotNull DungeonPlugin plugin) {
@@ -68,9 +66,6 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
 
         this.dungeonTickTask = new DungeonTickTask(this);
         this.dungeonTickTask.start();
-
-        this.chestTickTask = new DungeonChestTickTask(this);
-//        this.chestTickTask.start();
     }
 
     @Override
@@ -84,10 +79,6 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
                 }
             });
             this.dungeonMap = null;
-        }
-        if (this.chestTickTask != null) {
-            this.chestTickTask.stop();
-            this.chestTickTask = null;
         }
         if (this.dungeonTickTask != null) {
             this.dungeonTickTask.stop();

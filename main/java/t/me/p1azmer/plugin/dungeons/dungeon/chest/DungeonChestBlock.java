@@ -6,6 +6,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.manager.ICleanable;
+import t.me.p1azmer.engine.api.placeholder.IPlaceholderMap;
+import t.me.p1azmer.engine.api.placeholder.PlaceholderMap;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Keys;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
@@ -20,13 +22,14 @@ import java.util.HashSet;
 
 import static t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestState.*;
 
-public class DungeonChestBlock implements ICleanable {
+public class DungeonChestBlock implements ICleanable, IPlaceholderMap {
 
     private final Dungeon dungeon;
     private final Block block;
     private final Location location;
     private final DungeonChestMenu gui;
     private DungeonChestState chestState;
+    private final PlaceholderMap placeholderMap;
 
     // cache
     private boolean playerClicked = false;
@@ -40,6 +43,10 @@ public class DungeonChestBlock implements ICleanable {
         this.gui = gui;
         this.chestState = WAITING;
         this.openedCache = new HashSet<>();
+
+        this.placeholderMap = new PlaceholderMap()
+                .add(Placeholders.DUNGEON_CHEST_NEXT_STATE_IN, () -> String.valueOf(this.getNextStateTime()))
+        ;
     }
 
     @NotNull
@@ -67,7 +74,15 @@ public class DungeonChestBlock implements ICleanable {
     }
 
     public int getCurrentTick() {
-        return currentTick;
+        return this.currentTick;
+    }
+
+    public int getNextStateTime() {
+        return this.getDungeon().getDungeonChestSettings().getTime(this.getState()) - this.getCurrentTick();
+    }
+
+    public void setCurrentTick(int tick) {
+        this.currentTick = Math.max(0, tick);
     }
 
     @NotNull
@@ -119,15 +134,14 @@ public class DungeonChestBlock implements ICleanable {
         }
     }
 
-    public void updateHologram(int time, @NotNull DungeonPlugin plugin) {
-        plugin.error("update chest block " + time);
-        this.currentTick = time;
+    public void tick(@NotNull DungeonPlugin plugin, int tick) {
+        this.setCurrentTick(tick);
         HologramHandler handler = plugin.getHologramHandler();
-        if (handler != null){
-            handler.update(this, time);
+        if (handler != null) {
+            handler.update(this);
         }
         if (Config.DEBUG_TICK_CHEST.get()) {
-            this.getDungeon().plugin().sendDebug("Tick the '" + this.getDungeon().getId() + "' dungeon chest with state = " + this.getState().name() + ", time=" + time + ", coordinate=" + Placeholders.forLocation(this.getLocation()).apply("%location_x%, %location_z%"));
+            this.getDungeon().plugin().sendDebug("Tick the '" + this.getDungeon().getId() + "' dungeon chest with state = " + this.getState().name() + ", time=" + this.getCurrentTick() + ", coordinate=" + Placeholders.forLocation(this.getLocation()).apply("%location_x%, %location_z%") + ", next state in=" + this.getNextStateTime());
         }
     }
 
@@ -140,5 +154,10 @@ public class DungeonChestBlock implements ICleanable {
             this.openedCache.clear();
             this.openedCache = null;
         }
+    }
+
+    @Override
+    public @NotNull PlaceholderMap getPlaceholders() {
+        return this.placeholderMap;
     }
 }

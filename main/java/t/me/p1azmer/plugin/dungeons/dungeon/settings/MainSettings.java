@@ -85,13 +85,11 @@ public class MainSettings implements IPlaceholderMap {
         this.mobMap = mobMap;
 
 
-        this.placeholderMap = (new PlaceholderMap()
+        this.placeholderMap = new PlaceholderMap()
                 .add(Placeholders.DUNGEON_SETTINGS_BIG_CHEST, () -> LangManager.getBoolean(this.isBigChest()))
                 .add(Placeholders.DUNGEON_SETTINGS_BLOCKS_SIZE, () -> NumberUtil.format(this.getChestBlockSearchRadius()))
                 .add(Placeholders.DUNGEON_SETTINGS_CHEST_CLOSE_TIME, () -> String.valueOf(this.getChestCloseTime()))
                 .add(Placeholders.DUNGEON_SETTINGS_ENABLED, () -> LangManager.getBoolean(this.isEnabled()))
-                .add(Placeholders.DUNGEON_SETTINGS_CHEST_OPEN_TIME, () -> String.valueOf(this.getChestOpenTime()))
-                .add(Placeholders.DUNGEON_SETTINGS_REFRESH, () -> String.valueOf(this.getRefreshTime()))
                 .add(Placeholders.DUNGEON_SETTINGS_CLICK_TIMER, () -> LangManager.getBoolean(this.isClickTimer()))
                 .add(Placeholders.DUNGEON_SETTINGS_UNDERGROUND, () -> LangManager.getBoolean(this.isUnderground()))
                 .add(Placeholders.DUNGEON_SETTINGS_CHEST_WAIT_TIME, () -> String.valueOf(this.getChestWaitTime()))
@@ -110,7 +108,7 @@ public class MainSettings implements IPlaceholderMap {
                 .add(Placeholders.DUNGEON_SETTINGS_OPEN_COMMANDS, () -> String.join("\n", this.getOpenCommands()))
                 .add(Placeholders.DUNGEON_SETTINGS_MOBS, () -> this.getMobMap().entrySet().stream()
                         .map(enrty -> Colorizer.apply(Colors.LIGHT_YELLOW + enrty.getKey() + ": " + enrty.getValue())).collect(Collectors.joining("\n")))
-        );
+        ;
     }
 
     @NotNull
@@ -311,17 +309,6 @@ public class MainSettings implements IPlaceholderMap {
     @Override
     public @NotNull PlaceholderMap getPlaceholders() {
         return this.placeholderMap;
-    }
-
-    public @NotNull UnaryOperator<String> replacePlaceholders(int time) {
-        return s -> s
-                .replace(Placeholders.DUNGEON_SETTINGS_CHEST_WAIT_TIME, String.valueOf(getChestWaitTime() - time))
-                .replace(Placeholders.DUNGEON_SETTINGS_CHEST_OPEN_TIME, String.valueOf(getChestOpenTime() - time))
-                .replace(Placeholders.DUNGEON_SETTINGS_CHEST_CLOSE_TIME, String.valueOf(getChestCloseTime() - time))
-                .replace(Placeholders.DUNGEON_SETTINGS_REGION_WAIT_TIME, String.valueOf(getRegionWaitTime() - time))
-                .replace(Placeholders.DUNGEON_SETTINGS_REGION_OPEN_TIME, String.valueOf(getRegionOpenTime() - time))
-                .replace(Placeholders.DUNGEON_SETTINGS_REGION_CLOSE_TIME, String.valueOf(getRegionCloseTime() - time))
-                ;
     }
 
     public void setMobMap(@NotNull Map<String, Integer> mobMap) {

@@ -13,6 +13,7 @@ import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonReward;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestBlock;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.settings.DungeonChestSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleId;
@@ -22,8 +23,8 @@ import t.me.p1azmer.plugin.dungeons.utils.DungeonCuboid;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class ChestModule extends AbstractModule {
     private Map<Block, DungeonChestBlock> chestMap;
@@ -152,7 +153,6 @@ public class ChestModule extends AbstractModule {
 
     @Override
     public void update() {
-        MainSettings settings = dungeon().getSettings();
         for (DungeonChestBlock chest : new HashSet<>(this.getChests())) {
             if (chest.getState().isDeleted()) {
                 chest.clear();
@@ -160,19 +160,19 @@ public class ChestModule extends AbstractModule {
                 continue;
             }
             int time = chest.getCurrentTick();
-
-            if (chest.getState().isCooldown() && !settings.getChestOpenType().isClick() && time == settings.getChestWaitTime()) {
-                chest.setChestState(DungeonChestState.OPENED);
-                time = -1;
-            } else if (time == settings.getChestOpenTime()) {
-                chest.setChestState(DungeonChestState.OPENED);
-                time = -1;
-            } else if (chest.getState().isOpen() && time == settings.getChestCloseTime()) {
+            DungeonChestState state = chest.getState();
+            if (state.isWaiting() && chest.getNextStateTime() == 0 || state.isCooldown() && chest.getNextStateTime() == 0){
                 chest.setChestState(DungeonChestState.CLOSED);
-                chest.clear();
+                time = -1;
+            }else if (state.isClosed() && chest.getNextStateTime() == 0){
+                chest.setChestState(DungeonChestState.OPENED);
+                time = -1;
+            }else if (state.isOpen() && chest.getNextStateTime() == 0){
+                chest.setChestState(DungeonChestState.DELETED);
+                time = -1;
                 this.getChestMap().remove(chest.getBlock(), chest);
             }
-            chest.updateHologram(++time, this.plugin());
+            chest.tick(this.plugin(), ++time);
         }
         super.update();
     }
@@ -190,6 +190,11 @@ public class ChestModule extends AbstractModule {
     @NotNull
     public Collection<DungeonChestBlock> getChests() {
         return this.getChestMap().values();
+    }
+
+    @NotNull
+    public Collection<DungeonChestBlock> getActiveChests(){
+        return this.getChests().stream().filter(f->f.getState().isOpen() || f.getState().isClosed()).collect(Collectors.toList());
     }
 
     @NotNull
