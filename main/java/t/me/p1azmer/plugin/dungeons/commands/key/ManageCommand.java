@@ -86,7 +86,7 @@ abstract class ManageCommand extends AbstractCommand<DungeonPlugin> {
         }
 
         this.messageDone
-            .replace(Placeholders.Player.NAME, user.getName())
+            .replace(Placeholders.PLAYER_NAME, user.getName())
             .replace(Placeholders.GENERIC_AMOUNT, amount)
             .replace(key.replacePlaceholders())
             .send(sender);

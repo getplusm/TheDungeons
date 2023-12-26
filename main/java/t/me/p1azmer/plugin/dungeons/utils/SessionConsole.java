@@ -4,18 +4,18 @@ import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.internal.cui.CUIEvent;
 import com.sk89q.worldedit.session.SessionKey;
-import com.sk89q.worldedit.util.formatting.WorldEditText;
 import com.sk89q.worldedit.util.formatting.text.Component;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 public class SessionConsole extends LocalSession implements Actor {
 
-    DungeonPlugin plugin;
+    private final DungeonPlugin plugin;
 
     public SessionConsole(DungeonPlugin plugin) {
         this.plugin = plugin;
@@ -61,6 +61,10 @@ public class SessionConsole extends LocalSession implements Actor {
         return true;
     }
 
+    public void setPermission(String permission, boolean value) {
+
+    }
+
     @Override
     public String getName() {
         return "CONSOLE";
@@ -69,35 +73,33 @@ public class SessionConsole extends LocalSession implements Actor {
     @Override
     public void printRaw(String msg) {
         for (String part : msg.split("\n")) {
-           System.out.println(part);
+            plugin.getLogger().info(part);
         }
     }
 
     @Override
     public void printDebug(String msg) {
         for (String part : msg.split("\n")) {
-           System.out.println("§7" + part);
+            plugin.getLogger().info("§7" + part);
         }
     }
 
     @Override
     public void print(String msg) {
         for (String part : msg.split("\n")) {
-           System.out.println("§c" + part);
+            plugin.getLogger().info("§c" + part);
         }
     }
 
     @Override
     public void printError(String msg) {
         for (String part : msg.split("\n")) {
-           System.out.println("§c" + part);
+            plugin.getLogger().info("§c" + part);
         }
     }
 
     @Override
     public void print(Component component) {
-
-        System.out.println(WorldEditText.format(component, getLocale()));
     }
 
     @Override
@@ -130,8 +132,17 @@ public class SessionConsole extends LocalSession implements Actor {
         return Locale.ROOT;
     }
 
+
+    public boolean runAction(Runnable ifFree, boolean checkFree, boolean async) {
+        return false;
+    }
+
     @Override
     public UUID getUniqueId() {
         return UUID.randomUUID();
+    }
+
+    public Map<String, Object> getRawMeta() {
+        return null;
     }
 }

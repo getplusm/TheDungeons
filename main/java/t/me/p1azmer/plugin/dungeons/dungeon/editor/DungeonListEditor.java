@@ -2,7 +2,6 @@ package t.me.p1azmer.plugin.dungeons.dungeon.editor;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.menu.AutoPaged;
@@ -11,24 +10,24 @@ import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
 import t.me.p1azmer.engine.api.menu.impl.MenuOptions;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.editor.EditorManager;
-import t.me.p1azmer.engine.utils.ItemUtil;
+import t.me.p1azmer.engine.utils.Colorizer;
+import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.Dungeon;
+import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
+import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
-import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DungeonListEditor extends EditorMenu<DungeonPlugin, DungeonManager> implements AutoPaged<Dungeon> {
 
-    public DungeonListEditor(@NotNull DungeonManager crateManager) {
-        super(crateManager.plugin(), crateManager, Config.EDITOR_TITLE_CRATE.get(), 45);
+    public DungeonListEditor(@NotNull DungeonManager manager) {
+        super(manager.plugin(), manager, Config.EDITOR_TITLE_DUNGEON.get(), 45);
 
         this.addReturn(39).setClick((viewer, event) -> {
             this.plugin.runTask(task -> this.plugin.getEditor().open(viewer.getPlayer(), 1));
@@ -61,32 +60,34 @@ public class DungeonListEditor extends EditorMenu<DungeonPlugin, DungeonManager>
     @Override
     @NotNull
     public List<Dungeon> getObjects(@NotNull Player player) {
-        return this.object.getDungeons().stream().sorted(Comparator.comparing(Dungeon::getId)).collect(Collectors.toList());
+        return this.object.getDungeons().stream().sorted(Comparator.comparing(Dungeon::getId)).toList();
     }
 
     @Override
     @NotNull
-    public ItemStack getObjectStack(@NotNull Player player, @NotNull Dungeon crate) {
-        ItemStack item = new ItemStack(new ItemStack(Material.CHEST));
-        ItemUtil.mapMeta(item, meta -> {
-            meta.setDisplayName(EditorLocales.DUNGEON_OBJECT.getLocalizedName());
-            meta.setLore(EditorLocales.DUNGEON_OBJECT.getLocalizedLore());
-            meta.addItemFlags(ItemFlag.values());
-            ItemUtil.replace(meta, crate.replacePlaceholders());
-        });
+    public ItemStack getObjectStack(@NotNull Player player, @NotNull Dungeon dungeon) {
+        Material material = dungeon.getSettings().getChestMaterial();
+        ItemStack item = new ItemStack(material.isAir() ? Material.CHEST : material);
+        ItemReplacer.create(item)
+                .readLocale(EditorLocales.DUNGEON_OBJECT)
+                .trimmed()
+                .hideFlags()
+                .replace(dungeon.replacePlaceholders())
+                .replace(Colorizer::apply)
+                .writeMeta();
         return item;
     }
 
     @Override
     @NotNull
-    public ItemClick getObjectClick(@NotNull Dungeon crate) {
+    public ItemClick getObjectClick(@NotNull Dungeon dungeon) {
         return (viewer, event) -> {
             if (event.isShiftClick() && event.isRightClick()) {
-                this.object.delete(crate);
+                this.object.delete(dungeon);
                 this.plugin.runTask(task -> this.open(viewer.getPlayer(), viewer.getPage()));
                 return;
             }
-            this.plugin.runTask(task -> crate.getEditor().open(viewer.getPlayer(), 1));
+            this.plugin.runTask(task -> dungeon.getEditor().open(viewer.getPlayer(), 1));
         };
     }
 }

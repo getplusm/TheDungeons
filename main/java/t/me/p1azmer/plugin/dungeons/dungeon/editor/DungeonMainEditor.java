@@ -1,157 +1,183 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.editor;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
+import org.bukkit.World;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import t.me.p1azmer.engine.api.editor.InputHandler;
-import t.me.p1azmer.engine.api.manager.IListener;
+import t.me.p1azmer.engine.api.manager.EventListener;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.editor.EditorManager;
+import t.me.p1azmer.engine.utils.CollectionsUtil;
+import t.me.p1azmer.engine.utils.Colorizer;
+import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.engine.utils.ItemUtil;
+import t.me.p1azmer.engine.utils.collections.AutoRemovalCollection;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.Dungeon;
+import t.me.p1azmer.plugin.dungeons.dungeon.editor.effect.DungeonEffectListEditor;
+import t.me.p1azmer.plugin.dungeons.dungeon.editor.region.DungeonRegionMainEditor;
+import t.me.p1azmer.plugin.dungeons.dungeon.editor.reward.DungeonRewardListEditor;
+import t.me.p1azmer.plugin.dungeons.dungeon.editor.settings.DungeonSettingsEditor;
+import t.me.p1azmer.plugin.dungeons.dungeon.editor.settings.HologramSettingsEditor;
+import t.me.p1azmer.plugin.dungeons.dungeon.editor.settings.PartySettingsEditor;
+import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
+import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.SchematicModule;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implements IListener {
+public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implements EventListener {
 
+    private HologramSettingsEditor hologramSettingsEditor;
     private DungeonRewardListEditor editorRewards;
-    private boolean isReadyForBlock = false;
+    private DungeonEffectListEditor effectEditor;
+    private DungeonRegionMainEditor regionMainEditor;
+    private DungeonSettingsEditor settingsEditor;
+    private PartySettingsEditor partySettingsEditor;
 
-    public DungeonMainEditor(@NotNull Dungeon crate) {
-        super(crate.plugin(), crate, Config.EDITOR_TITLE_CRATE.get(), 45);
+    private final AutoRemovalCollection<Dungeon> rebootCache = AutoRemovalCollection.newHashSet(1, TimeUnit.MINUTES);
 
-        this.addReturn(40).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.plugin.getEditor().getCratesEditor().open(viewer.getPlayer(), 1));
+    public DungeonMainEditor(@NotNull Dungeon dungeon) {
+        super(dungeon.plugin(), dungeon, Config.EDITOR_TITLE_DUNGEON.get(), 54);
+
+        String REGION_HEAD_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzIyODM5ZDVjN2ZjMDY3ODA2MmYxYzZjOGYyN2IzMzIwOTQzODRlM2JiNWM0YjVlYmQxNjc2YjI3OWIwNmJmIn19fQ==";
+        ItemStack regionHead = ItemUtil.createCustomHead(REGION_HEAD_TEXTURE);
+        String SETTINGS_HEAD_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTMxOGVlNTI3OGUwOGQ5ZTZmZTkxNjNlYzQyNjdjNzkxZjUyNDhhMzU3ZjVmNzgwZDYzNDY4MTJjNzA0ZWI4ZiJ9fX0=";
+        ItemStack settingsHead = ItemUtil.createCustomHead(SETTINGS_HEAD_TEXTURE);
+
+        String KEY_HEAD_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWVlZmE0Y2QyYTU1OGU0YTgxMmUyZWE3NTQxZTYyNzUwYjk2YmExZDgyYzFkYTlmZDVmMmUzZmI5MzA4YzYzNSJ9fX0=";
+        ItemStack keyHead = ItemUtil.createCustomHead(KEY_HEAD_TEXTURE);
+
+        String BARRIER_HEAD_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvM2VkMWFiYTczZjYzOWY0YmM0MmJkNDgxOTZjNzE1MTk3YmUyNzEyYzNiOTYyYzk3ZWJmOWU5ZWQ4ZWZhMDI1In19fQ==";
+        ItemStack barrierHead = ItemUtil.createCustomHead(BARRIER_HEAD_TEXTURE);
+        ItemStack worldHead = ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjliMjg4OTAyMDU4MzU2NWY4OGQ1MDUzNzg3MGM1OWFhZDgwMjU5NGZhYmQ4MzdlMWQxNGY1YTA2YWUzNDUwOSJ9fX0=");
+
+        this.addReturn(49).setClick((viewer, event) -> {
+            this.plugin.runTask(task -> this.plugin.getEditor().getDungeonEditor().open(viewer.getPlayer(), 1));
         });
 
         this.addItem(Material.NAME_TAG, EditorLocales.DUNGEON_NAME, 4).setClick((viewer, event) -> {
             this.handleInput(viewer, Lang.EDITOR_ENTER_DISPLAY_NAME, wrapper -> {
-                crate.setName(wrapper.getText());
-                crate.save();
+                dungeon.setName(wrapper.getText());
+                dungeon.save();
                 return true;
             });
         });
-        this.addItem(Material.DIRT, EditorLocales.DUNGEON_SCHEMATIC, 9).setClick((viewer, event) -> {
-            if (event.isShiftClick()) {
-                if (event.isRightClick()) {
-                    crate.setSchematics(new ArrayList<>());
-//                    crate.updateHologram();
-                    this.save(viewer);
+        dungeon.getModuleManager().getModule(SchematicModule.class).ifPresent(module -> {
+            this.addItem(Material.WOODEN_AXE, EditorLocales.DUNGEON_SCHEMATIC, 27).setClick((viewer, event) -> {
+                if (event.isShiftClick()) {
+                    if (event.isRightClick()) {
+                        module.setSchematics(new ArrayList<>());
+                        this.save(viewer);
+                        return;
+                    }
                 }
-            } else {
                 if (event.isLeftClick()) {
                     this.handleInput(viewer, Lang.EDITOR_ENTER_SCHEMATIC, wrapper -> {
-                        List<String> list = crate.getSchematics();
-                        list.add(wrapper.getText());
-                        crate.setSchematics(list);
-//                        crate.updateHologram();
-                        crate.save();
+                        String schematicName = wrapper.getText();
+                        File schematicFile = module.getFileByName(schematicName);
+                        if (!this.plugin.getSchematicHandler().containsChestBlock(dungeon, schematicFile)) {
+                            EditorManager.error(viewer.getPlayer(), plugin().getMessage(Lang.EDITOR_DUNGEON_ERROR_SCHEMATIC_NOT_VALID).getLocalized());
+                            return false;
+                        }
+                        int chestBlocks = this.plugin.getSchematicHandler().getAmountOfChestBlocks(dungeon, schematicFile);
+                        if (chestBlocks <= 0) {
+                            EditorManager.error(viewer.getPlayer(), plugin.getMessage(Lang.EDITOR_DUNGEON_ERROR_SCHEMATIC_NOT_CONTAINS_CHEST).getLocalized());
+                            return false;
+                        }
+                        List<String> list = module.getSchematics();
+                        list.add(schematicName);
+                        module.setSchematics(list);
+                        dungeon.save();
                         return true;
                     });
                 }
-            }
+            });
         });
-
-        this.addItem(Material.TRIPWIRE_HOOK, EditorLocales.DUNGEON_KEYS, 11).setClick((viewer, event) -> {
+        this.addItem(keyHead, EditorLocales.DUNGEON_KEYS, 28).setClick((viewer, event) -> {
             if (event.isLeftClick()) {
                 this.handleInput(viewer, Lang.EDITOR_DUNGEON_ENTER_KEY_ID, wrapper -> {
-                    crate.getKeyIds().add(wrapper.getTextRaw());
-                    crate.save();
+                    dungeon.getKeyIds().add(wrapper.getTextRaw());
+                    dungeon.save();
                     return true;
                 });
-                EditorManager.suggestValues(viewer.getPlayer(), plugin.getKeyManager().getKeyIds(), true);
+                EditorManager.suggestValues(viewer.getPlayer(), plugin.getKeyManager().getKeyIds(), false);
             } else if (event.isRightClick()) {
-                crate.getKeyIds().clear();
+                dungeon.getKeyIds().clear();
                 this.save(viewer);
             }
         });
 
-        this.addItem(Material.EMERALD, EditorLocales.DUNGEON_REWARDS, 13).setClick((viewer, event) -> {
+        this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzQzMWFlN2RjZDFlMmRkMzZjMzNhMGM5YTExNmI1NmUxNGFjZGFmMGRhZmIyYTA0OTg2ZDY1YWVhMGUzNTMxNCJ9fX0="),
+                EditorLocales.HOLOGRAM_SETTINGS, 9).setClick((viewer, event) -> {
+            this.plugin.runTask(task -> this.getHologramEditor().open(viewer.getPlayer(), 1));
+        });
+
+        // other editors
+        this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODJjZGUwNjhlOTlhNGY5OGMzMWY4N2I0Y2MwNmJlMTRiMjI5YWNhNGY3MjgxYTQxNmM3ZTJmNTUzMjIzZGI3NCJ9fX0="),
+                EditorLocales.DUNGEON_REWARDS, 11).setClick((viewer, event) -> {
             this.plugin.runTask(task -> this.getEditorRewards().open(viewer.getPlayer(), 1));
         });
+        this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzhjZWI4NjMxYWRkN2NiYjU2NWRjYjcwNWYxMjEyMzQ5Y2NjZDc1NTk2NWM0NmE5MjI4NTJjOWZkOTQ4YjRiYiJ9fX0="),
+                EditorLocales.DUNGEON_EFFECTS, 13).setClick((viewer, event) -> {
+            this.plugin.runTask(task -> this.getEffectEditor().open(viewer.getPlayer(), 1));
+        });
+        this.addItem(regionHead, EditorLocales.DUNGEON_REGION, 15).setClick((viewer, event) -> {
+            this.plugin.runTask(task -> this.getRegionMainEditor().open(viewer.getPlayer(), 1));
+        });
+        this.addItem(settingsHead, EditorLocales.DUNGEON_SETTINGS, 17).setClick((viewer, event) -> {
+            this.plugin.runTask(task -> this.getSettingsEditor().open(viewer.getPlayer(), 1));
+        });
+        this.addItem(barrierHead, EditorLocales.DUNGEON_PARTICLE, 26).setClick((viewer, event) -> {
+            viewer.getPlayer().sendMessage(Colorizer.apply("&cThis page will be available later\nFollow the news in our discord: &lhttps://discord.gg/ajnPb3fdKq"));
+        });
+        if (plugin().getPartyHandler() != null) {
+            this.addItem(Material.GOLDEN_HORSE_ARMOR, EditorLocales.DUNGEON_PARTY, 25).setClick((viewer, event) -> {
+                this.getPartySettingsEditor().openNextTick(viewer.getPlayer(), 1);
+            });
+        }
+        this.addItem(worldHead, EditorLocales.DUNGEON_WORLD, 31).setClick((viewer, event) -> {
+            EditorManager.suggestValues(viewer.getPlayer(), CollectionsUtil.worldNames(), true);
+            this.handleInput(viewer, Lang.Editor_Dungeon_Enter_World, wrapper -> {
+                String worldName = wrapper.getText();
+                World world = Bukkit.getWorld(worldName);
+                if (world == null) {
+                    EditorManager.error(viewer.getPlayer(), plugin().getMessage(Lang.Editor_Dungeon_World_Not_Found).getLocalized());
+                    return false;
+                }
+                dungeon.setWorld(world);
+                dungeon.save();
+                return true;
+            });
+        });
+        this.addItem(Material.SOUL_TORCH, EditorLocales.DUNGEON_REBOOT, 45).setClick((viewer, event) -> {
+            if (event.isShiftClick() && event.isRightClick()) {
+                if (this.rebootCache.add(dungeon)) {
+                    this.getObject().reboot();
+                    viewer.getPlayer().sendMessage(Colorizer.apply("&aReboot the '" + dungeon.getId() + "' dungeon!"));
+                } else {
+                    viewer.getPlayer().sendMessage(Colorizer.apply("&cYou can't restart the dungeon so often! Please wait one minute for reboot!"));
+                }
+            }
+        });
 
-
-        this.addItem(Material.ARMOR_STAND, EditorLocales.DUNGEON_BLOCK_HOLOGRAM_OPEN, 15).setClick((viewer, event) -> {
-            if (event.isShiftClick()) {
-                if (event.isRightClick()) {
-                    crate.setOpenMessage(new ArrayList<>());
-//                    crate.updateHologram();
-                    this.save(viewer);
-                }
-            } else {
-                if (event.isLeftClick()) {
-                    this.handleInput(viewer, Lang.EDITOR_DUNGEON_ENTER_BLOCK_HOLOGRAM_TEXT, wrapper -> {
-                        List<String> list = crate.getOpenMessage();
-                        list.add(wrapper.getText());
-                        crate.setOpenMessage(list);
-//                        crate.updateHologram();
-                        crate.save();
-                        return true;
-                    });
-                }
-            }
-        });
-        this.addItem(Material.ARMOR_STAND, EditorLocales.DUNGEON_BLOCK_HOLOGRAM_CLOSE, 16).setClick((viewer, event) -> {
-            if (event.isShiftClick()) {
-                if (event.isRightClick()) {
-                    crate.setCloseMessage(new ArrayList<>());
-//                    crate.updateHologram();
-                    this.save(viewer);
-                }
-            } else {
-                if (event.isLeftClick()) {
-                    this.handleInput(viewer, Lang.EDITOR_DUNGEON_ENTER_BLOCK_HOLOGRAM_TEXT, wrapper -> {
-                        List<String> list = crate.getCloseMessage();
-                        list.add(wrapper.getText());
-                        crate.setCloseMessage(list);
-//                        crate.updateHologram();
-                        crate.save();
-                        return true;
-                    });
-                }
-            }
-        });
-        this.addItem(Material.ARMOR_STAND, EditorLocales.DUNGEON_BLOCK_HOLOGRAM_WAIT, 17).setClick((viewer, event) -> {
-            if (event.isShiftClick()) {
-                if (event.isRightClick()) {
-                    crate.setWaitMessage(new ArrayList<>());
-                    this.save(viewer);
-                }
-            } else {
-                if (event.isLeftClick()) {
-                    this.handleInput(viewer, Lang.EDITOR_DUNGEON_ENTER_BLOCK_HOLOGRAM_TEXT, wrapper -> {
-                        List<String> list = crate.getWaitMessage();
-                        list.add(wrapper.getText());
-                        crate.setWaitMessage(list);
-                        crate.save();
-                        return true;
-                    });
-                }
-            }
-        });
-        this.addItem(Material.STONE_BUTTON, EditorLocales.DUNGEON_OPEN_TYPE, 26).setClick((viewer, event) -> {
-            crate.setOpenType(crate.getOpenType().isClick() ? Dungeon.OpenType.TIMER : Dungeon.OpenType.CLICK);
-            crate.save();
-        });
 
         this.getItems().forEach(menuItem -> {
             if (menuItem.getOptions().getDisplayModifier() == null) {
                 menuItem.getOptions().setDisplayModifier(((viewer, item) -> {
-                    ItemUtil.replace(item, crate.replacePlaceholders());
+                    dungeon.getModuleManager().getModules().forEach(module -> ItemReplacer.replace(item, module.replacePlaceholders()));
+                    ItemReplacer.replace(item, dungeon.replacePlaceholders());
+                    ItemReplacer.replace(item, dungeon.getHologramSettings().replacePlaceholders());
+                    ItemReplacer.replace(item, dungeon.getDungeonRegion().replacePlaceholders());
+                    ItemReplacer.replace(item, dungeon.getSettings().replacePlaceholders());
                 }));
             }
         });
@@ -180,6 +206,47 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
             this.editorRewards = new DungeonRewardListEditor(this.object);
         }
         return this.editorRewards;
+    }
+
+    @NotNull
+    public HologramSettingsEditor getHologramEditor() {
+        if (this.hologramSettingsEditor == null) {
+            this.hologramSettingsEditor = new HologramSettingsEditor(this.object.getHologramSettings());
+        }
+        return this.hologramSettingsEditor;
+    }
+
+
+    @NotNull
+    public DungeonEffectListEditor getEffectEditor() {
+        if (this.effectEditor == null) {
+            this.effectEditor = new DungeonEffectListEditor(this.object);
+        }
+        return this.effectEditor;
+    }
+
+    @NotNull
+    public DungeonRegionMainEditor getRegionMainEditor() {
+        if (this.regionMainEditor == null) {
+            this.regionMainEditor = new DungeonRegionMainEditor(this.object.getDungeonRegion());
+        }
+        return regionMainEditor;
+    }
+
+    @NotNull
+    public DungeonSettingsEditor getSettingsEditor() {
+        if (this.settingsEditor == null) {
+            this.settingsEditor = new DungeonSettingsEditor(this.object.getSettings());
+        }
+        return settingsEditor;
+    }
+
+    @NotNull
+    public PartySettingsEditor getPartySettingsEditor() {
+        if (this.partySettingsEditor == null) {
+            this.partySettingsEditor = new PartySettingsEditor(this.object.getPartySettings());
+        }
+        return partySettingsEditor;
     }
 
     private void save(@NotNull MenuViewer viewer) {

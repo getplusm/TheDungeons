@@ -1,362 +1,595 @@
 package t.me.p1azmer.plugin.dungeons.editor;
 
+import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.editor.EditorLocale;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
-import t.me.p1azmer.plugin.dungeons.dungeon.Dungeon;
+import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
+
+import static t.me.p1azmer.engine.utils.Colors.*;
 
 public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales {
 
-    private static final String PREFIX = "Editor.DungeonEditorType."; // Old version compatibility
+    private static final String PREFIX = "Editor.";
 
-    public static final EditorLocale DUNGEON_EDITOR = builder(PREFIX + "EDITOR_DUNGEON")
+    public static final EditorLocale DUNGEON_EDITOR = builder(PREFIX + "Dungeon")
             .name("Dungeons")
-            .text("Create and manage your dungeons here!").breakLine()
-            .actionsHeader().action("LMB", "Open").build();
-    public static final EditorLocale KEYS_EDITOR = builder(PREFIX + "EDITOR_KEYS")
+            .build();
+    public static final EditorLocale KEYS_EDITOR = builder(PREFIX + "Keys")
             .name("Keys")
-            .text("Create and manage your keys here!").breakLine()
-            .actionsHeader().action("LMB", "Open").build();
+            .build();
+    public static final EditorLocale MOB_EDITOR = builder(PREFIX + "Mobs")
+            .name("Mob Editor")
+            .build();
 
-    public static final EditorLocale DUNGEON_OBJECT = builder(PREFIX + "DUNGEON_OBJECT")
+    // dungeon
+
+    public static final EditorLocale DUNGEON_OBJECT = builder(PREFIX + "Dungeon.Object")
             .name(Placeholders.DUNGEON_NAME + " &7(ID: &f" + Placeholders.DUNGEON_ID + "&7)")
-            .actionsHeader()
-            .action("LMB", "Configure")
-            .action("RMB+SHIFT", "Delete " + RED + "(No Undo)").build();
+            .click(LMB, "Configure")
+            .click(SHIFT_RMB, "Delete " + RED + "(No Undo)")
+            .build();
 
-    public static final EditorLocale DUNGEON_CREATE = builder(PREFIX + "DUNGEON_CREATE")
-            .name("Create Dungeon")
-            .text("Create a new dungeon.")
-            .actionsHeader().action("LMB", "Create").build();
+    public static final EditorLocale DUNGEON_CREATE = builder(PREFIX + "Dungeon.Create")
+            .name("New Dungeon")
+            .build();
 
-    public static final EditorLocale DUNGEON_NAME = builder(PREFIX + "DUNGEON_CHANGE_NAME")
+    public static final EditorLocale DUNGEON_NAME = builder(PREFIX + "Dungeon.Change.Name")
             .name("Name")
-            .text("Sets the displayed name of the dungeon.", "Used in messages and menus.").breakLine()
-            .currentHeader().current("Displayed Name", Placeholders.DUNGEON_NAME).breakLine()
-            .actionsHeader().action("LMB", "Change").build();
+            .text("Sets the displayed name of the dungeon", "Used in messages and menus")
+            .emptyLine()
+            .currentHeader()
+            .current("Displayed Name", Placeholders.DUNGEON_NAME + GRAY + " (" + WHITE + LMB + GRAY + ")")
+            .build();
 
-    public static final EditorLocale DUNGEON_KEYS = builder(PREFIX + "DUNGEON_CHANGE_KEYS")
+    public static final EditorLocale DUNGEON_KEYS = builder(PREFIX + "Dungeon.Change.Keys")
             .name("Attached Keys")
-            .text("Specifies which keys can be used to open this dungeon.").breakLine()
-            .currentHeader().current("ID", Placeholders.DUNGEON_KEY_IDS).breakLine()
+            .text("Specifies which keys can be used to open this dungeon.").emptyLine()
+            .currentHeader()
+            .current("ID List", Placeholders.DUNGEON_KEY_IDS)
+            .emptyLine()
             .warningHeader().warning("If no keys are set, the dungeon can be opened without them!")
-            .warning("If incorrect keys are provided, you won't be able to open the dungeon!").breakLine()
-            .actionsHeader().action("LMB", "Attach Key").action("RMB", "Clear List")
+            .warning("If incorrect keys are provided, you won't be able to open the dungeon!")
+            .emptyLine()
+            .click(LMB, "Attach Key")
+            .click(RMB, "Clear")
             .build();
-
-    public static final EditorLocale DUNGEON_BLOCK_HOLOGRAM_OPEN = builder(PREFIX + "DUNGEON_CHANGE_BLOCK_HOLOGRAM_OPEN")
-            .name("Hologram - Stage=Opening")
-            .text("Sets the hologram text when the dungeon is in the opening stage.").breakLine()
-            .noteHeader()
-            .action("You can specify the time until the dungeon opens", "")
-            .action("using the placeholder", "dungeon_open_in")
-            .breakLine()
-            .current("Opening Text", "").text(Placeholders.DUNGEON_HOLOGRAM_TEXT_OPEN.toString()).breakLine()
-            .actionsHeader().action("LMB", "Add Text").action("RMB+SHIFT", "Clear")
-            .build();
-    public static final EditorLocale DUNGEON_BLOCK_HOLOGRAM_CLOSE = builder(PREFIX + "DUNGEON_CHANGE_BLOCK_HOLOGRAM_CLOSE")
-            .name("Hologram - Stage=Closure")
-            .text("Sets the hologram text when the dungeon is open.").breakLine()
-            .noteHeader()
-            .action("You can specify the time until the dungeon closes", "")
-            .action("using the placeholder", "dungeon_hologram_text_close")
-            .breakLine()
-            .current("Closure Text", "").text(Placeholders.DUNGEON_HOLOGRAM_TEXT_CLOSE).breakLine()
-            .actionsHeader().action("LMB", "Add Text").action("RMB+SHIFT", "Clear")
-            .build();
-
-    public static final EditorLocale DUNGEON_BLOCK_HOLOGRAM_WAIT = builder(PREFIX + "DUNGEON_CHANGE_BLOCK_HOLOGRAM_WAIT")
-            .name("Hologram - Stage=Waiting")
-            .text("Sets the hologram text when the dungeon is in the waiting stage for opening (CLICK opening mode).").breakLine()
-            .current("Waiting Text", "").text(Placeholders.DUNGEON_HOLOGRAM_TEXT_WAIT).breakLine()
-            .actionsHeader().action("LMB", "Add Text").action("RMB+SHIFT", "Clear")
-            .build();
-
-    public static final EditorLocale DUNGEON_SCHEMATIC = builder(PREFIX + "DUNGEON_CHANGE_SCHEMATIC")
+    public static final EditorLocale DUNGEON_SCHEMATIC = builder(PREFIX + "Dungeon.Change.Schematics")
             .name("Schematics")
-            .text("List of schematics that will be used").breakLine()
-            .warningHeader().warning("The schematic must contain the block specified in the configuration.").breakLine()
-            .warningHeader().warning("If the list is " + RED + "EMPTY" + GRAY + ", the dungeon won't work!").breakLine()
-            .currentHeader().current("List", "").text(Placeholders.DUNGEON_SCHEMATICS)
-            .breakLine()
-            .actionsHeader().action("LMB", "Add").action("RMB+SHIFT", "Clear").build();
+            .text("List of schematics that will be used").emptyLine()
+            .warningHeader().warning("The schematics must contain the block specified in the configuration.",
+                    "If the list is " + RED + "EMPTY" + GRAY + ", the dungeon won't work!")
+            .emptyLine()
+            .currentHeader()
+            .current("List", "").text(Placeholders.DUNGEON_SCHEMATICS)
+            .emptyLine()
 
-    public static final EditorLocale DUNGEON_OPEN_TYPE = builder(PREFIX + "DUNGEON_CHANGE_OPEN_TYPE")
-            .name("Opening Type")
-            .text("Sets the type of opening for the dungeon", Dungeon.OpenType.CLICK.name() + " - Opens the dungeon on click", Dungeon.OpenType.TIMER.name() + " - Opens the dungeon based on a timer").breakLine()
-            .currentHeader().current("", Placeholders.DUNGEON_OPEN_TYPE).breakLine()
-            .actionsHeader().action("LMB", "Change").build();
-
-    public static final EditorLocale DUNGEON_REWARDS = builder(PREFIX + "DUNGEON_CHANGE_REWARDS")
-            .name("Rewards")
-            .text("Create and manage your rewards here!").breakLine()
-            .actionsHeader().action("LMB", "Open")
+            .click(LMB, "Add")
+            .click(SHIFT_RMB, "Clear")
             .build();
 
-    public static final EditorLocale REWARD_OBJECT = builder(PREFIX + "REWARD_OBJECT")
+    public static final EditorLocale DUNGEON_EFFECTS = builder(PREFIX + "Dungeon.Change.Effects")
+            .name("Effects")
+            .click(LMB, "Navigate")
+            .build();
+    public static final EditorLocale DUNGEON_REWARDS = builder(PREFIX + "Dungeon.Change.Rewards")
+            .name("Rewards")
+            .click(LMB, "Navigate")
+            .build();
+
+    public static final EditorLocale DUNGEON_REGION = builder(PREFIX + "Dungeon.Change.Region")
+            .name("Region")
+            .click(LMB, "Navigate")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS = builder(PREFIX + "Dungeon.Change.Settings")
+            .name("Main Settings")
+            .current("Enabled", Placeholders.DUNGEON_SETTINGS_ENABLED)
+            .current("Chest material", Placeholders.DUNGEON_SETTINGS_CHEST_MATERIAL)
+            .current("Minimal online", Placeholders.DUNGEON_SETTINGS_MINIMAL_ONLINE)
+            .current("Open type", Placeholders.DUNGEON_SETTINGS_OPEN_TYPE)
+            .current("Underground", Placeholders.DUNGEON_SETTINGS_UNDERGROUND)
+            .text("  and more in menu")
+            .emptyLine()
+            .click(LMB, "Navigate")
+            .build();
+    public static final EditorLocale DUNGEON_PARTICLE = builder(PREFIX + "Dungeon.Change.Particles")
+            .name("Particles")
+            .text(RED + "Coming soon..")
+            //.click(LMB, "Navigate")
+            .build();
+    public static final EditorLocale DUNGEON_PARTY = builder(PREFIX + "Dungeon.Party")
+            .name("Party")
+            .click(LMB, "Navigate")
+            .build();
+
+    public static final EditorLocale DUNGEON_REBOOT = builder(PREFIX + "Dungeon.Reboot")
+            .name("Reboot the dungeon")
+            .text(ORANGE + "Reboot: reset the waiting time,", ORANGE + "delete the dungeon if it is", ORANGE + "spawned and start it again!").emptyLine()
+            .click(SHIFT_RMB, "Restart")
+            .build();
+
+    public static final EditorLocale DUNGEON_WORLD = builder(PREFIX + "Dungeon.World")
+            .name("Dungeon World")
+            .text(LIGHT_PURPLE + Placeholders.DUNGEON_WORLD + GRAY + " (" + WHITE + LMB + GRAY + ")")
+            .build();
+    // holograms
+    public static final EditorLocale HOLOGRAM_SETTINGS = builder(PREFIX + "Dungeon.Settings.Hologram")
+            .name("Hologram Settings")
+            .click(LMB, "Navigate")
+            .build();
+
+    @NotNull
+    public static EditorLocale HOLOGRAM_OBJECT = builder(PREFIX + "Dungeon.Hologram.Object")
+            .name(LIGHT_PURPLE + Placeholders.DUNGEON_CHEST_STATE_NAME)
+            .text("Sets the message that will be", "over the chest block in this state")
+            .emptyLine()
+            .currentHeader()
+            .textRaw(Placeholders.EDITOR_HOLOGRAM_TEXT)
+            .click(LMB, "Add Line")
+            .click(RMB, "Remove Line")
+            .click(SHIFT_RMB, "Clear " + RED + "(No Undo)")
+            .build();
+    public static final EditorLocale DUNGEON_HOLOGRAM_Y_OFFSET = builder(PREFIX + "Dungeon.Change.Holograms.Offset.Y")
+            .name("Hologram Y Offset")
+            .text("Sets the Y offset for", "hologram location")
+            .emptyLine()
+            .currentHeader()
+            .current("Y Offset", Placeholders.DUNGEON_HOLOGRAM_CHEST_OFFSET_Y)
+            .emptyLine()
+            .click(LMB, "Change")
+            .build();
+
+    // settings
+    public static final EditorLocale DUNGEON_SETTINGS_ENABLE = builder(PREFIX + "Dungeon.Settings.Enabled")
+            .name("Enabled dungeon")
+            .text("Sets whether the", "dungeon is enabled or disabled")
+            .currentHeader()
+            .current("Enabled", Placeholders.DUNGEON_SETTINGS_ENABLED)
+            .emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_OPEN_TYPE = builder(PREFIX + "Dungeon.Settings.Open_Type")
+            .name("Chest Opening Type")
+            .text("Sets the type of opening for the dungeon", GREEN + Dungeon.OpenType.CLICK.name() + GRAY + " - Opens the dungeon on click", GREEN + Dungeon.OpenType.TIMER.name() + GRAY + " - Opens the dungeon based on a timer").emptyLine()
+            .currentHeader()
+            .current("Type", Placeholders.DUNGEON_SETTINGS_OPEN_TYPE).emptyLine()
+            .click(LMB, "Change").build();
+
+    public static final EditorLocale DUNGEON_SETTINGS_CHEST_WAIT_TIME = builder(PREFIX + "Dungeon.Settings.Chest.Wait_Type")
+            .name("Chest Waiting time")
+            .text("Sets the time in seconds to wait before opening the chest")
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_CHEST_WAIT_TIME)
+            .emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_CHEST_CLOSE_TIME = builder(PREFIX + "Dungeon.Settings.Chest.Close_Type")
+            .name("Chest Closing time")
+            .text("Sets the time in seconds for how long the active chest will be open")
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_CHEST_CLOSE_TIME)
+            .emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_CHEST_OPEN_TIME = builder(PREFIX + "Dungeon.Settings.Chest.Open_Type")
+            .name("Opening time")
+            .text("Sets the time in seconds for the active chest to open")
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_CHEST_OPEN_TIME)
+            .emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_TIMER_REFRESH = builder(PREFIX + "Dungeon.Settings.Timer.Refresh")
+            .name("Refreshing time")
+            .text("Sets the dungeon reload time.", "That is, this is the frequency of appearance of the dungeon")
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_REFRESH)
+            .emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_CHEST_LIMIT = builder(PREFIX + "Dungeon.Settings.Chest.Limit")
+            .name("Chest block limit")
+            .text("Sets a limit on the number of chest blocks")
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_CHEST_BLOCK_LIMIT)
+            .emptyLine()
+            .click(LMB, "Change")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_SEPARATE_GUI = builder(PREFIX + "Dungeon.Settings.Separate.Gui")
+            .name("Separate chest block gui")
+            .text("Sets whether there will be a separate menu", "for each block of the chest or", "one menu for all blocks")
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_SEPARATE_CHEST_BLOCK)
+            .emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_CLICK_TIMER = builder(PREFIX + "Dungeon.Settings.Timer.Click")
+            .name("Click Timer")
+            .text("Sets whether the timer will be started", "when opening if the", "opening type is click").emptyLine()
+            .currentHeader()
+            .current("Use", Placeholders.DUNGEON_SETTINGS_CLICK_TIMER).emptyLine()
+            .click(LMB, "Change").build();
+    public static final EditorLocale DUNGEON_SETTINGS_BIG_CHEST = builder(PREFIX + "Dungeon.Settings.Chest.Big")
+            .name("Big Chest")
+            .text("Sets the chest (rewards menu) will be big.", "The large has 54 slots,", "and the small one has 27.").emptyLine()
+            .currentHeader()
+            .current("Big", Placeholders.DUNGEON_SETTINGS_BIG_CHEST).emptyLine()
+            .click(LMB, "Change").build();
+    public static final EditorLocale DUNGEON_SETTINGS_RANDOM_SLOTS = builder(PREFIX + "Dungeon.Settings.Random_Slots")
+            .name("Random Slots")
+            .text("Sets whether the items in the dungeon", "chest will be in random slots", "or will be filled gradually").emptyLine()
+            .currentHeader()
+            .current("Random", Placeholders.DUNGEON_SETTINGS_RANDOM_SLOTS).emptyLine()
+            .click(LMB, "Change").build();
+
+    public static final EditorLocale DUNGEON_SETTINGS_UNDERGROUND = builder(PREFIX + "Dungeon.Settings.Underground")
+            .name("Underground")
+            .text("Sets whether the dungeon", "will spawn underground or", "on the surface").emptyLine()
+            .currentHeader()
+            .current("Underground", Placeholders.DUNGEON_SETTINGS_UNDERGROUND).emptyLine()
+            .click(LMB, "Change").build();
+    public static final EditorLocale DUNGEON_SETTINGS_CHEST_BLOCK_SEARCH_RADIUS = builder(PREFIX + "Dungeon.Settings.Blocks")
+            .name("Blocks Search Radius")
+            .text("Sets the radius at which", "chest blocks will be searched").emptyLine()
+            .currentHeader()
+            .current("Radius", Placeholders.DUNGEON_SETTINGS_BLOCKS_SIZE).emptyLine()
+            .click(LMB, "Change").build();
+    public static final EditorLocale DUNGEON_SETTINGS_MINIMAL_ONLINE = builder(PREFIX + "Dungeon.Settings.Minimal_Online")
+            .name("Minimal Online")
+            .text("Sets the minimum allowed online", "players for spawn").emptyLine()
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_MINIMAL_ONLINE).emptyLine()
+            .click(LMB, "Change")
+            .build();
+
+    public static final EditorLocale DUNGEON_SETTINGS_CHEST_MATERIAL = builder(PREFIX + "Dungeon.Settings.Chest.Material")
+            .name("Chest Block")
+            .text("Sets what material will be used as a chest", "that players will activate and open").emptyLine()
+            .currentHeader()
+            .current("Material", Placeholders.DUNGEON_SETTINGS_CHEST_MATERIAL).emptyLine()
+
+            .click(LMB, "Change")
+            .click(DRAG_DROP, "Quick change")
+            .build();
+
+    public static final EditorLocale DUNGEON_SETTINGS_LET_PLAYER_WHEN_CLOSE = builder(PREFIX + "Dungeon.Settings.Let_Players")
+            .name("Let players when close")
+            .text("Sets whether the player will", "be able to enter the dungeon if it is still closed.", "&cBe careful with this setting,", "&cas if you set a 'false',", "&cthe plugin will push the player 3 blocks back").emptyLine()
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_LET_PLAYERS_WHEN_CLOSE).emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+
+    public static final EditorLocale DUNGEON_SETTINGS_USE_ONE_KEY_TO_OPEN_CHEST = builder(PREFIX + "Dungeon.Settings.Chest.One_Key")
+            .name("One key for chests")
+            .text("Sets whether only one key per chest", "will be used to use it.", "&eIf yes, then the player activates the chest", "&ewill be counted for all subsequent players").emptyLine()
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_USE_ONE_KEY_FOR_CHEST).emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+
+    public static final EditorLocale DUNGEON_SETTINGS_REGION_CLOSE_TIME = builder(PREFIX + "Dungeon.Settings.Region.Close_Time")
+            .name("Region close time")
+            .text("Sets how many seconds the dungeon will be closed to players.").emptyLine()
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_REGION_CLOSE_TIME).emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+
+    public static final EditorLocale DUNGEON_SETTINGS_REGION_OPEN_TIME = builder(PREFIX + "Dungeon.Settings.Region.Open_Time")
+            .name("Region open time")
+            .text("Sets the time in seconds for how long the open dungeon will be available.").emptyLine()
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_REGION_OPEN_TIME).emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+
+    public static final EditorLocale DUNGEON_SETTINGS_REGION_WAIT_TIME = builder(PREFIX + "Dungeon.Settings.Region.Wait_Time")
+            .name("Region wait time")
+            .text("Sets the waiting time before", "the dungeon appears in the world").emptyLine()
+            .currentHeader()
+            .current("Value", Placeholders.DUNGEON_SETTINGS_REGION_WAIT_TIME).emptyLine()
+
+            .click(LMB, "Change")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_COMMAND_CLOSE = builder(PREFIX + "Dungeon.Settings.Command.Close")
+            .name("Dungeon Close Commands")
+            .text("Sets the commands that will be", "executed when the dungeon is closed").emptyLine()
+            .currentHeader()
+            .text(Placeholders.DUNGEON_SETTINGS_CLOSE_COMMANDS)
+            .emptyLine()
+            .click(LMB, "Add")
+            .click(SHIFT_RMB, "Clear")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_COMMAND_OPEN = builder(PREFIX + "Dungeon.Settings.Command.Open")
+            .name("Dungeon Open Commands")
+            .text("Sets the commands that will be", "executed when the dungeon is opened").emptyLine()
+            .currentHeader()
+            .text(Placeholders.DUNGEON_SETTINGS_OPEN_COMMANDS)
+            .emptyLine()
+            .click(LMB, "Add")
+            .click(SHIFT_RMB, "Clear")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_MOBS = builder(PREFIX + "Dungeon.Settings.Mobs")
+            .name("Dungeon Mobs")
+            .text("Sets which mobs will be spawned in", "the dungeon when the dungeon appears")
+            .currentHeader()
+            .text(GRAY + "(Mob Id: Mob count)", "", Placeholders.DUNGEON_SETTINGS_MOBS)
+            .click(LMB, "Add")
+            .click(SHIFT_RMB, "Clear")
+            .build();
+    // effect
+
+    public static final EditorLocale EFFECT_OBJECT = builder(PREFIX + "Dungeon.Change.EFFECT_OBJECT")
+            .name(Placeholders.EFFECT_NAME)
+            .currentHeader()
+            .current("Duration", Placeholders.EFFECT_DURATION)
+            .current("Amplifier", Placeholders.EFFECT_AMPLIFIER)
+            .emptyLine()
+
+            .click(LMB, "Change duration")
+            .click(RMB, "Change amplifier")
+            .click(SHIFT_RMB, "Delete " + RED + "(No Undo)")
+            .build();
+
+    public static final EditorLocale EFFECT_CREATE = builder(PREFIX + "EFFECT_CREATE")
+            .name("Create Effect")
+            .text("Create a new potion effect for the dungeon.").emptyLine()
+            .click(LMB, "Create")
+            .build();
+
+    public static final EditorLocale EFFECT_SORT = builder(PREFIX + "EFFECT_SORT")
+            .name("Effects Sorting")
+            .text("Automatically sorts effects in the specified order.").emptyLine()
+
+            .click("[Slot 1]", "by duration").click("[Slot 2]", "by amplifier")
+            .click("[Slot 3]", "by name")
+            .build();
+
+    // region
+    public static final EditorLocale REGION_NAME = builder(PREFIX + "Region.NAME")
+            .name("Name")
+            .currentHeader()
+            .current("", Placeholders.REGION_NAME)
+
+            .click(LMB, "Change")
+            .emptyLine()
+            .build();
+
+    public static final EditorLocale REGION_ENABLED = builder(PREFIX + "Region.ENABLED")
+            .name("Region status")
+            .currentHeader()
+            .current("Enabled", Placeholders.REGION_ENABLED)
+
+            .click(LMB, "Change")
+            .emptyLine()
+            .build();
+    public static final EditorLocale REGION_IGNORE_AIR_BLOCKS = builder(PREFIX + "Region.IGNORE_AIR_BLOCKS")
+            .name("Region Schematic")
+            .notes("Sets whether the dungeon", "schematic will replace air blocks or", "fill without air around the schematic")
+            .currentHeader()
+            .current("Ignore air blocks", Placeholders.REGION_IGNORE_AIR_BLOCKS)
+
+            .click(LMB, "Change")
+            .emptyLine()
+            .build();
+    public static final EditorLocale REGION_RADIUS = builder(PREFIX + "Region.RADIUS")
+            .name("Radius")
+            .currentHeader()
+            .current("", Placeholders.REGION_RADIUS)
+
+            .click(LMB, "Change")
+            .emptyLine()
+            .build();
+    public static final EditorLocale REGION_FLAGS = builder(PREFIX + "Region.FLAGS")
+            .name("Flags")
+            .currentHeader()
+            .current("List", "").text(Placeholders.REGION_FLAGS)
+            .emptyLine()
+            .click(LMB, "Add")
+            .click(SHIFT_RMB, "Clear").build();
+
+    // rewards
+    public static final EditorLocale REWARD_OBJECT = builder(PREFIX + "Reward.OBJECT")
             .name(Placeholders.REWARD_NAME + " &7(ID: &f" + Placeholders.REWARD_ID + "&7)")
             .text("Chance: &f" + Placeholders.REWARD_CHANCE + "%")
-            .actionsHeader().action("LMB", "Configure")
-            .action("LMB+SHIFT", "Move Forward").action("RMB+SHIFT", "Move Backward")
-            .action("[Q/Drop] key", "Delete " + RED + "(No Undo)")
+            .click(LMB, "Configure")
+            .click(SHIFT_LMB, "Move Forward").click(SHIFT_RMB, "Move Backward")
+            .click(DROP_KEY, "Delete " + RED + "(No Undo)")
             .build();
 
-    public static final EditorLocale REWARD_CREATE = builder(PREFIX + "REWARD_CREATE")
+    public static final EditorLocale REWARD_CREATE = builder(PREFIX + "Reward.CREATE")
             .name("Create Reward")
-            .text("Create a new reward for the dungeon.").breakLine()
-            .actionsHeader().action("LMB", "Manual Creation")
-            .action("Insert Item", "Quick Creation")
+            .text("Create a new reward for the dungeon.").emptyLine()
+            .click(LMB, "Manual Creation")
+            .click(DRAG_DROP, "Quick Creation")
             .build();
 
 
-    public static final EditorLocale REWARD_SORT = builder(PREFIX + "REWARD_SORT")
+    public static final EditorLocale REWARD_SORT = builder(PREFIX + "Reward.SORT")
             .name("Reward Sorting")
-            .text("Automatically sorts rewards in the specified order.").breakLine()
-            .actionsHeader()
-            .action("[Slot 1]", "by chance").action("[Slot 2]", "by type")
-            .action("[Slot 3]", "by name")
+            .text("Automatically sorts rewards in the specified order.").emptyLine()
+
+            .click("[Slot 1]", "by chance").click("[Slot 2]", "by type")
+            .click("[Slot 3]", "by name")
             .build();
-    public static final EditorLocale REWARD_NAME = builder(PREFIX + "REWARD_CHANGE_NAME")
+    public static final EditorLocale REWARD_NAME = builder(PREFIX + "Reward.Change.NAME")
             .name("Displayed Name")
-            .text("Sets the displayed name of the reward.", "Used in menus and messages.").breakLine()
-            .currentHeader().current("Displayed Name", Placeholders.REWARD_NAME).breakLine()
-            .warningHeader().warning("This is " + RED + "NOT" + GRAY + " the actual name of the reward!").breakLine()
-            .actionsHeader().action("LMB", "Change").action("RMB", "Take from Item")
-            .action("LMB+SHIFT", "Set on Item")
+            .text("Sets the displayed name of the reward.", "Used in menus and messages.").emptyLine()
+            .currentHeader()
+            .current("Displayed Name", Placeholders.REWARD_NAME).emptyLine()
+            .warningHeader().warning("This is " + RED + "NOT" + GRAY + " the actual name of the reward!").emptyLine()
+            .click(LMB, "Change").click(RMB, "Take from Item")
+            .click(SHIFT_LMB, "Set on Item")
             .build();
 
-    public static final EditorLocale REWARD_ITEM = builder(PREFIX + "REWARD_CHANGE_ITEM")
+    public static final EditorLocale REWARD_ITEM = builder(PREFIX + "Reward.Change.ITEM")
             .name("Item")
-            .text("The item that will be added to the chest").breakLine()
-            .actionsHeader().action("Insert Item", "Replace Item").action("RMB", "Get a Copy")
+            .text("The item that will be added to the chest")
+            .emptyLine()
+            .click(DRAG_DROP, "Replace Item")
+            .click(RMB, "Get a Copy")
             .build();
 
-    public static final EditorLocale REWARD_CHANCE = builder(PREFIX + "REWARD_CHANGE_CHANCE")
+    public static final EditorLocale REWARD_CHANCE = builder(PREFIX + "Reward.Change.CHANCE")
             .name("Chance")
             .text("Sets the probability of the reward appearing in the chest.")
-            .currentHeader().current("Chance", Placeholders.REWARD_CHANCE + "%").breakLine()
-            .actionsHeader().action("LMB", "Change")
+            .currentHeader()
+            .current("Chance", Placeholders.REWARD_CHANCE + "%").emptyLine()
+            .click(LMB, "Change")
             .build();
 
-    public static final EditorLocale REWARD_BROADCAST = builder(PREFIX + "REWARD_CHANGE_BROADCAST")
-            .name("Notification")
-            .text("Sets whether there will be a notification", "when a player finds this item", "in the dungeon.").breakLine()
-            .currentHeader().current("Enabled", Placeholders.REWARD_BROADCAST).breakLine()
-            .actionsHeader().action("LMB", "Toggle")
-            .build();
-
-    public static final EditorLocale REWARD_LIMITS = builder(PREFIX + "REWARD_CHANGE_LIMITS")
+    public static final EditorLocale REWARD_LIMITS = builder(PREFIX + "Reward.Change.LIMITS")
             .name("Item Limits")
-            .text("Determines the quantity of the item that will be in the Dungeon").breakLine()
+            .text("Determines the quantity of the item that will be in the Dungeon").emptyLine()
             .currentHeader()
             .current("Maximum", Placeholders.REWARD_MAX_AMOUNT)
-            .current("Minimum", Placeholders.REWARD_MIN_AMOUNT).breakLine()
-            .actionsHeader()
-            .action("LMB", "Set Maximum Quantity")
-            .action("RMB", "Set Minimum Quantity")
+            .current("Minimum", Placeholders.REWARD_MIN_AMOUNT).emptyLine()
+
+            .click(LMB, "Set Maximum Quantity")
+            .click(RMB, "Set Minimum Quantity")
             .build();
 
-    public static final EditorLocale KEY_OBJECT = builder(PREFIX + "KEY_OBJECT")
+    // keys
+
+    public static final EditorLocale KEY_OBJECT = builder(PREFIX + "Key.OBJECT")
             .name(Placeholders.KEY_NAME + GRAY + " (ID: " + BLUE + Placeholders.KEY_ID + GRAY + ")")
-            .actionsHeader().action("LMB", "Change")
-            .action("RMB+SHIFT", "Delete " + RED + "(No Undo)")
+            .click(LMB, "Change")
+            .click(SHIFT_RMB, "Delete " + RED + "(No Undo)")
             .build();
 
-    public static final EditorLocale KEY_CREATE = builder(PREFIX + "KEY_CREATE")
+    public static final EditorLocale KEY_CREATE = builder(PREFIX + "Key.CREATE")
             .name("Create Key")
-            .text("Create a new key for dungeons.").breakLine()
-            .actionsHeader().action("LMB", "Create")
+            .text("Create a new key for dungeons.").emptyLine()
+            .click(LMB, "Create")
             .build();
 
-    public static final EditorLocale KEY_NAME = builder(PREFIX + "KEY_CHANGE_NAME")
+    public static final EditorLocale KEY_NAME = builder(PREFIX + "Key.Change.NAME")
             .name("Displayed Name")
-            .text("Sets the displayed name of the key.", "Used in menus and messages.").breakLine()
-            .currentHeader().current("Displayed Name", Placeholders.KEY_NAME).breakLine()
-            .warningHeader().warning("This is " + RED + "NOT" + GRAY + " the actual name of the key!").breakLine()
-            .actionsHeader().action("LMB", "Change")
+            .text("Sets the displayed name of the key.", "Used in menus and messages.").emptyLine()
+            .currentHeader()
+            .current("Displayed Name", Placeholders.KEY_NAME).emptyLine()
+            .warningHeader().warning("This is " + RED + "NOT" + GRAY + " the actual name of the key!").emptyLine()
+            .click(LMB, "Change")
             .build();
 
-    public static final EditorLocale KEY_ITEM = builder(PREFIX + "KEY_CHANGE_ITEM")
+    public static final EditorLocale KEY_ITEM = builder(PREFIX + "Key.Change.ITEM")
             .name("Item")
-            .text("Sets the physical item of the key.").breakLine()
-            .noteHeader().notes("Use an item with a predefined name, description, etc.").breakLine()
-            .actionsHeader().action("Insert Item", "Replace").action("RMB", "Get")
+            .text("Sets the physical item of the key.").emptyLine()
+            .noteHeader().notes("Use an item with a predefined name, description, etc.").emptyLine()
+            .click(DRAG_DROP, "Replace").click(RMB, "Get")
             .build();
-    /**
-     * Russian
-     */
 
-//    public static final EditorLocale DUNGEON_EDITOR = builder(PREFIX + "EDITOR_DUNGEON")
-//            .name("Данжи")
-//            .text("Создавайте свои данжи и управляйте ими здесь!").breakLine()
-//            .actionsHeader().action("ЛКМ", "Открыть").build();
-//
-//    public static final EditorLocale KEYS_EDITOR = builder(PREFIX + "EDITOR_KEYS")
-//            .name("Ключи")
-//            .text("Создавайте свои ключи и управляйте ими здесь!").breakLine()
-//            .actionsHeader().action("ЛКМ", "Открыть").build();
-//
-//    public static final EditorLocale DUNGEON_OBJECT = builder(PREFIX + "DUNGEON_OBJECT")
-//            .name(Placeholders.DUNGEON_NAME + " &7(ID: &f" + Placeholders.DUNGEON_ID + "&7)")
-//            .actionsHeader()
-//            .action("ЛКМ", "Настроить")
-//            .action("ПКМ+ШИФТ", "Удалить " + RED + "(Нет отмены)").build();
-//
-//    public static final EditorLocale DUNGEON_CREATE = builder(PREFIX + "DUNGEON_CREATE")
-//            .name("Создать данж")
-//            .text("Создать новый данж.")
-//            .actionsHeader().action("ЛКМ", "Создать").build();
-//
-//    public static final EditorLocale DUNGEON_NAME = builder(PREFIX + "DUNGEON_CHANGE_NAME")
-//            .name("Название")
-//            .text("Задает отображаемое имя данжа.", "Оно используется в сообщениях и меню.").breakLine()
-//            .currentHeader().current("Отображаемое имя", Placeholders.DUNGEON_NAME).breakLine()
-//            .actionsHeader().action("ЛКМ", "Изменить").build();
-//
-//    public static final EditorLocale DUNGEON_KEYS = builder(PREFIX + "DUNGEON_CHANGE_KEYS")
-//            .name("Прикрепленные ключи")
-//            .text("Устанавливает, какие ключи", "можно использовать для открытия этого данжа.").breakLine()
-//            .currentHeader().current("ИД", Placeholders.DUNGEON_KEY_IDS).breakLine()
-//            .warningHeader().warning("Если ключи не установлены, данж можно открыть и без них!")
-//            .warning("Если предоставлены неверные ключи, вы не сможете открыть данж!").breakLine()
-//            .actionsHeader().action("ЛКМ", "Прикрепить ключ").action("ПКМ", "Очистить список")
-//            .build();
-//
-//    public static final EditorLocale DUNGEON_BLOCK_HOLOGRAM_OPEN = builder(PREFIX + "DUNGEON_CHANGE_BLOCK_HOLOGRAM_OPEN")
-//            .name("Голограмма. Стадия=Открытие")
-//            .text("Устанавливает текст голограммы", "когда идет стадия ожидания открытия").breakLine()
-//            .noteHeader()
-//            .action("Вы можете указать время до открытия Данжа", "")
-//            .action("Используя плейсхолдер", "dungeon_open_in")
-//            .breakLine()
-//            .current("Текст открытия", "").text(Placeholders.DUNGEON_HOLOGRAM_TEXT_OPEN.toString()).breakLine()
-//            .actionsHeader().action("ЛКМ", "Добавить текст").action("ПКМ+ШИФТ", "Очистить")
-//            .build();
-//    public static final EditorLocale DUNGEON_BLOCK_HOLOGRAM_CLOSE = builder(PREFIX + "DUNGEON_CHANGE_BLOCK_HOLOGRAM_CLOSE")
-//            .name("Голограмма. Стадия=Закрытие")
-//            .text("Устанавливает текст голограммы", "когда данж открыт").breakLine()
-//            .noteHeader()
-//            .action("Вы можете указать время до закрытия Данжа", "")
-//            .action("Используя плейсхолдер", "dungeon_hologram_text_close")
-//            .breakLine()
-//            .current("Текст закрытия", "").text(Placeholders.DUNGEON_HOLOGRAM_TEXT_CLOSE).breakLine()
-//            .actionsHeader().action("ЛКМ", "Добавить текст").action("ПКМ+ШИФТ", "Очистить")
-//            .build();
-//
-//    public static final EditorLocale DUNGEON_BLOCK_HOLOGRAM_WAIT = builder(PREFIX + "DUNGEON_CHANGE_BLOCK_HOLOGRAM_WAIT")
-//            .name("Голограмма. Стадия=Ожидания")
-//            .text("Устанавливает текст голограммы", "когда данж ожидает открытия", "в режиме открытия CLICK").breakLine()
-//            .current("Текст ождиания", "").text(Placeholders.DUNGEON_HOLOGRAM_TEXT_CLOSE).breakLine()
-//            .actionsHeader().action("ЛКМ", "Добавить текст").action("ПКМ+ШИФТ", "Очистить")
-//            .build();
-//
-//    public static final EditorLocale DUNGEON_SCHEMATIC = builder(PREFIX + "DUNGEON_CHANGE_SCHEMATIC")
-//            .name("Схематики")
-//            .text("Список схематик,", "который будет появляться").breakLine()
-//            .warningHeader().warning("Схематика должна содержать содержать блок, который указан в конфиге").breakLine()
-//            .warningHeader().warning("Если список " + RED + "ПУСТ" + GRAY + ", то данж не будет работать!").breakLine()
-//            .currentHeader().current("Список", "").text(Placeholders.DUNGEON_SCHEMATICS)
-//            .breakLine()
-//            .actionsHeader().action("ЛКМ", "Добавить").action("ПКМ+ШИФТ", "Очистить").build();
-//
-//    public static final EditorLocale DUNGEON_OPEN_TYPE = builder(PREFIX + "DUNGEON_CHANGE_OPEN_TYPE")
-//            .name("Тип открытия")
-//            .text("Устанавливает тип открытия данжа", Dungeon.OpenType.CLICK.name() + " - Откроет Данж по клику", Dungeon.OpenType.TIMER.name() + " - Откроет Данж по таймеру").breakLine()
-//            .currentHeader().current("", Placeholders.DUNGEON_OPEN_TYPE).breakLine()
-//            .actionsHeader().action("ЛКМ", "Изменить").build();
-//
-//    public static final EditorLocale DUNGEON_REWARDS = builder(PREFIX + "DUNGEON_CHANGE_REWARDS")
-//            .name("Награды")
-//            .text("Создавайте награды и управляйте ими здесь!").breakLine()
-//            .actionsHeader().action("ЛКМ", "Открыть")
-//            .build();
-//
-//    public static final EditorLocale REWARD_OBJECT = builder(PREFIX + "REWARD_OBJECT")
-//            .name(Placeholders.REWARD_NAME + " &7(ID: &f" + Placeholders.REWARD_ID + "&7)")
-//            .text("Шанс: &f" + Placeholders.REWARD_CHANCE + "%")
-//            .actionsHeader().action("ЛКМ", "Настройка")
-//            .action("ЛКМ+ШИФТ", "Передвинуть вперед").action("ПКМ+ШИФТ", "Передвинуть назад")
-//            .action("[Q/Дроп] клавиша", "Удалить " + RED + "(Нет отмены)")
-//            .build();
-//
-//    public static final EditorLocale REWARD_CREATE = builder(PREFIX + "REWARD_CREATE")
-//            .name("Создать награду")
-//            .text("Создает новую награду для данжа.").breakLine()
-//            .actionsHeader().action("ЛКМ", "Ручное создание")
-//            .action("Вложите предмет", "Быстрое создание")
-//            .build();
-//
-//    public static final EditorLocale REWARD_SORT = builder(PREFIX + "REWARD_SORT")
-//            .name("Сортировка наград")
-//            .text("Автоматически сортирует награды в", "указанном порядке.").breakLine()
-//            .actionsHeader()
-//            .action("[Слот 1]", "по шансу").action("[Слот 2]", "по типу")
-//            .action("[Слот 3]", "по имени")
-//            .build();
-//
-//    public static final EditorLocale REWARD_NAME = builder(PREFIX + "REWARD_CHANGE_NAME")
-//            .name("Отображаемое название")
-//            .text("Устанавливает отображаемое имя награды.", "Оно используется в меню и сообщениях.").breakLine()
-//            .currentHeader().current("Отображаемое имя", Placeholders.REWARD_NAME).breakLine()
-//            .warningHeader().warning("Это " + RED + "НЕ" + GRAY + " фактическое название награды!").breakLine()
-//            .actionsHeader().action("ЛКМ", "Изменить").action("ПКМ", "Взять с предмета")
-//            .action("ЛКМ+ШИФТ", "Установить на предмет")
-//            .build();
-//
-//    public static final EditorLocale REWARD_ITEM = builder(PREFIX + "REWARD_CHANGE_ITEM")
-//            .name("Предмет")
-//            .text("Предмет который будет добавлен в сундук").breakLine()
-//            .actionsHeader().action("Вложите предмет", "Заменить предмет").action("ПКМ", "Получить копию")
-//            .build();
-//
-//    public static final EditorLocale REWARD_CHANCE = builder(PREFIX + "REWARD_CHANGE_CHANCE")
-//            .name("Шанс")
-//            .text("Устанавливает вероятность попадания награды в сундук.")
-//            .currentHeader().current("Шанс", Placeholders.REWARD_CHANCE + "%").breakLine()
-//            .actionsHeader().action("ЛКМ", "Изменить")
-//            .build();
-//
-//    public static final EditorLocale REWARD_BROADCAST = builder(PREFIX + "REWARD_CHANGE_BROADCAST")
-//            .name("Уведомление")
-//            .text("Устанавливает, будет ли оповещение о том,", "что игрок нашел этот предмет", "в данже.").breakLine()
-//            .currentHeader().current("Включено", Placeholders.REWARD_BROADCAST).breakLine()
-//            .actionsHeader().action("ЛКМ", "Переключить")
-//            .build();
-//
-//    public static final EditorLocale REWARD_LIMITS = builder(PREFIX + "REWARD_CHANGE_LIMITS")
-//            .name("Количество предмета")
-//            .text("Определяет количество предмета которое будет в Данже").breakLine()
-//            .currentHeader()
-//            .current("Максимальное", Placeholders.REWARD_MAX_AMOUNT)
-//            .current("Минимальное", Placeholders.REWARD_MIN_AMOUNT).breakLine()
-//            .actionsHeader()
-//            .action("ЛКМ", "Установить макс. количество")
-//            .action("ПКМ", "Установить мин. количество")
-//            .build();
-//
-//    public static final EditorLocale KEY_OBJECT = builder(PREFIX + "KEY_OBJECT")
-//            .name(Placeholders.KEY_NAME + GRAY + " (ID: " + BLUE + Placeholders.KEY_ID + GRAY + ")")
-//            .actionsHeader().action("ЛКМ", "Изменить")
-//            .action("ПКМ+ШИФТ", "Удалить " + RED + "(Нет отмены)")
-//            .build();
-//
-//    public static final EditorLocale KEY_CREATE = builder(PREFIX + "KEY_CREATE")
-//            .name("Создать ключ")
-//            .text("Создает новый ключ для данжей.").breakLine()
-//            .actionsHeader().action("ЛКМ", "Создать")
-//            .build();
-//
-//    public static final EditorLocale KEY_NAME = builder(PREFIX + "KEY_CHANGE_NAME")
-//            .name("Отображаемое название")
-//            .text("Задает отображаемое имя ключа.", "Оно используется в меню и сообщениях.").breakLine()
-//            .currentHeader().current("отображаемое имя", Placeholders.KEY_NAME).breakLine()
-//            .warningHeader().warning("Это " + RED + "НЕ" + GRAY + " фактическое название ключа!").breakLine()
-//            .actionsHeader().action("ЛКМ", "Изменить")
-//            .build();
-//
-//    public static final EditorLocale KEY_ITEM = builder(PREFIX + "KEY_CHANGE_ITEM")
-//            .name("Предмет")
-//            .text("Устанавливает физический предмет ключа.").breakLine()
-//            .noteHeader().notes("Используйте предмет с заранее заданным именем, описанием и т.д.").breakLine()
-//            .actionsHeader().action("Вложите предмет", "Заменить").action("ПКМ", "Получить")
-//            .build();
+    // mobs
+    public static final EditorLocale MOB_OBJECT = builder(PREFIX + "Mob.OBJECT")
+            .name(Placeholders.MOB_NAME + GRAY + " (&f" + Placeholders.MOB_ID + GRAY + ")")
+            .click(LMB, "Edit").click(RMB, "Delete " + RED + "(No Undo)")
+            .build();
+
+    public static final EditorLocale MOB_CREATE = builder(PREFIX + "Mob.CREATE")
+            .name("Create Mob")
+            .build();
+
+    public static final EditorLocale MOB_NAME = builder(PREFIX + "Mob.Change.NAME")
+            .name("Display Name")
+            .text("Sets mob display name and", "whether or not this name is", "always visible.").emptyLine()
+            .currentHeader()
+            .current("Name", Placeholders.MOB_NAME)
+            .current("Is Visible", Placeholders.MOB_NAME_VISIBLE)
+
+            .click(LMB, "Change Name")
+            .click(RMB, "Toggle Visibility")
+            .build();
+
+    public static final EditorLocale MOB_ENTITY_TYPE = builder(PREFIX + "Mob.Change.ENTITY_TYPE")
+            .name("Entity Type")
+            .text("Sets mob entity type.").emptyLine()
+            .currentHeader()
+            .current("Type", Placeholders.MOB_ENTITY_TYPE)
+            .emptyLine()
+            .click(LMB, "Change")
+            .build();
+
+    public static final EditorLocale MOB_ATTRIBUTES = builder(PREFIX + "Mob.Change.ATTRIBUTES")
+            .name("Mob Attributes")
+            .text("Sets mob default attributes.").emptyLine()
+            .currentHeader()
+            .text(Placeholders.MOB_ATTRIBUTES_BASE)
+            .emptyLine()
+            .noteHeader().text("Base attribute with zero value means", "that default mob's attribute value", "won't be changed.")
+            .emptyLine()
+
+            .click(LMB, "Change")
+            .click(SHIFT_LMB, "Clear All")
+            .build();
+
+    public static final EditorLocale MOB_POTIONS = builder(PREFIX + "Mob.Change.POTIONS")
+            .name("Mob Potions")
+            .text("Sets mob default potion effects.").emptyLine()
+            .currentHeader()
+            .current("Duration", "").text(Placeholders.MOB_POTION_EFFECT_DURATION)
+            .current("Value", "").text(Placeholders.MOB_POTION_EFFECT_VALUE)
+            .emptyLine()
+            .click(LMB, "Change Duration")
+            .click(RMB, "Change Value")
+            .click(SHIFT_LMB, "Clear All")
+            .build();
+
+    public static final EditorLocale MOB_EQUIPMENT = builder(PREFIX + "Mob.Change.EQUIPMENT")
+            .name("Mob Equipment")
+            .text("Items to be equipped on a mob.").emptyLine()
+            .warningHeader().warning("Boots в†’ Legs в†’ Chest в†’ Head в†’ Hand в†’ Off Hand").emptyLine()
+            .click(LMB, "Navigate")
+            .build();
+
+    public static final EditorLocale MOB_STYLES = builder(PREFIX + "Mob.Change.STYLES")
+            .name("Mob Styles")
+            .click(LMB, "Navigate")
+            .build();
+
+    public static final EditorLocale MOB_SILENT = builder(PREFIX + "Mob.Change.SILENT")
+            .name("Mob Silent")
+            .currentHeader()
+            .current("Silent", Placeholders.MOB_SILENT)
+            .click(LMB, "Change")
+            .build();
+
+    public static final EditorLocale MOB_STYLE_OBJECT = builder(PREFIX + "Mob.STYLE_OBJECT")
+            .name("Style Type: " + GREEN + Placeholders.MOB_STYLE_TYPE)
+            .currentHeader()
+            .current("Value", Placeholders.MOB_STYLE_VALUE).emptyLine()
+            .click(LMB, "Change").click(RMB, "Remove")
+            .build();
+
+    public static final EditorLocale MOB_RIDER = builder(PREFIX + "Mob.Change.RIDER")
+            .name("Mob Rider")
+            .currentHeader()
+            .current("Rider", Placeholders.MOB_RIDER_ID)
+            .click(LMB, "Change")
+            .click(RMB, "Clear")
+            .build();
+
+    // party
+    public static final EditorLocale PARTY_ENABLED = builder(PREFIX + "Party.Change.Enabled")
+            .name("Party Enabled")
+            .currentHeader()
+            .emptyLine()
+            .current("Enabled", Placeholders.PARTY_ENABLED + GRAY + " (" + WHITE + LMB + GRAY + ")")
+            .build();
+    public static final EditorLocale PARTY_SIZE = builder(PREFIX + "Party.Change.Size")
+            .name("Party Size")
+            .currentHeader()
+            .current("Size", Placeholders.PARTY_SIZE)
+            .emptyLine()
+            .click(LMB, "Change")
+            .build();
 }

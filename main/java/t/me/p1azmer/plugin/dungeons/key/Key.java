@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.api.manager.AbstractConfigHolder;
 import t.me.p1azmer.engine.api.manager.ICleanable;
-import t.me.p1azmer.engine.api.placeholder.IPlaceholder;
+import t.me.p1azmer.engine.api.placeholder.IPlaceholderMap;
 import t.me.p1azmer.engine.api.placeholder.PlaceholderMap;
 import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.engine.utils.PDCUtil;
@@ -15,7 +15,7 @@ import t.me.p1azmer.plugin.dungeons.Keys;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.key.editor.KeyMainEditor;
 
-public class Key extends AbstractConfigHolder<DungeonPlugin> implements IPlaceholder, ICleanable {
+public class Key extends AbstractConfigHolder<DungeonPlugin> implements IPlaceholderMap, ICleanable {
 
     private String name;
     private ItemStack item;
@@ -38,7 +38,7 @@ public class Key extends AbstractConfigHolder<DungeonPlugin> implements IPlaceho
     public boolean load() {
         this.name = cfg.getString("Name", getId());
         ItemStack item = cfg.getItem("Item");
-        if (item.getType().equals(Material.AIR)) {
+        if (item.getType().isAir()) {
             item = new ItemStack(Material.TRIPWIRE_HOOK);
         }
         this.setItem(item);
@@ -85,7 +85,7 @@ public class Key extends AbstractConfigHolder<DungeonPlugin> implements IPlaceho
     @NotNull
     public ItemStack getItem() {
         ItemStack item = this.getRawItem();
-        PDCUtil.set(item, Keys.CRATE_KEY_ID, this.getId());
+        PDCUtil.set(item, Keys.DUNGEON_KEY_ID, this.getId());
         return item;
     }
 

@@ -8,18 +8,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
+import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.engine.utils.PlayerUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.key.Key;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
+import t.me.p1azmer.plugin.dungeons.key.Key;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
 public class KeyMainEditor extends EditorMenu<DungeonPlugin, Key> {
 
-    public KeyMainEditor(@NotNull Key crateKey) {
-        super(crateKey.plugin(), crateKey, Config.EDITOR_TITLE_KEY.get(), 26);
+    public KeyMainEditor(@NotNull Key key) {
+        super(key.plugin(), key, Config.EDITOR_TITLE_KEY.get(), 26);
 
         this.addReturn(22).setClick((viewer, event) -> {
             this.plugin.runTask(task -> plugin.getEditor().getKeysEditor().open(viewer.getPlayer(), 1));
@@ -27,26 +28,26 @@ public class KeyMainEditor extends EditorMenu<DungeonPlugin, Key> {
 
         this.addItem(Material.NAME_TAG, EditorLocales.KEY_NAME, 12).setClick((viewer, event) -> {
             this.handleInput(viewer, Lang.EDITOR_ENTER_DISPLAY_NAME, wrapper -> {
-                crateKey.setName(wrapper.getText());
+                key.setName(wrapper.getText());
                 return true;
             });
         });
 
         this.addItem(Material.TRIPWIRE_HOOK, EditorLocales.KEY_ITEM, 14).setClick((viewer, event) -> {
             if (event.isRightClick()) {
-                PlayerUtil.addItem(viewer.getPlayer(), crateKey.getRawItem());
+                PlayerUtil.addItem(viewer.getPlayer(), key.getRawItem());
                 return;
             }
 
             ItemStack cursor = event.getCursor();
-            if (cursor == null || cursor.getType().equals(Material.AIR)) return;
+            if (cursor == null || cursor.getType().isAir()) return;
 
-            crateKey.setItem(cursor);
+            key.setItem(cursor);
             event.getView().setCursor(null);
             this.save(viewer);
         }).getOptions().setDisplayModifier(((viewer, item) -> {
-            item.setType(crateKey.getRawItem().getType());
-            item.setItemMeta(crateKey.getRawItem().getItemMeta());
+            item.setType(key.getRawItem().getType());
+            item.setItemMeta(key.getRawItem().getItemMeta());
             ItemUtil.mapMeta(item, meta -> {
                 meta.setDisplayName(EditorLocales.KEY_ITEM.getLocalizedName());
                 meta.setLore(EditorLocales.KEY_ITEM.getLocalizedLore());
@@ -55,7 +56,7 @@ public class KeyMainEditor extends EditorMenu<DungeonPlugin, Key> {
         }));
         this.getItems().forEach(menuItem -> {
             if (menuItem.getOptions().getDisplayModifier() == null) {
-                menuItem.getOptions().setDisplayModifier(((viewer, item) -> ItemUtil.replace(item, crateKey.replacePlaceholders())));
+                menuItem.getOptions().setDisplayModifier(((viewer, item) -> ItemReplacer.replace(item, key.replacePlaceholders())));
             }
         });
     }

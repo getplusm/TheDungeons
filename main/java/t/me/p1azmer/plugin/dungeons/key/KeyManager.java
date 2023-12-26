@@ -7,17 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.api.manager.AbstractManager;
-import t.me.p1azmer.engine.utils.ItemUtil;
-import t.me.p1azmer.engine.utils.PDCUtil;
-import t.me.p1azmer.engine.utils.PlayerUtil;
-import t.me.p1azmer.engine.utils.StringUtil;
-import t.me.p1azmer.engine.utils.collections.AutoRemovalCollection;
-import t.me.p1azmer.engine.utils.collections.AutoRemovalMap;
+import t.me.p1azmer.engine.utils.*;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Keys;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.Dungeon;
-import t.me.p1azmer.plugin.dungeons.lang.Lang;
+import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -64,9 +58,7 @@ public class KeyManager extends AbstractManager<DungeonPlugin> {
         key.setName("&a"+StringUtil.capitalizeFully(id) + " Key");
 
         ItemStack item = new ItemStack(Material.TRIPWIRE_HOOK);
-        ItemUtil.mapMeta(item, meta -> {
-            meta.setDisplayName(key.getName());
-        });
+        ItemReplacer.create(item).setDisplayName(key.getName()).writeMeta();
 
         key.setItem(item);
         key.save();
@@ -76,10 +68,10 @@ public class KeyManager extends AbstractManager<DungeonPlugin> {
         return true;
     }
 
-    public boolean delete(@NotNull Key crateKey) {
-        if (crateKey.getFile().delete()) {
-            crateKey.clear();
-            this.getKeysMap().remove(crateKey.getId());
+    public boolean delete(@NotNull Key keyId) {
+        if (keyId.getFile().delete()) {
+            keyId.clear();
+            this.getKeysMap().remove(keyId.getId());
             return true;
         }
         return false;
@@ -107,27 +99,27 @@ public class KeyManager extends AbstractManager<DungeonPlugin> {
 
     @Nullable
     public Key getKeyByItem(@NotNull ItemStack item) {
-        String id = PDCUtil.getString(item, Keys.CRATE_KEY_ID).orElse(null);
+        String id = PDCUtil.getString(item, Keys.DUNGEON_KEY_ID).orElse(null);
         return id == null ? null : this.getKeyById(id);
     }
 
     @NotNull
-    public Set<Key> getKeys(@NotNull Dungeon crate) {
-        return crate.getKeyIds().stream().map(this::getKeyById).filter(Objects::nonNull).collect(Collectors.toSet());
+    public Set<Key> getKeys(@NotNull Dungeon dungeon) {
+        return dungeon.getKeyIds().stream().map(this::getKeyById).filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     @NotNull
-    public Set<Key> getKeys(@NotNull Player player, @NotNull Dungeon crate) {
-        return this.getKeys(crate).stream().filter(key -> this.getKeysAmount(player, key) > 0).collect(Collectors.toSet());
+    public Set<Key> getKeys(@NotNull Player player, @NotNull Dungeon dungeon) {
+        return this.getKeys(dungeon).stream().filter(key -> this.getKeysAmount(player, key) > 0).collect(Collectors.toSet());
     }
 
     @Nullable
-    public ItemStack getFirstKeyStack(@NotNull Player player, @NotNull Key crateKey) {
+    public ItemStack getFirstKeyStack(@NotNull Player player, @NotNull Key keyId) {
         for (ItemStack item : player.getInventory().getContents()) {
-            if (item == null || item.getType().equals(Material.AIR)) continue;
+            if (item == null || item.getType().isAir()) continue;
 
             Key crateKey2 = this.getKeyByItem(item);
-            if (crateKey2 != null && crateKey2.equals(crateKey)) {
+            if (crateKey2 != null && crateKey2.equals(keyId)) {
                 return item;
             }
         }
@@ -143,36 +135,24 @@ public class KeyManager extends AbstractManager<DungeonPlugin> {
         return key != null && key.getId().equalsIgnoreCase(other.getId());
     }
 
-    public int getKeysAmount(@NotNull Player player, @NotNull Dungeon crate) {
-        return this.getKeys(player, crate).stream().mapToInt(key -> this.getKeysAmount(player, key)).sum();
+    public int getKeysAmount(@NotNull Player player, @NotNull Dungeon dungeon) {
+        return this.getKeys(player, dungeon).stream().mapToInt(key -> this.getKeysAmount(player, key)).sum();
     }
 
-    public int getKeysAmount(@NotNull Player player, @NotNull Key crateKey) {
+    public int getKeysAmount(@NotNull Player player, @NotNull Key keyId) {
         return PlayerUtil.countItem(player, itemHas -> {
             Key itemKey = this.getKeyByItem(itemHas);
-            return itemKey != null && itemKey.getId().equalsIgnoreCase(crateKey.getId());
+            return itemKey != null && itemKey.getId().equalsIgnoreCase(keyId.getId());
         });
     }
 
-    public boolean hasKey(@NotNull Player player, @NotNull Dungeon crate) {
-        return !this.getKeys(player, crate).isEmpty();
+    public boolean hasKey(@NotNull Player player, @NotNull Dungeon dungeon) {
+        return !this.getKeys(player, dungeon).isEmpty();
     }
 
-    public boolean hasKey(@NotNull Player player, @NotNull Key crateKey) {
-        return this.getKeysAmount(player, crateKey) > 0;
+    public boolean hasKey(@NotNull Player player, @NotNull Key keyId) {
+        return this.getKeysAmount(player, keyId) > 0;
     }
-
-//    public void giveKeysOnHold(@NotNull Player player) {
-//        CrateUser user = plugin.getUserManager().getUserData(player);
-//        user.getKeysOnHold().forEach((keyId, amount) -> {
-//            Key crateKey = this.getKeyById(keyId);
-//            if (crateKey == null) return;
-//
-//            this.giveKey(player, crateKey, amount);
-//        });
-//        user.cleanKeysOnHold();
-//        user.saveData(this.plugin);
-//    }
 
     public void setKey(@NotNull Player player, @NotNull Key key, int amount) {
 
