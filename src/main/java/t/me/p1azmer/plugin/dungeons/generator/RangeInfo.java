@@ -45,8 +45,6 @@ public class RangeInfo {
         int distanceMin = cfg.getInt(path + ".Distance_Min");
         int distanceMax = cfg.getInt(path + ".Distance_Max");
 
-        DungeonAPI.PLUGIN.warn("Load the rangeInfo: " + distanceMin + "/"+ distanceMax + ". path=" + path);
-
         boolean materialsAsBlack = cfg.getBoolean(path+".Material.Use_As_Blacklist", true);
         boolean biomesAsBlack = cfg.getBoolean(path+".Material.Use_As_Blacklist", true);
 
