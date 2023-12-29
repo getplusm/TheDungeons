@@ -1,0 +1,7 @@
+Name: "&7Default Key"
+Item:
+  Material: TRIPWIRE_HOOK
+  Name: "&7Key for dungeon"
+  Lore:
+    - "&7- &fUse this key"
+    - "&fto open the dungeon!"

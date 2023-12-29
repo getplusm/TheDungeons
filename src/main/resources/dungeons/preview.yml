@@ -1,0 +1,114 @@
+# WIKI: https://github.com/getplusm/Dungeons/wiki
+Name: '&a&lPreview Dungeon'
+Settings:
+  Region:
+    Enabled: true
+    Name: preview
+    Radius: 15
+    Flags:
+      - pistons deny
+      - pvp allow
+      - use allow
+      - chest-access allow
+  Time:
+    Refresh: 60
+  Minimal_Online: 1
+  Click_Timer: false
+  Let_Players_When_Close: false
+  Modules:
+    Map:
+      chest: true
+      command: true
+      hologram: true
+      spawn: true
+      announce: true
+      schematic: true
+  Stages:
+    Map:
+      CANCELLED: 1
+      CHECK: 3
+      REBOOTED: 1
+      OPENING: 5
+      CLOSED: 5
+      DELETING: 1
+      WAITING_PLAYERS: 10
+      PREPARE: 30
+      OPENED: 60
+      FREEZE: 5
+  Chest:
+    Map:
+      COOLDOWN: 5
+      DELETED: 1
+      CLOSED: 10
+      OPENED: 10
+      WAITING: 10
+    Block:
+      Limit: 3
+      Material: BARREL
+    Menu:
+      Use_One_Key: false
+      Big: false
+      Separate: false
+      Random_Slots: false
+    Open_Type: CLICK
+  Announces:
+    Map:
+      CLOSED:
+        Messages:
+          - '            #c71585Attention ❗'
+          - '            #fcf2f8At the coordinates: #ffb6ad⚐ %location_world%, %location_x%, %location_y%, %location_z%'
+          - '            #fcf2f8A dungeon has appeared #ffb6ad%dungeon_name%'
+          - '            #fcf2f8In order to open it you need'
+          - '            #ffe4e0▪ #c71585%dungeon_key_names%'
+        Global: true
+        Times: '0'
+      PREPARE:
+        Messages:
+          - '#fd5e5e&lNOTE:'
+          - '#e39fff&lUntil the new dungeon is spawned: #fdba5e%dungeon_next_stage_in%#e39fff&l sec.'
+        Global: true
+        Times: 26,27,28,29,30
+  Schematics:
+    List:
+      - dungeon_rotten_mushroom.schem
+    Ignore_Air_Blocks: true
+    Underground: false
+  Commands:
+    Map:
+      CANCELLED: []
+      CHECK: []
+      REBOOTED: []
+      OPENING: []
+      CLOSED: []
+      DELETING: []
+      WAITING_PLAYERS: []
+      PREPARE: []
+      OPENED: []
+      FREEZE: []
+Enabled: true
+Hologram:
+  Chest:
+    Y_Offset: 2.0
+    Chest_Block:
+      Messages:
+        Map:
+          OPENED:
+            - '#d8c2ffDungeon chest'
+            - '#dec1d2Status: #7fffd4Opened'
+            - '#dec1d2Closing in: #99ff99%dungeon_chest_next_state_in%'
+          WAITING:
+            - '#d8c2ffDungeon chest'
+            - '#dec1d2Status: #4dffc3Waiting you'
+            - '#FFC458Click me if you have key!'
+          COOLDOWN:
+            - '#d8c2ffDungeon chest'
+            - '#dec1d2Status: #db3251Closed'
+            - '&eOpening in: #99ff99%dungeon_chest_next_state_in%'
+Party:
+  Enabled: false
+  Size: 2
+Effects:
+  Enabled: false
+World: world
+Key:
+  Ids: []
