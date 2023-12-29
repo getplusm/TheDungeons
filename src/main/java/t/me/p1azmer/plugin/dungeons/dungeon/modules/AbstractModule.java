@@ -65,7 +65,9 @@ public abstract class AbstractModule implements IPlaceholderMap {
     protected abstract void onShutdown();
 
     public boolean activate() {
-        if (!this.dungeon().getModuleSettings().isEnabled(this.getId())) return false;
+        if (!this.dungeon().getModuleSettings().isEnabled(this.getId())) {
+            return false;
+        }
 
         this.active = this.canEnable.test(true);
         return this.active && this.onActivate();

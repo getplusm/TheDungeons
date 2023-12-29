@@ -114,6 +114,8 @@ public class SpawnModule extends AbstractModule {
 
     @Override
     public boolean onDeactivate() {
+        if (dungeon().getModuleManager().getModule(SchematicModule.class).isPresent() && !dungeon().getModuleManager().getModule(SchematicModule.class).get().onDeactivate()) return false;
+
         DungeonDeleteEvent event = new DungeonDeleteEvent(this.dungeon());
         plugin().getPluginManager().callEvent(event);
         if (event.isCancelled()) {

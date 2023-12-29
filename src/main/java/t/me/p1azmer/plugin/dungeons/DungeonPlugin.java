@@ -244,6 +244,6 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     }
 
     public void sendDebug(@NotNull String text) {
-        if (Config.DEBUG.get()) this.warn("DEBUG | " + text);
+        if (Config.DEBUG.get()) this.debug(text);
     }
 }

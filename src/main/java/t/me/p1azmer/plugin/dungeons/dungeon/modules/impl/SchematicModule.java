@@ -4,9 +4,11 @@ import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.utils.FileUtil;
 import t.me.p1azmer.engine.utils.random.Rnd;
+import t.me.p1azmer.plugin.dungeons.api.schematic.SchematicHandler;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleId;
 
 import java.io.File;
 import java.io.InputStream;
@@ -20,9 +22,11 @@ public class SchematicModule extends AbstractModule {
     private List<File> schematicFiles;
     private List<String> schematics;
     private File cachedSchematicFile;
+    private SchematicHandler handler;
 
     public SchematicModule(@NotNull Dungeon dungeon, @NotNull String id) {
         super(dungeon, id, false, true);
+        this.handler = plugin().getSchematicHandler();
     }
 
     @Override
@@ -49,7 +53,8 @@ public class SchematicModule extends AbstractModule {
                 }
             }
         }
-        return aBoolean -> !this.getSchematicFiles().isEmpty() && !this.schematics.isEmpty() && dungeon().getStage().isCheck() && dungeon().getModuleManager().getModule(SpawnModule.class).isPresent()
+        return aBoolean -> handler != null && !this.getSchematicFiles().isEmpty() && !this.schematics.isEmpty()
+                && (dungeon().getStage().isCheck() || dungeon().getStage().isPrepare()) && dungeon().getModuleManager().getModule(SpawnModule.class).isPresent()
                 && dungeon().getModuleManager().getModule(SpawnModule.class).get().isSpawned() && !isGenerated();
     }
 
@@ -66,16 +71,18 @@ public class SchematicModule extends AbstractModule {
         }
 
         this.cachedSchematicFile = Rnd.get(this.getSchematicFiles());
-        return this.generated = this.dungeonManager().plugin().getSchematicHandler().paste(this.dungeon(), this.cachedSchematicFile);
+        return this.generated = handler.paste(this.dungeon(), this.cachedSchematicFile);
     }
 
     @Override
     public boolean onDeactivate() {
+        if (dungeon().getModuleManager().getModule(ChestModule.class).isPresent() && !dungeon().getModuleManager().getModule(ChestModule.class).get().onDeactivate()) return false;
+
         if (!this.generated) {
             return true; // return true btw
         }
         this.generated = false;
-        this.dungeonManager().plugin().getSchematicHandler().undo(this.dungeon());
+        handler.undo(this.dungeon());
         this.cachedSchematicFile = null;
         return true;
     }

@@ -31,7 +31,7 @@ public class ChestModule extends AbstractModule {
     private List<Block> blocks;
 
     public ChestModule(@NotNull Dungeon dungeon, @NotNull String id) {
-        super(dungeon, id, false, true);
+        super(dungeon, id, false);
     }
 
     @Override
@@ -138,6 +138,9 @@ public class ChestModule extends AbstractModule {
 
     @Override
     public boolean onDeactivate() {
+        if (this.getChests().stream().anyMatch(chest -> chest.getState().isOpen() || chest.getState().isCooldown()))
+            return false;
+
         this.getChests()
                 .stream()
                 .filter(Objects::nonNull)

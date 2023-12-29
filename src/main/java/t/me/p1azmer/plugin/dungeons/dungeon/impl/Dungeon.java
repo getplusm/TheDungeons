@@ -78,7 +78,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     public Dungeon(@NotNull DungeonManager manager, @NotNull JYML cfg) {
         super(manager.plugin(), cfg);
         this.manager = manager;
-
+        this.setStage(FREEZE);
         this.setPartySettings(new PartySettings(this, false, 2));
         this.setHologramSettings(new HologramSettings(this, 2, Map.of(
                 DungeonChestState.WAITING, List.of("#d8c2ffDungeon chest", "#dec1d2Status: #4dffc3Waiting you", "#FFC458Click me if you have key!"),
@@ -116,7 +116,6 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         this.setRewardsMap(new LinkedHashMap<>());
 
         this.selfTick = new AtomicInteger();
-        DungeonStage.call(this, FREEZE, "loading");
 
         this.placeholderMap = new PlaceholderMap()
                 .add(Placeholders.DUNGEON_NAME, () -> Colorizer.apply(this.getName()))

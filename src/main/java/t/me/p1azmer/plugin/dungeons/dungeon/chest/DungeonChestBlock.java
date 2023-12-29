@@ -101,7 +101,6 @@ public class DungeonChestBlock implements ICleanable, IPlaceholderMap {
     }
 
     public void click(@NotNull Player player) {
-        player.sendMessage(this.getState().name() + " - " + this.getNextStateTime() + " - " + this.getCurrentTick());
         ChestModule.OpenType openType = this.getDungeon().getChestSettings().getOpenType();
         if (openType.isClick() && this.getState().isWaiting()) {
             this.setChestState(this.getDungeon().getSettings().isClickTimer() ? COOLDOWN : OPENED);

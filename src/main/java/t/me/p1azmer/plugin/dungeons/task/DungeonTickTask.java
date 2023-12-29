@@ -23,6 +23,7 @@ public class DungeonTickTask extends AbstractTask<DungeonPlugin> {
                 continue;
             }
             dungeon.tick();
+
             if (!dungeon.getStage().isFreeze())
                 dungeon.getModuleManager().getModules().forEach(AbstractModule::update);
         }
