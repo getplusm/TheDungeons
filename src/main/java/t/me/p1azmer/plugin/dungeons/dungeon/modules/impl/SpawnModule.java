@@ -10,6 +10,7 @@ import t.me.p1azmer.engine.utils.LocationUtil;
 import t.me.p1azmer.engine.utils.random.Rnd;
 import t.me.p1azmer.plugin.dungeons.api.events.DungeonDeleteEvent;
 import t.me.p1azmer.plugin.dungeons.api.events.DungeonSpawnEvent;
+import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.generator.RangeInfo;
@@ -91,22 +92,28 @@ public class SpawnModule extends AbstractModule {
         Block block = result.getBlock();
         Biome biome = block.getBiome();
 
+        RegionHandler handler = plugin().getRegionHandler();
+        if (handler != null){
+            if (!handler.isValidLocation(result)){
+                return false;
+            }
+        }
         if (rangeInfo.isBiomesAsBlack()) {
             if (rangeInfo.getBiomes().contains(biome)) {
-                this.error("Biomes not contains biome " + biome.name());
+                this.debug("Biomes not contains biome " + biome.name());
                 return false;
             }
         } else if (!rangeInfo.getBiomes().contains(biome)) {
-            this.error("Biomes not contains biome " + biome.name());
+            this.debug("Biomes not contains biome " + biome.name());
             return false;
         }
         if (rangeInfo.isMaterialsAsBlack()) {
             if (rangeInfo.getMaterials().contains(block.getType())) {
-                this.error("Materials contains block " + block.getType().name());
+                this.debug("Materials contains block " + block.getType().name());
                 return false;
             }
         } else if (!rangeInfo.getMaterials().contains(block.getType())) {
-            this.error("Materials not contains block " + block.getType().name());
+            this.debug("Materials not contains block " + block.getType().name());
             return false;
         }
         return this.spawn(result);

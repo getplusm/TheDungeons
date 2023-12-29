@@ -91,10 +91,7 @@ public abstract class AbstractModule implements IPlaceholderMap {
                 this.dungeon().cancel(false); // TODO add cancelled all modules to cancel method
             }
         } else if (!canActivate && isActive()) {
-            if (!deactivate()) {
-                return;
-            }
-            this.plugin().debug("Deactivate dungeon '" + this.dungeon().getId() + "' module '" + this.getId() + "'");
+            deactivate();
         }
     }
 
