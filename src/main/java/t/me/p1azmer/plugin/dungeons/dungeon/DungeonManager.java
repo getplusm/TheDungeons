@@ -181,7 +181,7 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
         if (!module.spawn(location)){
             return false;
         }
-        DungeonStage.call(dungeon, DungeonStage.PREPARE, "Dungeon Manager with location");
+        DungeonStage.call(dungeon, DungeonStage.OPENING, "Dungeon Manager with location");
         return true;
     }
 

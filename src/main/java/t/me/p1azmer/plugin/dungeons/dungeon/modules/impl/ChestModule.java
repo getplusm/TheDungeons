@@ -67,7 +67,7 @@ public class ChestModule extends AbstractModule {
                 }
                 this.chestBlocksMap.put(schematicName, chestBlocks);
             }
-            return true;
+            return this.dungeon().getStage().isOpening() || this.dungeon().getStage().isOpened() || this.dungeon().getStage().isWaitingPlayers();
         };
     }
 
@@ -103,9 +103,9 @@ public class ChestModule extends AbstractModule {
         }
 
         List<DungeonReward> rewards = new ArrayList<>();
-        Collection<DungeonReward> rewardList = dungeon().getRewards();
+        Collection<DungeonReward> rewardList = this.dungeon().getRewards();
         if (!rewardList.isEmpty()) {
-            if (dungeon().getChestSettings().isSeparateMenu()) {
+            if (this.dungeon().getChestSettings().isSeparateMenu()) {
                 for (Block block : blocks) {
                     for (DungeonReward dungeonReward : rewardList) {
                         if (Rnd.chance(dungeonReward.getChance())) {
@@ -166,6 +166,7 @@ public class ChestModule extends AbstractModule {
             }
             int time = chest.getCurrentTick();
             DungeonChestState state = chest.getState();
+
             if (state.isWaiting() && chest.getNextStateTime() == 0 || state.isCooldown() && chest.getNextStateTime() == 0) {
                 chest.setChestState(DungeonChestState.CLOSED);
                 time = -1;

@@ -100,7 +100,7 @@ public class SpawnModule extends AbstractModule {
         }
         if (rangeInfo.isBiomesAsBlack()) {
             if (rangeInfo.getBiomes().contains(biome)) {
-                this.debug("Biomes not contains biome " + biome.name());
+                this.debug("Biomes contains biome " + biome.name());
                 return false;
             }
         } else if (!rangeInfo.getBiomes().contains(biome)) {
