@@ -55,7 +55,7 @@ public class DungeonChestMenu extends AbstractListener<DungeonPlugin> implements
             this.cachedRewards.add(reward);
 
             if (settings.isRandomSlots()) {
-                int slot = Rnd.get(0, this.inventory.getSize());
+                int slot = Rnd.get(0, this.inventory.getSize()-1);
                 ItemStack currentItem = this.inventory.getItem(slot);
                 if (currentItem == null || currentItem.getType().isAir())
                     this.inventory.setItem(slot, item);
