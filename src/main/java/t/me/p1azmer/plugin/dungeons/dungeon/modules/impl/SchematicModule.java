@@ -8,7 +8,6 @@ import t.me.p1azmer.plugin.dungeons.api.schematic.SchematicHandler;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleId;
 
 import java.io.File;
 import java.io.InputStream;
@@ -60,23 +59,28 @@ public class SchematicModule extends AbstractModule {
 
     @Override
     protected void onShutdown() {
+        this.generated = false;
+        handler.undo(this.dungeon());
+        this.cachedSchematicFile = null;
     }
 
     @Override
-    public boolean onActivate() {
+    public boolean onActivate(boolean force) {
         Location location = dungeon().getLocation();
         if (location == null) {
-            this.error("Dungeon Location not found or generated!");
+            this.error("Cannot found Dungeon Location!");
             return false;
         }
 
         this.cachedSchematicFile = Rnd.get(this.getSchematicFiles());
-        return this.generated = handler.paste(this.dungeon(), this.cachedSchematicFile);
+        this.generated = true;
+        return handler.paste(this.dungeon(), this.cachedSchematicFile);
     }
 
     @Override
     public boolean onDeactivate() {
-        if (dungeon().getModuleManager().getModule(ChestModule.class).isPresent() && !dungeon().getModuleManager().getModule(ChestModule.class).get().onDeactivate()) return false;
+        if (dungeon().getModuleManager().getModule(ChestModule.class).isPresent() && !dungeon().getModuleManager().getModule(ChestModule.class).get().onDeactivate())
+            return false;
 
         if (!this.generated) {
             return true; // return true btw

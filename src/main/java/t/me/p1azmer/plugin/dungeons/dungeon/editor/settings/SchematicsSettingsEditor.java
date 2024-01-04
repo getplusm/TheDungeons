@@ -1,6 +1,7 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.editor.settings;
 
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
@@ -31,20 +32,25 @@ public class SchematicsSettingsEditor extends EditorMenu<DungeonPlugin, Schemati
         });
 
 
-        this.addItem(settings.isIgnoreAirBlocks() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
-                        ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0="),
-                EditorLocales.SCHEMATICS_IGNORE_AIR, 3).setClick((viewer, event) -> {
+        this.addItem(new ItemStack(Material.PLAYER_HEAD), EditorLocales.SCHEMATICS_IGNORE_AIR, 3).setClick((viewer, event) -> {
             settings.setIgnoreAirBlocks(!settings.isIgnoreAirBlocks());
             this.save(viewer);
+        }).getOptions().setDisplayModifier((viewer, item) -> {
+            ItemStack replacer = settings.isIgnoreAirBlocks() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
+                    ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0=");
+            item.setItemMeta(replacer.getItemMeta());
+            ItemReplacer.create(item).readLocale(EditorLocales.SCHEMATICS_IGNORE_AIR).writeMeta();
         });
-        this.addItem(settings.isUnderground() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
-                        ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0="),
-                EditorLocales.DUNGEON_SETTINGS_UNDERGROUND, 2).setClick((viewer, event) -> {
+        this.addItem(new ItemStack(Material.PLAYER_HEAD), EditorLocales.DUNGEON_SETTINGS_UNDERGROUND, 2).setClick((viewer, event) -> {
             this.object.setUnderground(!settings.isUnderground());
             this.save(viewer);
+        }).getOptions().setDisplayModifier((viewer, item) -> {
+            ItemStack replacer = settings.isUnderground() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
+                    ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0=");
+            item.setItemMeta(replacer.getItemMeta());
+            ItemReplacer.create(item).readLocale(EditorLocales.DUNGEON_SETTINGS_UNDERGROUND).writeMeta();
         });
-        this.addItem(Material.FLOWER_BANNER_PATTERN,
-                EditorLocales.SCHEMATICS_LIST, 5).setClick((viewer, event) -> {
+        this.addItem(Material.FLOWER_BANNER_PATTERN, EditorLocales.SCHEMATICS_LIST, 5).setClick((viewer, event) -> {
             if (event.isShiftClick()) {
                 if (event.isRightClick()) {
                     settings.setSchematics(new ArrayList<>());

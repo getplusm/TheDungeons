@@ -3,10 +3,9 @@ package t.me.p1azmer.plugin.dungeons.dungeon.editor.settings;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import t.me.p1azmer.engine.api.manager.AbstractConfigHolder;
 import t.me.p1azmer.engine.api.menu.AutoPaged;
 import t.me.p1azmer.engine.api.menu.click.ItemClick;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
@@ -14,10 +13,11 @@ import t.me.p1azmer.engine.api.menu.impl.MenuOptions;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.editor.EditorManager;
 import t.me.p1azmer.engine.utils.Colorizer;
+import t.me.p1azmer.engine.utils.Colors;
 import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
-import t.me.p1azmer.plugin.dungeons.api.Announce;
+import t.me.p1azmer.plugin.dungeons.announce.impl.Announce;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.AnnounceSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
@@ -27,6 +27,8 @@ import t.me.p1azmer.plugin.dungeons.lang.Lang;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class AnnounceSettingsEditor extends EditorMenu<DungeonPlugin, AnnounceSettings> implements AutoPaged<DungeonStage> {
@@ -34,17 +36,13 @@ public class AnnounceSettingsEditor extends EditorMenu<DungeonPlugin, AnnounceSe
     public AnnounceSettingsEditor(@NotNull AnnounceSettings settings) {
         super(settings.dungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 36);
 
-        this.addReturn(31).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> settings.dungeon().getEditor().open(viewer.getPlayer(), 1));
-        });
+        this.addReturn(31).setClick((viewer, event) -> this.plugin.runTask(task -> settings.dungeon().getEditor().open(viewer.getPlayer(), 1)));
         this.addNextPage(32);
         this.addPreviousPage(30);
 
         this.getItems().forEach(menuItem -> {
             if (menuItem.getOptions().getDisplayModifier() == null) {
-                menuItem.getOptions().setDisplayModifier(((viewer, item) -> {
-                    ItemReplacer.replace(item, settings.replacePlaceholders());
-                }));
+                menuItem.getOptions().setDisplayModifier(((viewer, item) -> ItemReplacer.replace(item, settings.replacePlaceholders())));
             }
         });
     }
@@ -75,18 +73,15 @@ public class AnnounceSettingsEditor extends EditorMenu<DungeonPlugin, AnnounceSe
     @NotNull
     public ItemStack getObjectStack(@NotNull Player player, @NotNull DungeonStage stage) {
         ItemStack item = new ItemStack(Material.FLOWER_BANNER_PATTERN);
-        Announce announce = this.object.getAnnounce(stage);
+        Map<Announce, int[]> map = this.object.getAnnounceMap(stage);
+
         ItemReplacer.create(item)
-                .readLocale(EditorLocales.ANNOUNCE_OBJECT)
+                .readLocale(EditorLocales.ANNOUNCE_MODULE_OBJECT)
                 .trimmed()
+                .replace(Placeholders.EDITOR_STAGE_NAME, stage.name())
                 .hideFlags()
-                .replace(s -> s
-                        .replace(Placeholders.EDITOR_STAGE_NAME, stage.name())
-                        .replace(Placeholders.EDITOR_STAGE_ANNOUNCE_MESSAGE, String.join("\n", announce.getMessagesRaw()))
-                        .replace(Placeholders.EDITOR_STAGE_ANNOUNCE_TIMES, Arrays.toString(announce.getTimes()))
-                )
+                .replace(Placeholders.EDITOR_STAGE_ANNOUNCES, Colorizer.apply(Colors.LIGHT_PURPLE + String.join("\n", map.entrySet().stream().map(pair -> Colors.LIGHT_PURPLE + pair.getKey().getId() + " " + Colors.PURPLE + Arrays.toString(pair.getValue())).toList())))
                 .replace(this.object.replacePlaceholders())
-                .replace(announce.replacePlaceholders())
                 .replace(Colorizer::apply)
                 .writeMeta();
 
@@ -98,22 +93,29 @@ public class AnnounceSettingsEditor extends EditorMenu<DungeonPlugin, AnnounceSe
     public ItemClick getObjectClick(@NotNull DungeonStage stage) {
         return (viewer, event) -> {
             Player player = viewer.getPlayer();
-            Announce announce = this.object.getAnnounce(stage);
 
-            if (event.getClick().equals(ClickType.DROP)){
-                announce.setGlobal(!announce.isGlobal());
-                this.object.setAnnounce(stage, announce);
-                this.save(viewer);
-                return;
-            }
             if (event.getClick().equals(ClickType.LEFT)) {
-                EditorManager.prompt(player, plugin.getMessage(Lang.Editor_Enter_Text).getLocalized());
+                EditorManager.prompt(player, plugin.getMessage(Lang.Editor_Enter_Announce_And_Time).getLocalized());
+                EditorManager.suggestValues(player, plugin.getAnnounceManager().getAnnounces().stream().map(AbstractConfigHolder::getId).collect(Collectors.toList()), false);
                 EditorManager.startEdit(player, wrapper -> {
                     String message = wrapper.getText();
-                    List<String> messages = new ArrayList<>(announce.getMessagesRaw());
-                    messages.add(message);
-                    announce.setMessages(plugin, messages);
-                    this.object.setAnnounce(stage, announce);
+                    String[] splitter = message.split(" ");
+                    Announce announce = plugin.getAnnounceManager().getAnnounce(splitter[0]);
+                    if (announce == null) {
+                        EditorManager.error(player, plugin.getMessage(Lang.Editor_Announce_And_Time_Error).getLocalized());
+                        EditorManager.displayValues(player, false, 1);
+                        return false;
+                    }
+
+                    int[] time = splitter.length == 1 ? new int[]{0} : Arrays.stream(splitter[1].replace(" ", "").split(","))
+                            .mapToInt(Integer::parseInt)
+                            .toArray();
+                    Map<Announce, int[]> map = this.object.getAnnounceMap(stage);
+                    if (map.containsKey(announce) && map.get(announce).length > 0) {
+                        time = mergeArrays(time, map.get(announce));
+                    }
+                    map.put(announce, time);
+                    this.object.setAnnounce(stage, map);
                     this.save(viewer);
                     return true;
                 });
@@ -121,35 +123,21 @@ public class AnnounceSettingsEditor extends EditorMenu<DungeonPlugin, AnnounceSe
                 return;
             }
             if (event.getClick().equals(ClickType.SHIFT_LEFT)) {
-                if (announce.getMessagesRaw().isEmpty()) return;
-
-                announce.setMessages(plugin, new ArrayList<>());
-                this.object.setAnnounce(stage, announce);
-                this.save(viewer);
-                return;
-            }
-
-            if (event.getClick().equals(ClickType.RIGHT)) {
-                EditorManager.prompt(player, plugin.getMessage(Lang.Editor_Enter_Array_Integers).getLocalized());
-                EditorManager.startEdit(player, wrapper -> {
-                    String message = wrapper.getText().replace(" ", "");
-                    int[] times = Arrays.stream(message.split(","))
-                            .mapToInt(Integer::parseInt)
-                            .toArray();
-                    announce.setTimes(times);
-                    this.object.setAnnounce(stage, announce);
-                    this.save(viewer);
-                    return true;
-                });
-                plugin.runTask(task -> player.closeInventory());
-            }
-            if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {
-                if (announce.getTimes().length == 0) return;
-
-                announce.setTimes(new int[0]);
-                this.object.setAnnounce(stage, announce);
+                this.object.removeAnnounce(stage);
                 this.save(viewer);
             }
         };
+    }
+
+    private static int[] mergeArrays(int[] array1, int[] array2) {
+        int length1 = array1.length;
+        int length2 = array2.length;
+
+        int[] mergedArray = new int[length1 + length2];
+
+        System.arraycopy(array1, 0, mergedArray, 0, length1);
+        System.arraycopy(array2, 0, mergedArray, length1, length2);
+
+        return mergedArray;
     }
 }

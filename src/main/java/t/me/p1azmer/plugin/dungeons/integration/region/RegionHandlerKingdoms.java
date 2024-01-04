@@ -14,7 +14,7 @@ import org.kingdoms.events.lands.UnclaimLandEvent;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonRegion;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Region;
 
 import java.util.*;
 
@@ -65,7 +65,7 @@ public class RegionHandlerKingdoms implements RegionHandler {
 
     @Override
     public void create(@NotNull Dungeon dungeon) {
-        DungeonRegion region = dungeon.getDungeonRegion();
+        Region region = dungeon.getDungeonRegion();
         if (!region.isEnabled()) return;
 
         Location location = dungeon.getLocation();
@@ -79,7 +79,7 @@ public class RegionHandlerKingdoms implements RegionHandler {
 
     @Override
     public void delete(@NotNull Dungeon dungeon) {
-        DungeonRegion region = dungeon.getDungeonRegion();
+        Region region = dungeon.getDungeonRegion();
         if (!region.isCreated()) return;
 
         Land land = this.claimMap.get(dungeon);
@@ -98,7 +98,7 @@ public class RegionHandlerKingdoms implements RegionHandler {
     }
 
     @Override
-    public boolean isDungeonRegion(@NotNull Location location, @NotNull DungeonRegion dungeonRegion) {
+    public boolean isDungeonRegion(@NotNull Location location, @NotNull Region region) {
         World world = location.getWorld();
         if (world == null) return false;
         Land land = this.landManager.getData(SimpleChunkLocation.of(location));

@@ -77,12 +77,11 @@ public class Lang extends EngineLang {
 
     public static final LangKey EDITOR_REWARD_ENTER_ID = LangKey.of("Editor.Reward.Enter.Id", GRAY + "Enter " + GREEN + "[Reward Identifier]");
     public static final LangKey EDITOR_REWARD_ENTER_CHANCE = LangKey.of("Editor.Reward.Enter.Chance", GRAY + "Enter " + GREEN + "[Chance]");
-    public static final LangKey EDITOR_REWARD_ENTER_MAX_AMOUNT = LangKey.of("Editor.Reward.Enter.Max.Amount", GRAY + "Enter " + GREEN + "[Maximal Limit]");
-    public static final LangKey EDITOR_REWARD_ENTER_MIN_AMOUNT = LangKey.of("Editor.Reward.Enter.Min.Amount", GRAY + "Enter " + GREEN + "[Minimal Limit]");
+    public static final LangKey EDITOR_REWARD_ENTER_UNI_LIMIT = LangKey.of("Editor.Reward.Enter.UniLimit", GRAY + "Enter " + GREEN + "[Min] [Max]");
+    public static final LangKey EDITOR_REWARD_ENTER_UNI_AMOUNT = LangKey.of("Editor.Reward.Enter.UniAmount", GRAY + "Enter " + GREEN + "[Min] [Max]");
     public static final LangKey EDITOR_REWARD_ERROR_CREATE_EXIST = LangKey.of("Editor.Reward.Error.Create.Exist", RED + "A reward with this identifier already exists!");
-    public static final LangKey EDITOR_REWARD_ERROR_LIMIT_MAX = LangKey.of("Editor.Reward.Error.Limit.Max_Equals_Min", RED + "The maximum quantity cannot be less than or equal to less");
-    public static final LangKey EDITOR_REWARD_ERROR_LIMIT_MIN = LangKey.of("Editor.Reward.Error.Limit.Min_Equals_Max", RED + "The minimum quantity cannot be higher than the maximum");
     public static final LangKey EDITOR_DUNGEON_ERROR_MATERIAL_NOT_FOUND = LangKey.of("Editor.Dungeon.Error.Blocks.Material.Not_Found", RED + "Material not found, try again!");
+    public static final LangKey EDITOR_REWARD_ENTER_COMMAND            = LangKey.of("Editor.Reward.Enter.Command", GRAY + "Enter " + GREEN + "[Command]");
 
     public static final LangKey EDITOR_DUNGEON_ENTER_FLAG = LangKey.of("Editor.Dungeon.Enter.Region.Flag", GRAY + "Enter " + GREEN + "[Flag allow/deny]");
 
@@ -114,7 +113,12 @@ public class Lang extends EngineLang {
     public static final LangKey Editor_Mov_Enter_Style = new LangKey("Editor.Mob.Enter.Style", GRAY + "Enter " + GREEN + "value" + GRAY + "...");
     public static final LangKey Editor_Mob_Error_Exist = new LangKey("Editor.Mob.Error.Exist", RED+"Mob already exists!");
 
+    public static  final LangKey Editor_Announce_Enter_Create = new LangKey("Editor.Announce.Enter.Create", GRAY + "Enter " + GREEN + "unique " + GRAY + "announce " + GREEN + "identifier" + GRAY + "...");
+    public static final LangKey Editor_Announce_Error_Exist = new LangKey("Editor.Announce.Error.Exist", RED+"Announce already exists!");
+
     public static final LangKey Editor_Enter_Text = LangKey.of("Editor.Enter.Text", GRAY + "Enter " + GREEN + "text " + GRAY + "or " + GREEN + "leave empty" + GRAY + "...");
-    public static final LangKey Editor_Enter_Array_Integers = LangKey.of("Editor.Enter.Array_Integers", GRAY + "Enter " + GREEN + "values" + GRAY + " like " + GREEN + "[1,2,3]" + GRAY + "...");
+    public static final LangKey Editor_Enter_Announce_And_Time = LangKey.of("Editor.Announce_And_Time.Enter", GRAY + "Enter " + GREEN + "announce id " + GRAY + "and " + GREEN + "time [1,2,..]" + GRAY + "...");
+    public static final LangKey Editor_Announce_And_Time_Error = new LangKey("Editor.Announce_And_Time.Error", RED+"Announce not found!");
+//    public static final LangKey Editor_Enter_Array_Integers = LangKey.of("Editor.Enter.Array_Integers", GRAY + "Enter " + GREEN + "values" + GRAY + " like " + GREEN + "[1,2,..]" + GRAY + "...");
 //    public static final LangKey Editor_Error_Handler_Not_Installed = LangKey.of("Editor.Error.Handler.Not_Installed", RED+"The '"+Placeholders.GENERIC_HANDLER+"' handler is not installed and cannot be configured!");
 }

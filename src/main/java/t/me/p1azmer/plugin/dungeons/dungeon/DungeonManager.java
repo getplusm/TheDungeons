@@ -11,20 +11,12 @@ import t.me.p1azmer.engine.api.manager.AbstractManager;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Keys;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
-import t.me.p1azmer.plugin.dungeons.api.Announce;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonRegion;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestBlock;
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestState;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.listener.DungeonListener;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.SpawnModule;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.HologramSettings;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.MainSettings;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.ModuleSettings;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.PartySettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 import t.me.p1azmer.plugin.dungeons.generator.config.GeneratorConfig;
 import t.me.p1azmer.plugin.dungeons.integration.region.RegionHandlerWG;
@@ -170,32 +162,18 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
     }
 
     public boolean spawnDungeon(@NotNull Dungeon dungeon, @NotNull Location location) {
-        World world = location.getWorld();
-        if (world == null) return false;
         SpawnModule module = dungeon.getModuleManager().getModule(SpawnModule.class).orElse(null);
         if (module == null) {
             plugin.error("Error spawning dungeon via command, because the dungeon spawning module is disabled or not loaded!");
             return false;
         }
-        if (module.isSpawned()) return false;
-        if (!module.spawn(location)){
-            return false;
-        }
-        DungeonStage.call(dungeon, DungeonStage.OPENING, "Dungeon Manager with location");
-        return true;
-    }
-
-    public boolean spawnDungeon(@NotNull Dungeon dungeon) {
-        SpawnModule module = dungeon.getModuleManager().getModule(SpawnModule.class).orElse(null);
-        if (module == null) {
-            plugin.error("");
-            return false;
-        }
-        if (module.isSpawned()) {
-            plugin.error("Can't spawn a dungeon '" + dungeon.getName() + "' as it already exists in the world!");
-            return false;
-        }
-        DungeonStage.call(dungeon, DungeonStage.PREPARE, "Dungeon Manager with random");
+        dungeon.cancel(false);
+        plugin.runTaskLater(task -> {
+            dungeon.setLocation(location);
+            module.spawn(location);
+            dungeon.getModuleManager().getModules().forEach(founder -> founder.activate(true));
+            DungeonStage.call(dungeon, DungeonStage.OPENED, "Dungeon Manager with location");
+        }, 5);
         return true;
     }
 

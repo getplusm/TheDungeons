@@ -23,7 +23,7 @@ public abstract class AbstractModule implements IPlaceholderMap {
     protected PlaceholderMap placeholderMap;
 
     // cache
-    private boolean active;
+    private ActiveType activeType;
 
     public AbstractModule(@NotNull Dungeon dungeon, @NotNull String id, @NotNull Predicate<Boolean> canEnable, boolean updatable, boolean importantly) {
         this.dungeon = dungeon;
@@ -34,6 +34,7 @@ public abstract class AbstractModule implements IPlaceholderMap {
         this.manager = dungeon.getManager();
         this.canEnable = canEnable;
         this.cfg = dungeon().getConfig();
+        this.setActiveType(ActiveType.NATURAL, false);
         this.placeholderMap = new PlaceholderMap()
                 .add(Placeholders.MODULE_ID, this::getId)
         ;
@@ -64,35 +65,48 @@ public abstract class AbstractModule implements IPlaceholderMap {
 
     protected abstract void onShutdown();
 
-    public boolean activate() {
+    public boolean activate(boolean force) {
         if (!this.dungeon().getModuleSettings().isEnabled(this.getId())) {
             return false;
         }
 
-        this.active = this.canEnable.test(true);
-        return this.active && this.onActivate();
+        if (force) {
+            this.setActiveType(ActiveType.FORCE, true);
+            this.onActivate(true);
+        } else
+            this.setActiveType(ActiveType.NATURAL, this.canEnable.test(true));
+        return force || this.getActiveType().isActive() && this.onActivate(false);
     }
 
     public boolean deactivate() {
-        this.active = !this.onDeactivate();
-        return !this.active;
+        return !this.getActiveType().setActive(!this.onDeactivate());
     }
 
-    protected abstract boolean onActivate();
+    protected abstract boolean onActivate(boolean force);
 
     protected abstract boolean onDeactivate();
 
     public void update() {
         if (isActive() && !isUpdatable()) return;
-        boolean canActivate = canEnable.test(true);
+        boolean canActivate = this.getActiveType().isForce() || canEnable.test(true);
         if (canActivate && !isActive()) {
-            if (!activate() && isImportantly()) {
+            if (!activate(false) && isImportantly()) {
                 this.plugin().error("cannot continue this '" + this.dungeon().getId() + "' dungeon because an important module '" + this.getName() + "' failed to start!");
                 this.dungeon().cancel(false); // TODO add cancelled all modules to cancel method
             }
         } else if (!canActivate && isActive()) {
             deactivate();
         }
+    }
+
+    private void setActiveType(@NotNull ActiveType activeType, boolean active) {
+        activeType.setActive(active);
+        this.activeType = activeType;
+    }
+
+    @NotNull
+    private ActiveType getActiveType() {
+        return activeType;
     }
 
     @NotNull
@@ -124,7 +138,7 @@ public abstract class AbstractModule implements IPlaceholderMap {
     }
 
     public boolean isActive() {
-        return active;
+        return this.getActiveType().isActive();
     }
 
     @NotNull
@@ -143,14 +157,37 @@ public abstract class AbstractModule implements IPlaceholderMap {
     }
 
     protected void error(@NotNull String message) {
-        this.plugin().error("[" + this.getName() + " Module]: " + message);
+        this.plugin().error("[" + this.getName() + " Module of '" + this.dungeon().getId() + "']: " + message);
     }
 
     protected void warn(@NotNull String message) {
-        this.plugin().warn("[" + this.getName() + " Module]: " + message);
+        this.plugin().warn("[" + this.getName() + " Module of '" + this.dungeon().getId() + "']: " + message);
     }
 
     protected void debug(@NotNull String message) {
-        this.plugin().debug("[" + this.getName() + " Module]: " + message);
+        this.plugin().debug("[" + this.getName() + " Module of '" + this.dungeon().getId() + "']: " + message);
+    }
+
+    private enum ActiveType {
+        NATURAL(false),
+        FORCE(false),
+        ;
+        private boolean active;
+
+        ActiveType(boolean active) {
+            this.active = active;
+        }
+
+        public boolean isActive() {
+            return active;
+        }
+
+        public boolean setActive(boolean active) {
+            return this.active = active;
+        }
+
+        public boolean isForce() {
+            return this.equals(FORCE);
+        }
     }
 }

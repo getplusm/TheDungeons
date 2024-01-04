@@ -34,7 +34,7 @@ public class CommandModule extends AbstractModule {
     }
 
     @Override
-    public boolean onActivate() {
+    public boolean onActivate(boolean force) {
         return true;
     }
 

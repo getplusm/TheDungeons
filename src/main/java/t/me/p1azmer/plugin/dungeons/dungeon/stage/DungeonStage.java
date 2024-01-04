@@ -70,9 +70,7 @@ public enum DungeonStage {
             DungeonAPI.PLUGIN.warn("Tick the dungeon '" + dungeon.getId() + "'. Stage=" + this.name() + ", Tick=" + timer.get() + "/" + dungeon.getStageSettings().getTime(this));
         }
         if (timer.get() == dungeon.getStageSettings().getTime(this)) {
-            if (call(dungeon, CollectionsUtil.next(dungeon.getStage()), "self class")) {
-                timer.set(0);
-            }
+            call(dungeon, CollectionsUtil.next(dungeon.getStage()), "self class");
         } else {
             timer.incrementAndGet();
         }
@@ -102,6 +100,7 @@ public enum DungeonStage {
         }
         plugin.sendDebug("Call the dungeon '" + dungeon.getId() + "' from " + from + ". Change stage to " + stage.name() + " from " + dungeon.getStage().name());
         dungeon.setStage(stage);
+        dungeon.setSelfTick(0);
         return true;
     }
 }

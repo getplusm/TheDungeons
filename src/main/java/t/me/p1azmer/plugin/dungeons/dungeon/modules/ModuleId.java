@@ -9,4 +9,5 @@ public class ModuleId {
     public static final String SPAWN = "spawn";
     public static final String BOSSBAR = "bossbar";
     public static final String ANNOUNCE = "announce";
+    public static final String MOBS = "mobs";
 }

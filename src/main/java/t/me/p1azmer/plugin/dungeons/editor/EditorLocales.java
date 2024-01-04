@@ -1,10 +1,16 @@
 package t.me.p1azmer.plugin.dungeons.editor;
 
 import t.me.p1azmer.engine.api.editor.EditorLocale;
+import t.me.p1azmer.engine.utils.Colors2;
+import t.me.p1azmer.engine.utils.EngineUtils;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 
 import static t.me.p1azmer.engine.utils.Colors.*;
+import static t.me.p1azmer.engine.utils.Colors2.BOLD;
+import static t.me.p1azmer.engine.utils.Colors2.GRAY;
+import static t.me.p1azmer.engine.utils.Colors2.WHITE;
+import static t.me.p1azmer.engine.utils.Colors2.YELLOW;
 
 public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales {
 
@@ -18,6 +24,10 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .build();
     public static final EditorLocale MOB_EDITOR = builder(PREFIX + "Mobs")
             .name("Mob Editor")
+            .build();
+
+    public static final EditorLocale ANNOUNCE_EDITOR = builder(PREFIX + "Announce.Editor")
+            .name("Announce Editor")
             .build();
 
     // dungeon
@@ -189,28 +199,15 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .name("Announce Settings")
             .click(LMB, "Navigate")
             .build();
-    public static EditorLocale ANNOUNCE_OBJECT = builder(PREFIX + "Dungeon.Modules.Announce.Object")
+    public static EditorLocale ANNOUNCE_MODULE_OBJECT = builder(PREFIX + "Dungeon.Modules.Announce.Object")
             .name(LIGHT_PURPLE + Placeholders.EDITOR_STAGE_NAME)
-            .text("Sets the message and time to alert",
-                    "players to this stage of the dungeon.",
-                    GRAY + "Info about Global settings:",
-                    GRAY + "If set to " + GREEN + "true" + GRAY + ",",
-                    GRAY + "announcements will be broadcast, " +  RED + "otherwise",
-                    GRAY + "they will be sent to the dungeon world.",
-                    "",
-                    "Note: If you add '<! prefix: \"false\" !>',",
-                    "the message will be without the plugin prefix!")
+            .text(
+                    "Preview:",
+                    GRAY + "AnnounceId [Time]",
+                    Placeholders.EDITOR_STAGE_ANNOUNCES)
             .emptyLine()
-            .currentHeader()
-            .current("Messages", Placeholders.EDITOR_STAGE_ANNOUNCE_MESSAGE)
-            .current("Times", Placeholders.EDITOR_STAGE_ANNOUNCE_TIMES)
-            .current("Global Announce", Placeholders.ANNOUNCE_GLOBAL)
-            .emptyLine()
-            .click(LMB, "Add Line")
-            .click(SHIFT_LMB, "Clear Lines " + RED + "(No Undo)")
-            .click(DROP_KEY, "Change Global")
-            .click(RMB, "Set Times")
-            .click(SHIFT_RMB, "Clear Times " + RED + "(No Undo)")
+            .click(LMB, "Add")
+            .click(SHIFT_LMB, "Clear " + RED + "(No Undo)")
             .build();
     // holograms
     public static final EditorLocale HOLOGRAM_SETTINGS = builder(PREFIX + "Dungeon.Modules.Holograms.Settings")
@@ -282,7 +279,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .name("Underground")
             .text("Sets whether the dungeon", "will spawn underground or", "on the surface").emptyLine()
             .currentHeader()
-            .current("Underground", Placeholders.DUNGEON_SETTINGS_UNDERGROUND).emptyLine()
+            .current("Underground", Placeholders.SCHEMATICS_UNDERGROUND).emptyLine()
             .click(LMB, "Change").build();
     // main settings
     public static final EditorLocale DUNGEON_SETTINGS_ENABLE = builder(PREFIX + "Dungeon.Settings.Enabled")
@@ -383,13 +380,14 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .click(SHIFT_RMB, "Clear").build();
     // rewards
     public static final EditorLocale REWARD_OBJECT = builder(PREFIX + "Dungeon.Modules.Reward.Object")
-            .name(Placeholders.REWARD_NAME + " &7(ID: &f" + Placeholders.REWARD_ID + "&7)")
+            .name(Placeholders.REWARD_ID)
             .text("Chance: &f" + Placeholders.REWARD_CHANCE + "%")
+            .emptyLine()
             .click(LMB, "Configure")
-            .click(SHIFT_LMB, "Move Forward").click(SHIFT_RMB, "Move Backward")
+            .click(SHIFT_LMB, "Move Forward")
+            .click(SHIFT_RMB, "Move Backward")
             .click(DROP_KEY, "Delete " + RED + "(No Undo)")
             .build();
-
     public static final EditorLocale REWARD_CREATE = builder(PREFIX + "Dungeon.Modules.Reward.Create")
             .name("Create Reward")
             .text("Create a new reward for the dungeon.")
@@ -397,8 +395,6 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .click(LMB, "Manual Creation")
             .click(DRAG_DROP, "Quick Creation")
             .build();
-
-
     public static final EditorLocale REWARD_SORT = builder(PREFIX + "Dungeon.Modules.Reward.Sort")
             .name("Reward Sorting")
             .text("Automatically sorts rewards in the specified order.").emptyLine()
@@ -406,16 +402,6 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .click("[Slot 1]", "by chance").click("[Slot 2]", "by type")
             .click("[Slot 3]", "by name")
             .build();
-    public static final EditorLocale REWARD_NAME = builder(PREFIX + "Dungeon.Modules.Reward.Name")
-            .name("Displayed Name")
-            .text("Sets the displayed name of the reward.", "Used in menus and messages.").emptyLine()
-            .currentHeader()
-            .current("Displayed Name", Placeholders.REWARD_NAME).emptyLine()
-            .warningHeader().warning("This is " + RED + "NOT" + GRAY + " the actual name of the reward!").emptyLine()
-            .click(LMB, "Change").click(RMB, "Take from Item")
-            .click(SHIFT_LMB, "Set on Item")
-            .build();
-
     public static final EditorLocale REWARD_ITEM = builder(PREFIX + "Dungeon.Modules.Reward.Item")
             .name("Item")
             .text("The item that will be added to the chest")
@@ -423,28 +409,43 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .click(DRAG_DROP, "Replace Item")
             .click(RMB, "Get a Copy")
             .build();
-
     public static final EditorLocale REWARD_CHANCE = builder(PREFIX + "Dungeon.Modules.Reward.Chance")
             .name("Chance")
-            .text("Sets the probability of the reward appearing in the chest.")
+            .text("Sets the chance of adding this item to the chest")
             .currentHeader()
-            .current("Chance", Placeholders.REWARD_CHANCE + "%").emptyLine()
-            .click(LMB, "Change")
+            .current("Chance", Placeholders.REWARD_CHANCE + "%" + GRAY + " (" + WHITE + LMB + GRAY + ")")
             .build();
-
-    public static final EditorLocale REWARD_LIMITS = builder(PREFIX + "Dungeon.Modules.Reward.Limits")
-            .name("Item Limits")
-            .text("Determines the quantity of the item that will be in the Dungeon").emptyLine()
+    public static final EditorLocale REWARD_AMOUNT = builder(PREFIX + "Dungeon.Modules.Reward.Amount")
+            .name("Item Amount")
+            .text("Sets the amount of the item.",
+                    "The final amount will be within these values")
             .currentHeader()
-            .current("Maximum", Placeholders.REWARD_MAX_AMOUNT)
-            .current("Minimum", Placeholders.REWARD_MIN_AMOUNT).emptyLine()
-
-            .click(LMB, "Set Maximum Quantity")
-            .click(RMB, "Set Minimum Quantity")
+            .current("Min", Placeholders.REWARD_MIN_AMOUNT + GRAY + " (" + WHITE + LMB + GRAY + ")")
+            .current("Max", Placeholders.REWARD_MAX_AMOUNT + GRAY + " (" + WHITE + LMB + GRAY + ")")
             .build();
-
+    public static final EditorLocale REWARDS_LIMITS = builder(PREFIX + "Dungeon.Modules.Rewards.Limits")
+            .name("Reward Limit")
+            .text("Sets limits on the amount of items in the chest.",
+                    "The final amount will be within these values")
+            .currentHeader()
+            .current("Min", Placeholders.REWARD_LIMIT_MIN + GRAY + " (" + WHITE + LMB + GRAY + ")")
+            .current("Max", Placeholders.REWARD_LIMIT_MAX + GRAY + " (" + WHITE + LMB + GRAY + ")")
+            .build();
+    public static final EditorLocale REWARD_COMMANDS = builder(PREFIX + "Reward.Commands")
+            .name("Commands")
+            .text("All of the following commands will", "be executed from the "+WHITE+"console","when the chest is opened.")
+            .emptyLine()
+            .currentHeader()
+            .text(Placeholders.REWARD_COMMANDS)
+            .emptyLine()
+            .text(YELLOW + BOLD + "Placeholders:")
+            .current(EngineUtils.PLACEHOLDER_API, "All of them.")
+            .current(Placeholders.PLAYER_NAME, "For player name.")
+            .emptyLine()
+            .text("(" + WHITE + LMB + GRAY + " to add)")
+            .text("(" + WHITE + RMB + GRAY + " to remove all)")
+            .build();
     // keys
-
     public static final EditorLocale KEY_OBJECT = builder(PREFIX + "Dungeon.Modules.Key.Object")
             .name(Placeholders.KEY_NAME + GRAY + " (ID: " + BLUE + Placeholders.KEY_ID + GRAY + ")")
             .click(LMB, "Change")
@@ -575,5 +576,39 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .current("Size", Placeholders.PARTY_SIZE)
             .emptyLine()
             .click(LMB, "Change")
+            .build();
+
+    // announce
+
+    public static final EditorLocale ANNOUNCE_OBJECT = builder(PREFIX + "Announce.Object")
+            .name(Placeholders.ANNOUNCE_ID)
+            .click(LMB, "Edit")
+            .click(RMB, "Delete " + RED + "(No Undo)")
+            .build();
+
+    public static final EditorLocale ANNOUNCE_MESSAGES = builder(PREFIX + "Announce.Messages")
+            .name("Messages")
+            .text(WHITE + "Info:",
+                    "Sets the text of the announcement.",
+                    "Note: If you add " + YELLOW + "'<! prefix: \"false\" !>'" + Colors2.GRAY + ",",
+                    "the message will be without the plugin prefix!")
+            .currentHeader()
+            .text(Placeholders.ANNOUNCE_MESSAGES)
+            .emptyLine()
+            .click(LMB, "Add Line")
+            .click(RMB, "Clear Lines " + RED + "(No Undo)")
+            .build();
+    public static final EditorLocale ANNOUNCE_GLOBAL = builder(PREFIX + "Announce.Global")
+            .name("Global Announce")
+            .text("If false, then the announcement", "will be only in the world set in the dungeon")
+            .text(Placeholders.ANNOUNCE_GLOBAL + GRAY + " (" + WHITE + LMB + GRAY + ")")
+            .build();
+    public static final EditorLocale ANNOUNCE_ICON = builder(PREFIX + "Announce.Icon")
+            .name("Icon in List Menu")
+            .click(DRAG_DROP, "Replace")
+            .build();
+
+    public static final EditorLocale ANNOUNCE_CREATE = builder(PREFIX + "Announce.Create")
+            .name("New Announce")
             .build();
 }

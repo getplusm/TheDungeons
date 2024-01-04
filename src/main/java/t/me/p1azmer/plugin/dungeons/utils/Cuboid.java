@@ -3,23 +3,21 @@ package t.me.p1azmer.plugin.dungeons.utils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.utils.CollectionsUtil;
-import t.me.p1azmer.engine.utils.values.UniParticle;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class DungeonCuboid {
+public class Cuboid {
 
     private final Location min;
     private final Location max;
     private final Location center;
 
-    public DungeonCuboid(@NotNull Location loc1, @NotNull Location loc2) {
+    public Cuboid(@NotNull Location loc1, @NotNull Location loc2) {
         int minX = Math.min(loc1.getBlockX(), loc2.getBlockX());
         int minY = Math.min(loc1.getBlockY(), loc2.getBlockY());
         int minZ = Math.min(loc1.getBlockZ(), loc2.getBlockZ());
@@ -38,7 +36,7 @@ public class DungeonCuboid {
         this.center = new Location(loc1.getWorld(), cx, cy, cz);
     }
 
-    public static DungeonCuboid of(@NotNull Dungeon dungeon, @NotNull Location center) {
+    public static Cuboid of(@NotNull Dungeon dungeon, @NotNull Location center) {
         int radius = dungeon.getDungeonRegion().getRadius();
         int minX = center.getBlockX() - radius;
         int minY = center.getBlockY() - radius;
@@ -51,7 +49,7 @@ public class DungeonCuboid {
         Location min = new Location(dungeon.getWorld(), minX, minY, minZ);
         Location max = new Location(dungeon.getWorld(), maxX, maxY, maxZ);
 
-        return new DungeonCuboid(min, max);
+        return new Cuboid(min, max);
     }
 
     public boolean contains(@NotNull Location location) {

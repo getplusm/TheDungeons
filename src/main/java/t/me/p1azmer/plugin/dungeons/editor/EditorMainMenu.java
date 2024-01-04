@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
 import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
+import t.me.p1azmer.plugin.dungeons.announce.editor.AnnounceListEditor;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.editor.DungeonListEditor;
 import t.me.p1azmer.plugin.dungeons.key.editor.KeyListEditor;
@@ -15,27 +16,26 @@ public class EditorMainMenu extends EditorMenu<DungeonPlugin, DungeonPlugin> {
     private static final String TEXTURE_KEY = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWVlZmE0Y2QyYTU1OGU0YTgxMmUyZWE3NTQxZTYyNzUwYjk2YmExZDgyYzFkYTlmZDVmMmUzZmI5MzA4YzYzNSJ9fX0=";
     private static final String TEXTURE_MOB = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZWI3OTAxZTA1OWRjZTM2ODYxN2FhMDZmMmQ0NmY5ZmFiZThkMjdlOGQ3MWZiYzhlYzA1MTg2Y2JiYWNlMzY1ZCJ9fX0=";
 
+    private static final String TEXTURE_ANNOUNCE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzY2OTJmOTljYzZkNzgyNDIzMDQxMTA1NTM1ODk0ODQyOThiMmU0YTAyMzNiNzY3NTNmODg4ZTIwN2VmNSJ9fX0=";
+
     private DungeonListEditor dungeonListEditor;
     private KeyListEditor keyListEditor;
-    private MobListEditor mobEditor;
+    private MobListEditor mobListEditor;
+    private AnnounceListEditor announceListEditor;
 
     public EditorMainMenu(@NotNull DungeonPlugin plugin) {
         super(plugin, plugin, Config.EDITOR_TITLE_DUNGEON.get(), 27);
 
         this.addExit(22);
 
-        this.addItem(ItemUtil.createCustomHead(TEXTURE_KEY), EditorLocales.KEYS_EDITOR, 11)
-                .setClick((viewer, event) -> {
-                    this.plugin.runTask(task -> this.getKeysEditor().open(viewer.getPlayer(), 1));
-                });
-        this.addItem(ItemUtil.createCustomHead(TEXTURE_DUNGEON), EditorLocales.DUNGEON_EDITOR, 13)
-                .setClick((viewer, event) -> {
-                    this.plugin.runTask(task -> this.getDungeonEditor().open(viewer.getPlayer(), 1));
-                });
-        this.addItem(ItemUtil.createCustomHead(TEXTURE_MOB), EditorLocales.MOB_EDITOR, 15)
-                .setClick((viewer, event) -> {
-                    this.plugin.runTask(task -> this.getMobEditor().open(viewer.getPlayer(), 1));
-                });
+        this.addItem(ItemUtil.createCustomHead(TEXTURE_DUNGEON), EditorLocales.DUNGEON_EDITOR, 10)
+                .setClick((viewer, event) -> this.plugin.runTask(task -> this.getDungeonEditor().open(viewer.getPlayer(), 1)));
+        this.addItem(ItemUtil.createCustomHead(TEXTURE_ANNOUNCE), EditorLocales.ANNOUNCE_EDITOR, 12)
+                .setClick((viewer, event) -> this.plugin.runTask(task -> this.getAnnounceEditor().open(viewer.getPlayer(), 1)));
+        this.addItem(ItemUtil.createCustomHead(TEXTURE_KEY), EditorLocales.KEYS_EDITOR, 14)
+                .setClick((viewer, event) -> this.plugin.runTask(task -> this.getKeysEditor().open(viewer.getPlayer(), 1)));
+        this.addItem(ItemUtil.createCustomHead(TEXTURE_MOB), EditorLocales.MOB_EDITOR, 16)
+                .setClick((viewer, event) -> this.plugin.runTask(task -> this.getMobEditor().open(viewer.getPlayer(), 1)));
     }
 
     @Override
@@ -69,9 +69,16 @@ public class EditorMainMenu extends EditorMenu<DungeonPlugin, DungeonPlugin> {
 
     @NotNull
     public MobListEditor getMobEditor() {
-        if (this.mobEditor == null) {
-            this.mobEditor = new MobListEditor(plugin.getMobManager());
+        if (this.mobListEditor == null) {
+            this.mobListEditor = new MobListEditor(this.plugin.getMobManager());
         }
-        return mobEditor;
+        return mobListEditor;
+    }
+
+    @NotNull
+    public AnnounceListEditor getAnnounceEditor() {
+        if (this.announceListEditor == null)
+            this.announceListEditor = new AnnounceListEditor(this.plugin.getAnnounceManager());
+        return this.announceListEditor;
     }
 }

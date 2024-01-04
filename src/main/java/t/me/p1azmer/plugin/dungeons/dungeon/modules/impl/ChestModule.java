@@ -6,19 +6,18 @@ import org.bukkit.block.Block;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import t.me.p1azmer.engine.utils.random.Rnd;
 import t.me.p1azmer.plugin.dungeons.Keys;
 import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.api.schematic.SchematicHandler;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonReward;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Reward;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestBlock;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestMenu;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestState;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleId;
-import t.me.p1azmer.plugin.dungeons.utils.DungeonCuboid;
+import t.me.p1azmer.plugin.dungeons.utils.Cuboid;
 
 import java.io.File;
 import java.util.*;
@@ -57,7 +56,7 @@ public class ChestModule extends AbstractModule {
                 String schematicName = schematicFile.getName().replace(Config.DIR_SCHEMATICS, "");
 
                 if (!handler.containsChestBlock(dungeon(), schematicFile)) {
-                    plugin().error("Schematic '" + schematicName + "' not contains Chest Material (" + dungeon().getChestSettings().getMaterial().name() + "). Removed from list");
+                    this.error("Schematic '" + schematicName + "' not contains Chest Material (" + dungeon().getChestSettings().getMaterial().name() + "). Removed from list");
                     continue;
                 }
                 int chestBlocks = handler.getAmountOfChestBlocks(dungeon(), schematicFile);
@@ -77,7 +76,7 @@ public class ChestModule extends AbstractModule {
     }
 
     @Override
-    public boolean onActivate() {
+    public boolean onActivate(boolean force) {
         Location location = dungeon().getLocation();
         if (location == null) {
             return false;
@@ -89,43 +88,27 @@ public class ChestModule extends AbstractModule {
             return false;
         }
 
-        DungeonCuboid cuboid = dungeon().getDungeonCuboid();
+        Cuboid cuboid = dungeon().getDungeonCuboid();
         if (cuboid == null) {
-            plugin().error("Dungeon cuboid is null!");
+            this.error("Dungeon cuboid is null!");
             return false;
         }
 
         this.blocks.addAll(cuboid.getBlocks().stream().filter(f -> f.getType().equals(material)).peek(block -> block.setMetadata(Keys.DUNGEON_CHEST_BLOCK.getKey(), new FixedMetadataValue(plugin(), this.dungeon().getId()))).toList());
 
         if (this.blocks.isEmpty()) {
-            plugin().error("Chest Blocks is empty on generated schematic!");
+            this.error("Not found any Chest Block on dungeon location!");
             return false;
         }
 
-        List<DungeonReward> rewards = new ArrayList<>();
-        Collection<DungeonReward> rewardList = this.dungeon().getRewards();
-        if (!rewardList.isEmpty()) {
+        Map<Reward, Double> rewards = this.dungeon().getRewards().stream().collect(Collectors.toMap(reward -> reward, Reward::getChance));
+
+        if (!rewards.isEmpty()) {
             if (this.dungeon().getChestSettings().isSeparateMenu()) {
                 for (Block block : blocks) {
-                    for (DungeonReward dungeonReward : rewardList) {
-                        if (Rnd.chance(dungeonReward.getChance())) {
-                            rewards.add(dungeonReward);
-                        }
-                    }
-                    if (rewards.isEmpty()) {
-                        rewards.add(Rnd.get(rewardList.stream().toList()));
-                    }
                     this.setupMenu(block, rewards);
                 }
             } else {
-                for (DungeonReward dungeonReward : rewardList) {
-                    if (Rnd.chance(dungeonReward.getChance())) {
-                        rewards.add(dungeonReward);
-                    }
-                }
-                if (rewards.isEmpty()) {
-                    rewards.add(Rnd.get(rewardList.stream().toList()));
-                }
                 blocks.forEach(block -> this.setupMenu(block, rewards));
             }
         }
@@ -133,6 +116,7 @@ public class ChestModule extends AbstractModule {
         if (regionHandler != null) {
             regionHandler.create(dungeon());
         }
+
         return true;
     }
 
@@ -219,7 +203,7 @@ public class ChestModule extends AbstractModule {
         return this.blocks.stream().filter(f -> f.getLocation().equals(location)).findFirst().orElse(null);
     }
 
-    public void setupMenu(@NotNull Block block, @NotNull List<DungeonReward> rewards) {
+    public void setupMenu(@NotNull Block block, @NotNull Map<Reward, Double> rewards) {
         DungeonChestMenu menu = new DungeonChestMenu(block, this.dungeon(), rewards);
         DungeonChestBlock dungeonChestBlock = new DungeonChestBlock(this.dungeon(), block, block.getLocation(), menu);
         this.getChestMap().put(block, dungeonChestBlock);

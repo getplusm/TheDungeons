@@ -33,8 +33,12 @@ public class BossBarModule extends AbstractModule {
     }
 
     @Override
-    public boolean onActivate() {
-        if (this.bossBar == null) return false;
+    public boolean onActivate(boolean force) {
+        if (this.bossBar == null) {
+            //if (!force)return false;
+            //this.bossBar = Bukkit.createBossBar(Colorizer.apply(this.dungeon().replacePlaceholders().apply(Config.BOSSBAR_TITLE.get())), Config.BOSSBAR_COLOR.get(), Config.BOSSBAR_STYLE.get()); // rewrite for dungeon self bossbar
+            return false;
+        }
 
         this.dungeon().getWorld().getPlayers().forEach(this.bossBar::addPlayer);
         return true;

@@ -7,7 +7,6 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.config.JYML;
-import t.me.p1azmer.engine.api.lang.LangMessage;
 import t.me.p1azmer.engine.api.manager.AbstractConfigHolder;
 import t.me.p1azmer.engine.api.manager.ICleanable;
 import t.me.p1azmer.engine.api.placeholder.IPlaceholderMap;
@@ -15,15 +14,13 @@ import t.me.p1azmer.engine.api.placeholder.PlaceholderMap;
 import t.me.p1azmer.engine.lang.LangManager;
 import t.me.p1azmer.engine.utils.Colorizer;
 import t.me.p1azmer.engine.utils.Colors;
-import t.me.p1azmer.engine.utils.Colors2;
+import t.me.p1azmer.engine.utils.TimeUtil;
+import t.me.p1azmer.engine.utils.values.UniInt;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
-import t.me.p1azmer.plugin.dungeons.api.Announce;
-import t.me.p1azmer.plugin.dungeons.api.mob.MobFaction;
-import t.me.p1azmer.plugin.dungeons.api.mob.MobList;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonRegion;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonReward;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Region;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Reward;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestState;
 import t.me.p1azmer.plugin.dungeons.dungeon.editor.DungeonMainEditor;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
@@ -33,7 +30,7 @@ import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.*;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.StageSettings;
-import t.me.p1azmer.plugin.dungeons.utils.DungeonCuboid;
+import t.me.p1azmer.plugin.dungeons.utils.Cuboid;
 import t.me.p1azmer.plugin.dungeons.utils.ItemReader;
 
 import java.util.*;
@@ -49,7 +46,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     private String name;
     private DungeonStage stage;
 
-    private DungeonRegion dungeonRegion;
+    private Region region;
     private MainSettings settings;
     private HologramSettings hologramSettings;
     private PartySettings partySettings;
@@ -61,11 +58,12 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     private SchematicSettings schematicSettings;
     private CommandsSettings commandsSettings;
 
-    private Map<String, DungeonReward> rewardMap;
-    private Set<String> keyIds;
-    private MobList mobList;
+    private RewardSettings rewardSettings;
 
-    private DungeonCuboid dungeonCuboid;
+    private Map<String, Reward> rewardMap;
+    private Set<String> keyIds;
+
+    private Cuboid cuboid;
     private final DungeonManager manager;
     private ModuleManager moduleManager;
     private final PlaceholderMap placeholderMap;
@@ -86,31 +84,18 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
                 DungeonChestState.OPENED, List.of("#d8c2ffDungeon chest", "#dec1d2Status: #7fffd4Opened", "#dec1d2Closing in: #99ff99" + Placeholders.DUNGEON_CHEST_NEXT_STATE_IN))
         ));
         this.setSettings(new MainSettings(this, false, false, false, 1, new HashMap<>()));
-        this.setDungeonRegion(new DungeonRegion(this, true, this.getId(), 15, List.of("pistons deny", "pvp allow", "use allow", "chest-access allow")));
+        this.setDungeonRegion(new Region(this, true, this.getId(), 15, List.of("pistons deny", "pvp allow", "use allow", "chest-access allow")));
         this.setAnnounceSettings(new AnnounceSettings(this, Map.of(
-                PREPARE, new Announce(List.of(new LangMessage(plugin(),
-                        "<! prefix:\"false\" !>" +
-                                "\n" + Colors2.LIGHT_RED + Colors2.BOLD + "NOTE:" +
-                                "\n" + Colors2.LIGHT_PURPLE + "Until the new dungeon is spawned:" +
-                                "\n" + Colors2.LIGHT_ORANGE + Placeholders.DUNGEON_NEXT_STAGE_IN + Colors2.LIGHT_PURPLE + " sec." +
-                                "\n"
-                )), true, new int[]{26, 27, 28, 29, 30}),
-                DungeonStage.CLOSED, new Announce(List.of(new LangMessage(plugin(),
-                        """
-                                <! prefix:"false" !>
-                                #c71585Attention \u2757
-                                #fcf2f8At the coordinates: #ffb6ad\u2690 %location_world%, %location_x%, %location_y%, %location_z%
-                                #fcf2f8A dungeon has appeared #ffb6ad%dungeon_name%
-                                #fcf2f8In order to open it you need
-                                #ffe4e0\u25aa #c71585%dungeon_key_names%""")), true, new int[]{0}))));
+                PREPARE, Map.of(Objects.requireNonNull(plugin().getAnnounceManager().getAnnounce("prepare_default")), new int[]{26, 27, 28, 29, 30}),
+                DungeonStage.CLOSED, Map.of(Objects.requireNonNull(plugin().getAnnounceManager().getAnnounce("closed_default")), new int[]{0}))));
         this.setSchematicSettings(new SchematicSettings(this, List.of("dungeon_rotten_mushroom"), true, false));
         this.setModuleSettings(new ModuleSettings(this, Map.of(ModuleId.SPAWN, true, ModuleId.ANNOUNCE, true, ModuleId.CHEST, true, ModuleId.COMMAND, true, ModuleId.HOLOGRAM, true, ModuleId.SCHEMATIC, true)));
         this.setStageSettings(new StageSettings(this, Map.of(FREEZE, 5, CHECK, 3, PREPARE, 30, WAITING_PLAYERS, 10, OPENING, 5, OPENED, 60, CLOSED, 5, DELETING, 1, CANCELLED, 1, REBOOTED, 1)));
         this.setChestSettings(new ChestSettings(this, Map.of(DungeonChestState.WAITING, 10, DungeonChestState.COOLDOWN, 5, DungeonChestState.OPENED, 10, DungeonChestState.CLOSED, 10, DungeonChestState.DELETED, 1), 3, false, false, false, false, ChestModule.OpenType.CLICK, Material.BARREL));
         this.setEffectSettings(new EffectSettings(this, false, new ArrayList<>()));
         this.setCommandsSettings(new CommandsSettings(this, Map.of(FREEZE, new ArrayList<>(), CHECK, new ArrayList<>(), PREPARE, new ArrayList<>(), WAITING_PLAYERS, new ArrayList<>(), OPENING, new ArrayList<>(), OPENED, new ArrayList<>(), CLOSED, new ArrayList<>(), DELETING, new ArrayList<>(), CANCELLED, new ArrayList<>(), REBOOTED, new ArrayList<>())));
+        this.setRewardSettings(new RewardSettings(this, UniInt.of(5, 15)));
 
-        this.setMobList(new MobList());
         this.setModuleManager(new ModuleManager(this));
         this.setKeyIds(new HashSet<>());
         this.setRewardsMap(new LinkedHashMap<>());
@@ -121,10 +106,10 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
                 .add(Placeholders.DUNGEON_NAME, () -> Colorizer.apply(this.getName()))
                 .add(Placeholders.DUNGEON_WORLD, () -> LangManager.getWorld(this.getWorld()))
                 .add(Placeholders.DUNGEON_ID, this.getId())
-                .add(Placeholders.DUNGEON_KEY_IDS, () -> Colorizer.apply(Colors.LIGHT_PURPLE + String.join(", ", this.getKeyIds())))
-                .add(Placeholders.DUNGEON_NEXT_STAGE_IN, () -> String.valueOf(this.getNextStageTime()))
-                .add(Placeholders.DUNGEON_KEY_NAMES, () -> this.getKeyIds().stream().map(f ->
-                        Objects.requireNonNull(plugin.getKeyManager().getKeyById(f)).getName()).collect(Collectors.joining(", ")))
+                .add(Placeholders.DUNGEON_KEY_IDS, () -> Colorizer.apply(Colors.LIGHT_PURPLE + String.join(Colors.GRAY + ", " + Colors.LIGHT_PURPLE, this.getKeyIds())))
+                .add(Placeholders.DUNGEON_NEXT_STAGE_IN, () -> TimeUtil.formatTimeLeft(System.currentTimeMillis() + this.getNextStageTime() * 1000L))
+                .add(Placeholders.DUNGEON_KEY_NAMES, () -> Colorizer.apply(Colors.LIGHT_PURPLE + this.getKeyIds().stream().map(f ->
+                        Objects.requireNonNull(plugin.getKeyManager().getKeyById(f)).getName()).collect(Collectors.joining(Colors.GRAY + ", " + Colors.LIGHT_PURPLE))))
         ;
     }
 
@@ -140,6 +125,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         this.setAnnounceSettings(AnnounceSettings.read(this, cfg, "Settings.Announces"));
         this.setSchematicSettings(SchematicSettings.read(this, cfg, "Settings.Schematics"));
         this.setCommandsSettings(CommandsSettings.read(this, cfg, "Settings.Commands"));
+        this.setRewardSettings(RewardSettings.read(this, cfg, "Settings.Reward"));
 
         String worldName = this.cfg.getString("World", "world");
         this.world = plugin.getServer().getWorld(worldName);
@@ -152,31 +138,35 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         this.setName(cfg.getString("Name", getId()));
 
         for (String rewId : cfg.getSection("Rewards.List")) {
-            String path = "Rewards.List." + rewId + ".";
+            String path = "Rewards.List." + rewId;
 
-            String rewName = cfg.getString(path + "Name", rewId);
-            double rewChance = cfg.getDouble(path + "Chance");
+            double rewChance = cfg.getDouble(path + ".Chance");
 
-            String itemRaw = cfg.getString(path + "Item");
+            String itemRaw = cfg.getString(path + ".Item");
             if (itemRaw == null || itemRaw.isEmpty()) {
-                cfg.set(path + "Item", ItemReader.write(new ItemStack(Material.DIAMOND)));
+                cfg.set(path + ".Item", ItemReader.write(new ItemStack(Material.DIAMOND)));
             }
-            ItemStack item = ItemReader.read(cfg.getString(path + "Item", null))[0];
+            ItemStack item = ItemReader.read(cfg.getString(path + ".Item", null))[0];
             if (item == null)
-                item = ItemReader.read(cfg.getString(path + "Item", null))[0];
-            else {
-                cfg.set(path + "Item", null);
-                cfg.set(path + "Item", ItemReader.write(item));
+                item = new ItemStack(Material.DIAMOND);
+
+            if (cfg.contains(path + ".Max_Amount")){
+                int maxAmount = cfg.getInt(path + ".Max_Amount", 3);
+                int minAmount = cfg.getInt(path + ".Min_Amount", 1);
+                UniInt amount = UniInt.of(minAmount, maxAmount);
+                cfg.remove(path+".Min_Amount");
+                cfg.remove(path+".Max_Amount");
+                amount.write(cfg, ".Amount");
+                cfg.saveChanges();
             }
+            UniInt amount = UniInt.read(cfg, path + ".Amount");
+            List<String> commands = cfg.getStringList(path + ".Commands");
 
-            int maxAmount = cfg.getInt(path + "Max_Amount", 3);
-            int minAmount = cfg.getInt(path + "Min_Amount", 1);
-
-            DungeonReward reward = new DungeonReward(this, rewId, rewName, rewChance, minAmount, maxAmount, item);
+            Reward reward = new Reward(this, rewId, rewChance, amount, item, commands);
             this.rewardMap.put(rewId, reward);
         }
 
-        this.setDungeonRegion(DungeonRegion.read(this, cfg, "Settings.Region"));
+        this.setDungeonRegion(Region.read(this, cfg, "Settings.Region"));
         this.setHologramSettings(HologramSettings.read(this, cfg, "Hologram.Chest"));
 
         if (this.getDungeonRegion().isEnabled() && plugin.getRegionHandler() == null) {
@@ -201,15 +191,15 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         this.getAnnounceSettings().write(cfg, "Settings.Announces");
         this.getSchematicSettings().write(cfg, "Settings.Schematics");
         this.getCommandsSettings().write(cfg, "Settings.Commands");
+        this.getRewardSettings().write(cfg, "Settings.Reward");
 
         cfg.set("Rewards.List", null);
-        for (Map.Entry<String, DungeonReward> e : this.getRewardsMap().entrySet()) {
-            DungeonReward reward = e.getValue();
+        for (Map.Entry<String, Reward> e : this.getRewardsMap().entrySet()) {
+            Reward reward = e.getValue();
             String path = "Rewards.List." + e.getKey() + ".";
             cfg.set(path + "Item", ItemReader.write(reward.getItem()));
             cfg.set(path + "Chance", reward.getChance());
-            cfg.set(path + "Max_Amount", reward.getMaxAmount());
-            cfg.set(path + "Min_Amount", reward.getMinAmount());
+            reward.getAmount().write(cfg, path + "Amount");
         }
 
         cfg.set("World", this.getWorld().getName());
@@ -226,7 +216,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
             this.editor = null;
         }
         if (this.rewardMap != null) {
-            this.rewardMap.values().forEach(DungeonReward::clear);
+            this.rewardMap.values().forEach(Reward::clear);
             this.rewardMap.clear();
             this.rewardMap = null;
         }
@@ -278,6 +268,10 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         return commandsSettings;
     }
 
+    public RewardSettings getRewardSettings() {
+        return rewardSettings;
+    }
+
     @NotNull
     public DungeonMainEditor getEditor() {
         if (this.editor == null) {
@@ -306,8 +300,8 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     }
 
     @Nullable
-    public DungeonCuboid getDungeonCuboid() {
-        return dungeonCuboid;
+    public Cuboid getDungeonCuboid() {
+        return cuboid;
     }
 
     @NotNull
@@ -331,27 +325,18 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     }
 
     @NotNull
-    public Map<String, DungeonReward> getRewardsMap() {
+    public Map<String, Reward> getRewardsMap() {
         return this.rewardMap;
     }
 
     @Nullable
-    public DungeonReward getReward(@NotNull String id) {
+    public Reward getReward(@NotNull String id) {
         return this.getRewardsMap().get(id.toLowerCase());
     }
 
     @NotNull
-    public Collection<DungeonReward> getRewards() {
+    public Collection<Reward> getRewards() {
         return this.getRewardsMap().values();
-    }
-
-    @NotNull
-    public MobList getMobs() {
-        if (this.mobList == null)
-            this.mobList = new MobList();
-
-        this.mobList.getEnemies().removeIf(mob -> !mob.isValid() || mob.isDead());
-        return mobList;
     }
 
     @NotNull
@@ -360,8 +345,8 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     }
 
     @NotNull
-    public DungeonRegion getDungeonRegion() {
-        return dungeonRegion;
+    public Region getDungeonRegion() {
+        return region;
     }
 
     public int getNextStageTime() {
@@ -381,16 +366,12 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         this.keyIds = new HashSet<>(keyIds.stream().filter(Predicate.not(String::isEmpty)).map(String::toLowerCase).toList());
     }
 
-    public void setMobList(@NotNull MobList mobList) {
-        this.mobList = mobList;
-    }
-
     public void setWorld(@NotNull World world) {
         this.world = world;
     }
 
-    public void setDungeonCuboid(@Nullable DungeonCuboid dungeonCuboid) {
-        this.dungeonCuboid = dungeonCuboid;
+    public void setCuboid(@Nullable Cuboid cuboid) {
+        this.cuboid = cuboid;
     }
 
     public void setStage(@NotNull DungeonStage stage) {
@@ -445,43 +426,37 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         this.commandsSettings = commandsSettings;
     }
 
-    public void setRewardsMap(@NotNull Map<String, DungeonReward> rewards) {
+    public void setRewardSettings(RewardSettings rewardSettings) {
+        this.rewardSettings = rewardSettings;
+    }
+
+    public void setRewardsMap(@NotNull Map<String, Reward> rewards) {
         this.rewardMap = rewards;
     }
 
-    public void setRewards(@NotNull List<DungeonReward> rewards) {
+    public void setRewards(@NotNull List<Reward> rewards) {
         this.setRewardsMap(rewards.stream().collect(
-                Collectors.toMap(DungeonReward::getId, Function.identity(), (has, add) -> add, LinkedHashMap::new)));
+                Collectors.toMap(Reward::getId, Function.identity(), (has, add) -> add, LinkedHashMap::new)));
     }
 
-    public void addReward(@NotNull DungeonReward DungeonReward) {
-        this.getRewardsMap().put(DungeonReward.getId(), DungeonReward);
+    public void addReward(@NotNull Reward Reward) {
+        this.getRewardsMap().put(Reward.getId(), Reward);
     }
 
-    public void removeReward(@NotNull DungeonReward DungeonReward) {
-        this.removeReward(DungeonReward.getId());
+    public void removeReward(@NotNull Reward Reward) {
+        this.removeReward(Reward.getId());
     }
 
     public void removeReward(@NotNull String id) {
         this.getRewardsMap().remove(id);
     }
 
-    public void setDungeonRegion(@NotNull DungeonRegion dungeonRegion) {
-        this.dungeonRegion = dungeonRegion;
+    public void setDungeonRegion(@NotNull Region region) {
+        this.region = region;
     }
 
     public void setSelfTick(int tick) {
         this.selfTick.set(tick);
-    }
-
-    public void killMobs() {
-        for (MobFaction faction : MobFaction.values()) {
-            this.killMobs(faction);
-        }
-    }
-
-    public void killMobs(@NotNull MobFaction faction) {
-        this.getMobs().removeAll(faction);
     }
 
     public void reboot() {
@@ -492,12 +467,13 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
 
     public void cancel(boolean shutdown) {
         if (this.getLocation() != null) {
-            this.plugin.getSchematicHandler().undo(this);
-            this.killMobs();
+            if (plugin.getSchematicHandler() != null) {
+                this.plugin.getSchematicHandler().undo(this);
+            }
             this.setLocation(null);
         }
 
-        this.setDungeonCuboid(null);
+        this.setCuboid(null);
 
         if (!shutdown) {
             DungeonStage.call(this, FREEZE, "cancelled and refresh");
@@ -511,6 +487,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     }
 
     public void tick() {
+        this.getModuleManager().getModules().forEach(AbstractModule::update);
         this.getStage().tick(this);
     }
 }

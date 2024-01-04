@@ -39,7 +39,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 
 public class SchematicFAWEHandler implements SchematicHandler {
 
@@ -110,8 +109,8 @@ public class SchematicFAWEHandler implements SchematicHandler {
         BlockVector3 toVector = BlockVector3.at(location.getX(), location.getY(), location.getZ());
         com.sk89q.worldedit.world.World weWorld = BukkitAdapter.adapt(world);
 
-        try (EditSession editSession = this.worldEdit.getEditSessionFactory().getEditSession(weWorld, -1, actor)) {
-            editSession.setReorderMode(EditSession.ReorderMode.FAST);
+        try (EditSession editSession = this.worldEdit.newEditSession(weWorld)) {
+            editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
 
             Operation operation = session.getClipboard()
                     .createPaste(editSession)
@@ -119,7 +118,7 @@ public class SchematicFAWEHandler implements SchematicHandler {
                     .ignoreAirBlocks(dungeon.getSchematicSettings().isIgnoreAirBlocks())
                     .copyEntities(true)
                     .build();
-            Operations.completeLegacy(operation);
+            Operations.complete(operation);
             Clipboard clipboard = session.getClipboard().getClipboard();
             Region region = clipboard.getRegion();
 
@@ -132,7 +131,7 @@ public class SchematicFAWEHandler implements SchematicHandler {
             selector.learnChanges();
             selector.explainRegionAdjust(actor, session);
 
-            this.editSessionMap.put(location, editSession);
+            this.getEditSessionMap().put(location, editSession);
             this.placedMap.put(dungeon, location);
             return true;
         } catch (WorldEditException e) {
@@ -145,18 +144,17 @@ public class SchematicFAWEHandler implements SchematicHandler {
         if (!this.placedMap.containsKey(dungeon)) return true;
         Location location = this.placedMap.get(dungeon);
         if (location == null) return true;
-        if (!this.editSessionMap.containsKey(location)) return true;
+        if (!this.getEditSessionMap().containsKey(location)) return true;
 
         try {
             Actor actor = this.plugin.getSessionConsole();
-            EditSession editSession = this.editSessionMap.get(location);
+            EditSession editSession = this.getEditSessionMap().get(location);
             BlockBag blockBag = editSession.getBlockBag();
             LocalSession session = this.plugin.getSessionConsole();
 
 
             session.setWorldOverride(editSession.getWorld());
-            try (EditSession newEditSession = WorldEdit.getInstance().getEditSessionFactory()
-                    .getEditSession(editSession.getWorld(), -1, blockBag, actor)) {
+            try (EditSession newEditSession = WorldEdit.getInstance().newEditSessionBuilder().blockBag(blockBag).actor(actor).world(editSession.getWorld()).build()) {
                 editSession.undo(newEditSession);
             }
 

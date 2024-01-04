@@ -6,7 +6,7 @@ import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.api.placeholder.IPlaceholderMap;
 import t.me.p1azmer.engine.api.placeholder.PlaceholderMap;
 import t.me.p1azmer.plugin.dungeons.api.settings.AbstractSettings;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonEffect;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Effect;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 
 import java.util.ArrayList;
@@ -14,11 +14,11 @@ import java.util.List;
 
 public class EffectSettings extends AbstractSettings implements IPlaceholderMap {
     private boolean enabled;
-    private List<DungeonEffect> effects;
+    private List<Effect> effects;
 
     private final PlaceholderMap placeholderMap;
 
-    public EffectSettings(@NotNull Dungeon dungeon, boolean enabled, @NotNull List<DungeonEffect> effects) {
+    public EffectSettings(@NotNull Dungeon dungeon, boolean enabled, @NotNull List<Effect> effects) {
         super(dungeon);
         this.enabled = enabled;
         this.effects = effects;
@@ -27,21 +27,21 @@ public class EffectSettings extends AbstractSettings implements IPlaceholderMap 
 
     public static EffectSettings read(@NotNull Dungeon dungeon, @NotNull JYML cfg, @NotNull String path) {
         boolean enabled = cfg.getBoolean(path + ".Enabled");
-        List<DungeonEffect> effects = new ArrayList<>();
+        List<Effect> effects = new ArrayList<>();
         for (String effectName : cfg.getSection(path + ".List")) {
             PotionEffectType potionEffectType = PotionEffectType.getByName(effectName);
             if (potionEffectType == null) continue;
 
             int duration = cfg.getInt(path + ".List." + effectName + ".Duration", 25);
             int amplifier = cfg.getInt(path + ".List." + effectName + ".Amplifier", 1);
-            effects.add(new DungeonEffect(potionEffectType, duration, amplifier));
+            effects.add(new Effect(potionEffectType, duration, amplifier));
         }
         return new EffectSettings(dungeon, enabled, effects);
     }
 
     public void write(@NotNull JYML cfg, @NotNull String path) {
         cfg.set(path + ".Enabled", this.isEnabled());
-        for (DungeonEffect effect : this.getEffects()) {
+        for (Effect effect : this.getEffects()) {
             cfg.set(path + ".List." + effect.getPotionEffectType().getName() + ".Duration", effect.getDuration());
             cfg.set(path + ".List." + effect.getPotionEffectType().getName() + ".Amplifier", effect.getAmplifier());
         }
@@ -52,7 +52,7 @@ public class EffectSettings extends AbstractSettings implements IPlaceholderMap 
     }
 
     @NotNull
-    public List<DungeonEffect> getEffects() {
+    public List<Effect> getEffects() {
         return effects;
     }
 
@@ -66,7 +66,7 @@ public class EffectSettings extends AbstractSettings implements IPlaceholderMap 
         this.enabled = enabled;
     }
 
-    public void setEffects(@NotNull List<DungeonEffect> effects) {
+    public void setEffects(@NotNull List<Effect> effects) {
         this.effects = effects;
     }
 }

@@ -13,7 +13,7 @@ import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 
 import java.util.List;
 
-public class DungeonRegion extends AbstractSettings implements IPlaceholderMap {
+public class Region extends AbstractSettings implements IPlaceholderMap {
 
     private final PlaceholderMap placeholderMap;
 
@@ -25,11 +25,11 @@ public class DungeonRegion extends AbstractSettings implements IPlaceholderMap {
     // cache
     private boolean created = false;
 
-    public DungeonRegion(@NotNull Dungeon dungeon,
-                         boolean enabled,
-                         @NotNull String name,
-                         int radius,
-                         @NotNull List<String> flags) {
+    public Region(@NotNull Dungeon dungeon,
+                  boolean enabled,
+                  @NotNull String name,
+                  int radius,
+                  @NotNull List<String> flags) {
         super(dungeon);
         this.enabled = enabled;
         this.name = name;
@@ -45,12 +45,12 @@ public class DungeonRegion extends AbstractSettings implements IPlaceholderMap {
     }
 
     @NotNull
-    public static DungeonRegion read(@NotNull Dungeon dungeon, @NotNull JYML cfg, @NotNull String path) {
+    public static Region read(@NotNull Dungeon dungeon, @NotNull JYML cfg, @NotNull String path) {
         String name = cfg.getString(path + ".Name", "plazmer");
         boolean enabled = cfg.getBoolean(path + ".Enabled", true);
         int radius = cfg.getInt(path + ".Radius", 15);
         List<String> flags = cfg.getStringList(path + ".Flags");
-        return new DungeonRegion(dungeon, enabled, name, radius, flags);
+        return new Region(dungeon, enabled, name, radius, flags);
     }
 
     public void write(@NotNull JYML cfg, @NotNull String path) {

@@ -1,9 +1,8 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.editor.settings;
 
-import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.editor.EditorManager;
@@ -22,7 +21,6 @@ public class MainSettingsEditor extends EditorMenu<DungeonPlugin, MainSettings> 
     public MainSettingsEditor(@NotNull MainSettings settings) {
         super(settings.dungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 9);
         Dungeon dungeon = settings.dungeon();
-        ItemStack clockHead1 = ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmNiOGYwNjg4NWQxZGFhZmQyNmNkOTViMzQ4MmNiNTI1ZDg4MWE2N2UwZDI0NzE2MWI5MDhkOTNkNTZkMTE0ZiJ9fX0=");
         ItemStack mobHead = ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTM5NDlhMTZjYmFlNTRmNTRhMGFmMTA1ZjRjZGExNzEyZWI1YzM5YTc3Y2NhOWE5ZWQ1NTI4ZTAzYjczYWMwIn19fQ==");
         String MINIMAL_ONLINE_HEAD_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzZjYmFlNzI0NmNjMmM2ZTg4ODU4NzE5OGM3OTU5OTc5NjY2YjRmNWE0MDg4ZjI0ZTI2ZTA3NWYxNDBhZTZjMyJ9fX0=";
         ItemStack minimalOnlineHead = ItemUtil.createCustomHead(MINIMAL_ONLINE_HEAD_TEXTURE);
@@ -31,30 +29,40 @@ public class MainSettingsEditor extends EditorMenu<DungeonPlugin, MainSettings> 
             this.plugin.runTask(task -> dungeon.getEditor().open(viewer.getPlayer(), 1));
         });
 
-        this.addItem(settings.isEnabled() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
-                        ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0="),
-                EditorLocales.DUNGEON_SETTINGS_ENABLE, 2).setClick((viewer, event) -> {
+        this.addItem(new ItemStack(Material.PLAYER_HEAD), EditorLocales.DUNGEON_SETTINGS_ENABLE, 0).setClick((viewer, event) -> {
             settings.setEnabled(!settings.isEnabled());
             this.save(viewer);
+        }).getOptions().setDisplayModifier((viewer, item) -> {
+            ItemStack replacer = settings.isEnabled() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmZlYzNkMjVhZTBkMTQ3YzM0MmM0NTM3MGUwZTQzMzAwYTRlNDhhNWI0M2Y5YmI4NThiYWJmZjc1NjE0NGRhYyJ9fX0=") :
+                    ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTQ4ZDdkMWUwM2UxYWYxNDViMDEyNWFiODQxMjg1NjcyYjQyMTI2NWRhMmFiOTE1MDE1ZjkwNTg0MzhiYTJkOCJ9fX0=");
+            item.setItemMeta(replacer.getItemMeta());
+            ItemReplacer.create(item).readLocale(EditorLocales.DUNGEON_SETTINGS_ENABLE).writeMeta();
         });
-        this.addItem(minimalOnlineHead, EditorLocales.DUNGEON_SETTINGS_MINIMAL_ONLINE, 3).setClick((viewer, event) -> {
+        this.addItem(new ItemStack(Material.PLAYER_HEAD), EditorLocales.DUNGEON_SETTINGS_CLICK_TIMER, 2).setClick((viewer, event) -> {
+            settings.setClickTimer(!settings.isClickTimer());
+            this.save(viewer);
+        }).getOptions().setDisplayModifier((viewer, item) -> {
+            ItemStack replacer = settings.isClickTimer() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
+                    ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0=");
+            item.setItemMeta(replacer.getItemMeta());
+            ItemReplacer.create(item).readLocale(EditorLocales.DUNGEON_SETTINGS_CLICK_TIMER).writeMeta();
+        });
+        this.addItem(new ItemStack(Material.PLAYER_HEAD), EditorLocales.DUNGEON_SETTINGS_LET_PLAYER_WHEN_CLOSE, 3).setClick((viewer, event) -> {
+            settings.setLetPlayersWhenClose(!settings.isLetPlayersWhenClose());
+            this.save(viewer);
+        }).getOptions().setDisplayModifier((viewer, item) -> {
+            ItemStack replacer = settings.isLetPlayersWhenClose() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
+                    ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0=");
+            item.setItemMeta(replacer.getItemMeta());
+            ItemReplacer.create(item).readLocale(EditorLocales.DUNGEON_SETTINGS_LET_PLAYER_WHEN_CLOSE).writeMeta();
+        });
+
+        this.addItem(minimalOnlineHead, EditorLocales.DUNGEON_SETTINGS_MINIMAL_ONLINE, 5).setClick((viewer, event) -> {
             this.handleInput(viewer, Lang.EDITOR_DUNGEON_WRITE_VALUE, wrapper -> {
                 settings.setMinimalOnline(wrapper.asAnyInt(0));
                 dungeon.save();
                 return true;
             });
-        });
-        this.addItem(settings.isClickTimer() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
-                        ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0="),
-                EditorLocales.DUNGEON_SETTINGS_CLICK_TIMER, 4).setClick((viewer, event) -> {
-            settings.setClickTimer(!settings.isClickTimer());
-            this.save(viewer);
-        });
-        this.addItem(settings.isLetPlayersWhenClose() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
-                        ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0="),
-                EditorLocales.DUNGEON_SETTINGS_LET_PLAYER_WHEN_CLOSE, 5).setClick((viewer, event) -> {
-            settings.setLetPlayersWhenClose(!settings.isLetPlayersWhenClose());
-            this.save(viewer);
         });
         this.addItem(mobHead, EditorLocales.DUNGEON_SETTINGS_MOBS, 6).setClick((viewer, event) -> {
             if (event.isShiftClick()) {

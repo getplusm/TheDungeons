@@ -6,6 +6,7 @@ import t.me.p1azmer.engine.NexPlugin;
 import t.me.p1azmer.engine.api.command.GeneralCommand;
 import t.me.p1azmer.engine.command.list.ReloadSubCommand;
 import t.me.p1azmer.engine.utils.EngineUtils;
+import t.me.p1azmer.plugin.dungeons.announce.AnnounceManager;
 import t.me.p1azmer.plugin.dungeons.api.hologram.HologramHandler;
 import t.me.p1azmer.plugin.dungeons.api.party.PartyHandler;
 import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
@@ -36,6 +37,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     private DungeonManager dungeonManager;
     private KeyManager keyManager;
     private MobManager mobManager;
+    private AnnounceManager announceManager;
 
     private EditorMainMenu editor;
     private SessionConsole sessionConsole;
@@ -52,26 +54,20 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
 
     @Override
     public void enable() {
-        boolean hd = EngineUtils.hasPlugin("HolographicDisplays");
-        boolean dh = EngineUtils.hasPlugin("DecentHolograms");
-        if (!dh && !hd) {
-            this.error("*** Plugins for Holograms is not installed or not enabled. ***");
-            this.error("*** Use HolographicDisplays or DecentHolograms! ***");
-            this.error("*** This plugin will be disabled. ***");
-            this.setEnabled(false);
-            this.disable();
-            return;
-        }
         this.keyManager = new KeyManager(this);
         this.keyManager.setup();
 
         this.mobManager = new MobManager(this);
         this.mobManager.setup();
 
+        this.announceManager = new AnnounceManager(this);
+        this.announceManager.setup();
+
         this.dungeonManager = new DungeonManager(this);
         this.dungeonManager.setup();
 
-        this.sessionConsole = new SessionConsole(this);
+        if (this.schematicHandler != null)
+            this.sessionConsole = new SessionConsole(this);
     }
 
     @Override
@@ -91,6 +87,10 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
         if (this.keyManager != null) {
             this.keyManager.shutdown();
             this.keyManager = null;
+        }
+        if (this.announceManager != null){
+            this.announceManager.shutdown();
+            this.announceManager = null;
         }
         if (this.hologramHandler != null) {
             this.hologramHandler.shutdown();
@@ -208,6 +208,11 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     @NotNull
     public MobManager getMobManager() {
         return mobManager;
+    }
+
+    @NotNull
+    public AnnounceManager getAnnounceManager() {
+        return announceManager;
     }
 
     @NotNull

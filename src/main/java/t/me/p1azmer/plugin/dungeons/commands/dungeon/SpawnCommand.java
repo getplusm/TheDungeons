@@ -12,13 +12,10 @@ import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Perms;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static t.me.p1azmer.plugin.dungeons.commands.CommandFlags.RANDOM;
 
 public class SpawnCommand extends AbstractCommand<DungeonPlugin> {
 
@@ -27,7 +24,6 @@ public class SpawnCommand extends AbstractCommand<DungeonPlugin> {
         this.setDescription(plugin.getMessage(Lang.COMMAND_DROP_DESC));
         this.setUsage(plugin.getMessage(Lang.COMMAND_DROP_USAGE));
         this.setPlayerOnly(false);
-        this.addFlag(RANDOM);
     }
 
     @Override

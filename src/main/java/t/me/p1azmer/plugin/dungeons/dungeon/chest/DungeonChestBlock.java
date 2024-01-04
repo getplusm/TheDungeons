@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.manager.ICleanable;
 import t.me.p1azmer.engine.api.placeholder.IPlaceholderMap;
 import t.me.p1azmer.engine.api.placeholder.PlaceholderMap;
+import t.me.p1azmer.engine.utils.TimeUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Keys;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
@@ -46,7 +47,7 @@ public class DungeonChestBlock implements ICleanable, IPlaceholderMap {
         this.openedCache = new HashSet<>();
 
         this.placeholderMap = new PlaceholderMap()
-                .add(Placeholders.DUNGEON_CHEST_NEXT_STATE_IN, () -> String.valueOf(this.getNextStateTime()))
+                .add(Placeholders.DUNGEON_CHEST_NEXT_STATE_IN, () -> TimeUtil.formatTimeLeft(System.currentTimeMillis() + this.getNextStateTime() * 1000L))
         ;
     }
 
@@ -128,7 +129,7 @@ public class DungeonChestBlock implements ICleanable, IPlaceholderMap {
                 this.setChestState(OPENED);
             else
                 this.openedCache.add(player);
-        } else
+        } else if (!this.getState().isOpen())
             this.setChestState(OPENED);
 
         if (block.hasMetadata(Keys.DUNGEON_CHEST_BLOCK.getKey())) {

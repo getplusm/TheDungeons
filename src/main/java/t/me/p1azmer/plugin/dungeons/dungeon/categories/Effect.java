@@ -7,7 +7,7 @@ import t.me.p1azmer.engine.api.placeholder.IPlaceholderMap;
 import t.me.p1azmer.engine.api.placeholder.PlaceholderMap;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
 
-public class DungeonEffect implements IPlaceholderMap {
+public class Effect implements IPlaceholderMap {
 
     private PotionEffectType potionEffectType;
     private int duration;
@@ -15,7 +15,7 @@ public class DungeonEffect implements IPlaceholderMap {
 
     private final PlaceholderMap placeholderMap;
 
-    public DungeonEffect(@NotNull PotionEffectType potionEffectType, int duration, int amplifier) {
+    public Effect(@NotNull PotionEffectType potionEffectType, int duration, int amplifier) {
         this.potionEffectType = potionEffectType;
         this.duration = duration;
         this.amplifier = amplifier;

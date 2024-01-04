@@ -18,14 +18,11 @@ public class DungeonTickTask extends AbstractTask<DungeonPlugin> {
     @Override
     public void action() {
         for (Dungeon dungeon : this.manager.getDungeons()) {
-            if (plugin.getServer().getOnlinePlayers().size() < dungeon.getSettings().getMinimalOnline() || !dungeon.getSettings().isEnabled()) {
+            if ((plugin.getServer().getOnlinePlayers().size() < dungeon.getSettings().getMinimalOnline() || !dungeon.getSettings().isEnabled()) && !dungeon.getStage().isOpened()) {
                 dungeon.cancel(false);
                 continue;
             }
             dungeon.tick();
-
-            if (!dungeon.getStage().isFreeze())
-                dungeon.getModuleManager().getModules().forEach(AbstractModule::update);
         }
     }
 }

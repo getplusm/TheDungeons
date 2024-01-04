@@ -15,7 +15,7 @@ import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.generator.RangeInfo;
 import t.me.p1azmer.plugin.dungeons.generator.config.GeneratorConfig;
-import t.me.p1azmer.plugin.dungeons.utils.DungeonCuboid;
+import t.me.p1azmer.plugin.dungeons.utils.Cuboid;
 
 import java.util.function.Predicate;
 
@@ -43,7 +43,9 @@ public class SpawnModule extends AbstractModule {
     }
 
     @Override
-    public boolean onActivate() {
+    public boolean onActivate(boolean force) {
+        if (isSpawned()) return force;
+
         RangeInfo rangeInfo = GeneratorConfig.LOCATION_SEARCH_RANGES.get().get(dungeon().getWorld().getName());
         if (rangeInfo == null) {
             this.error("Unable to start dungeon spawn '" + dungeon().getId() + "' because the location generator for this '" + dungeon().getWorld().getName() + "' world is not set!");
@@ -92,29 +94,31 @@ public class SpawnModule extends AbstractModule {
         Block block = result.getBlock();
         Biome biome = block.getBiome();
 
-        RegionHandler handler = plugin().getRegionHandler();
-        if (handler != null){
-            if (!handler.isValidLocation(result)){
+        if (!force) {
+            RegionHandler handler = plugin().getRegionHandler();
+            if (handler != null){
+                if (!handler.isValidLocation(result)){
+                    return false;
+                }
+            }
+            if (rangeInfo.isBiomesAsBlack()) {
+                if (rangeInfo.getBiomes().contains(biome)) {
+                    this.debug("Biomes contains biome " + biome.name());
+                    return false;
+                }
+            } else if (!rangeInfo.getBiomes().contains(biome)) {
+                this.debug("Biomes not contains biome " + biome.name());
                 return false;
             }
-        }
-        if (rangeInfo.isBiomesAsBlack()) {
-            if (rangeInfo.getBiomes().contains(biome)) {
-                this.debug("Biomes contains biome " + biome.name());
+            if (rangeInfo.isMaterialsAsBlack()) {
+                if (rangeInfo.getMaterials().contains(block.getType())) {
+                    this.debug("Materials contains block " + block.getType().name());
+                    return false;
+                }
+            } else if (!rangeInfo.getMaterials().contains(block.getType())) {
+                this.debug("Materials not contains block " + block.getType().name());
                 return false;
             }
-        } else if (!rangeInfo.getBiomes().contains(biome)) {
-            this.debug("Biomes not contains biome " + biome.name());
-            return false;
-        }
-        if (rangeInfo.isMaterialsAsBlack()) {
-            if (rangeInfo.getMaterials().contains(block.getType())) {
-                this.debug("Materials contains block " + block.getType().name());
-                return false;
-            }
-        } else if (!rangeInfo.getMaterials().contains(block.getType())) {
-            this.debug("Materials not contains block " + block.getType().name());
-            return false;
         }
         return this.spawn(result);
     }
@@ -132,6 +136,7 @@ public class SpawnModule extends AbstractModule {
 
         this.spawned = false;
         this.dungeon().setLocation(null);
+        this.dungeon().setCuboid(null);
         return true;
     }
 
@@ -157,8 +162,8 @@ public class SpawnModule extends AbstractModule {
             lowerLocation.setY(upperLocation.getY());
             upperLocation.setY(temp);
         }
-        DungeonCuboid cuboid = new DungeonCuboid(lowerLocation, upperLocation);
-        this.dungeon().setDungeonCuboid(cuboid);
+        Cuboid cuboid = new Cuboid(lowerLocation, upperLocation);
+        this.dungeon().setCuboid(cuboid);
         this.spawned = true;
         return true;
     }

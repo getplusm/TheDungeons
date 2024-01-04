@@ -6,10 +6,9 @@ import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.editor.EditorManager;
 import t.me.p1azmer.engine.utils.ItemReplacer;
-import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonRegion;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Region;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
@@ -17,9 +16,9 @@ import t.me.p1azmer.plugin.dungeons.lang.Lang;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DungeonRegionMainEditor extends EditorMenu<DungeonPlugin, DungeonRegion> {
+public class DungeonRegionMainEditor extends EditorMenu<DungeonPlugin, Region> {
 
-    public DungeonRegionMainEditor(@NotNull DungeonRegion region) {
+    public DungeonRegionMainEditor(@NotNull Region region) {
         super(region.getDungeon().plugin(), region, Config.EDITOR_TITLE_DUNGEON.get(), 27);
         Dungeon dungeon = region.getDungeon();
 

@@ -4,14 +4,13 @@ import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.lang.LangMessage;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
-import t.me.p1azmer.plugin.dungeons.api.Announce;
+import t.me.p1azmer.plugin.dungeons.announce.impl.Announce;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class AnnounceModule extends AbstractModule {
 
@@ -30,7 +29,7 @@ public class AnnounceModule extends AbstractModule {
     }
 
     @Override
-    public boolean onActivate() {
+    public boolean onActivate(boolean force) {
         return true;
     }
 
@@ -39,21 +38,24 @@ public class AnnounceModule extends AbstractModule {
         Location location = this.dungeon().getLocation();
         if (location == null || location.getWorld() == null) return;
 
-        Announce announce = this.dungeon().getAnnounceSettings().getAnnounce(this.dungeon().getStage());
-        List<LangMessage> messages = new ArrayList<>(announce.getMessage(this.dungeon().getSelfTick().get()));
-        if (messages.isEmpty()) {
-            return;
-        }
-        messages = messages.stream().map(langMessage -> langMessage
-                .replace(this.dungeon().replacePlaceholders())
-                .replace(this.replacePlaceholders())
-                .replace(Placeholders.forLocation(location))
-        ).toList();
+        List<Announce> announces = this.dungeon().getAnnounceSettings().getAnnounces(this.dungeon().getStage(), this.dungeon().getSelfTick().get());
 
-        if (announce.isGlobal()) {
-            messages.forEach(LangMessage::broadcast);
-        } else {
-            messages.forEach(message -> location.getWorld().getPlayers().forEach(message::send));
+        for (Announce announce : announces) {
+            List<LangMessage> messages = new ArrayList<>(announce.getMessage());
+            if (messages.isEmpty()) {
+                return;
+            }
+            messages = messages.stream().map(langMessage -> langMessage
+                    .replace(this.dungeon().replacePlaceholders())
+                    .replace(this.replacePlaceholders())
+                    .replace(Placeholders.forLocation(location))
+            ).toList();
+
+            if (announce.isGlobal()) {
+                messages.forEach(LangMessage::broadcast);
+            } else {
+                messages.forEach(message -> location.getWorld().getPlayers().forEach(message::send));
+            }
         }
         super.update();
     }

@@ -31,7 +31,7 @@ public class HologramModule extends AbstractModule {
     }
 
     @Override
-    public boolean onActivate() {
+    public boolean onActivate(boolean force) {
         Location location = this.dungeon().getLocation();
         if (location == null || handler == null){
             return false;

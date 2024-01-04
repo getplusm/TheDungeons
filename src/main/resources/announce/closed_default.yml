@@ -1,0 +1,8 @@
+Messages:
+  - '<! prefix:"false" !>'
+  - '#c71585Attention ❗'
+  - '#fcf2f8At the coordinates: #ffb6ad⚐ %location_world%, %location_x%, %location_y%, %location_z%'
+  - '#fcf2f8A dungeon has appeared #ffb6ad%dungeon_name%'
+  - '#fcf2f8In order to open it you need'
+  - '#ffe4e0▪ #c71585%dungeon_key_names%'
+Global: true

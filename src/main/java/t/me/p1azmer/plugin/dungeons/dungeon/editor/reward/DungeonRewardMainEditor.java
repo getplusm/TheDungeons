@@ -9,20 +9,22 @@ import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.editor.EditorManager;
+import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.engine.utils.PlayerUtil;
+import t.me.p1azmer.engine.utils.values.UniInt;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Reward;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonReward;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
-public class DungeonRewardMainEditor extends EditorMenu<DungeonPlugin, DungeonReward> {
+public class DungeonRewardMainEditor extends EditorMenu<DungeonPlugin, Reward> {
 
-    public DungeonRewardMainEditor(@NotNull DungeonReward reward) {
+    public DungeonRewardMainEditor(@NotNull Reward reward) {
         super(reward.plugin(), reward, Config.EDITOR_TITLE_DUNGEON.get(), 45);
-        Dungeon dungeon = reward.getDungeon();
+        Dungeon dungeon = reward.dungeon();
 
         this.addReturn(40).setClick((viewer, event) -> {
             this.plugin.runTask(task -> dungeon.getEditor().getEditorRewards().open(viewer.getPlayer(), 1));
@@ -50,33 +52,7 @@ public class DungeonRewardMainEditor extends EditorMenu<DungeonPlugin, DungeonRe
             });
         }));
 
-        this.addItem(Material.NAME_TAG, EditorLocales.REWARD_NAME, 19).setClick((viewer, event) -> {
-            if (event.isRightClick()) {
-                reward.setName(ItemUtil.getItemName(reward.getItem()));
-                this.save(viewer);
-                return;
-            }
-            if (event.isShiftClick() && event.isLeftClick()) {
-                ItemStack preview = reward.getItem();
-                ItemUtil.mapMeta(preview, meta -> meta.setDisplayName(reward.getName()));
-                reward.setItem(preview);
-                this.save(viewer);
-                return;
-            }
-
-            this.handleInput(viewer, Lang.EDITOR_ENTER_DISPLAY_NAME, wrapper -> {
-                reward.setName(wrapper.getText());
-                dungeon.save();
-                return true;
-            });
-        });
-
-//        this.addItem(Material.ENDER_EYE, EditorLocales.REWARD_BROADCAST, 20).setClick((viewer, event) -> {
-//            reward.setBroadcast(!reward.isBroadcast());
-//            this.save(viewer);
-//        });
-
-        this.addItem(Material.COMPARATOR, EditorLocales.REWARD_CHANCE, 21).setClick((viewer, event) -> {
+        this.addItem(Material.COMPARATOR, EditorLocales.REWARD_CHANCE, 20).setClick((viewer, event) -> {
             this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_CHANCE, wrapper -> {
                 double chance = wrapper.asDouble();
                 if (chance > 100) chance = 100;
@@ -88,41 +64,35 @@ public class DungeonRewardMainEditor extends EditorMenu<DungeonPlugin, DungeonRe
         });
 
 
-        this.addItem(Material.REPEATER, EditorLocales.REWARD_LIMITS, 22).setClick((viewer, event) -> {
+        this.addItem(Material.REPEATER, EditorLocales.REWARD_AMOUNT, 22).setClick((viewer, event) -> {
             if (event.isLeftClick()) {
-                this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_MAX_AMOUNT, wrapper -> {
-                    int amount = wrapper.asInt(3);
-                    if (reward.getMinAmount() >= amount) {
-                        EditorManager.error(viewer.getPlayer(), plugin().getMessage(Lang.EDITOR_REWARD_ERROR_LIMIT_MAX).getLocalized());
-                        return false;
-                    }
-                    reward.setMaxAmount(amount);
-                    dungeon.save();
-                    return true;
-                });
-            } else {
-                this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_MIN_AMOUNT, wrapper -> {
-                    int amount = wrapper.asInt(3);
-                    if (amount >= reward.getMaxAmount()) {
-                        EditorManager.error(viewer.getPlayer(), plugin().getMessage(Lang.EDITOR_REWARD_ERROR_LIMIT_MIN).getLocalized());
-                        return false;
-                    }
-                    reward.setMinAmount(amount);
+                this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_UNI_AMOUNT, wrapper -> {
+                    UniInt amount = wrapper.asUniInt();
+                    reward.setAmount(amount);
                     dungeon.save();
                     return true;
                 });
             }
+        });
+        this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGZlMGU0ZjA2MDlhMmM1YWQ2MTdhOGM0MWQ3MTZlNjM3ZDNkMDU3MmEyYzAwN2ZlN2QzN2VkNTA2OTZiM2RkYiJ9fX0="),
+                EditorLocales.REWARD_COMMANDS, 24).setClick((viewer, event) -> {
+            if (event.isRightClick()) {
+                reward.getCommands().clear();
+                this.save(viewer);
+                return;
+            }
+            this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_COMMAND, wrapper -> {
+                reward.getCommands().add(wrapper.getText());
+                dungeon.save();
+                return true;
+            });
         });
 
-        this.getItems().forEach(menuItem -> {
-            if (menuItem.getOptions().getDisplayModifier() == null) {
-                menuItem.getOptions().setDisplayModifier(((viewer, item) -> ItemUtil.replace(item, reward.replacePlaceholders())));
-            }
-        });
+        this.getItems().forEach(menuItem -> menuItem.getOptions().addDisplayModifier(((viewer, item) -> ItemReplacer.replace(item, reward.replacePlaceholders()))));
     }
 
     private void save(@NotNull MenuViewer viewer) {
-        this.object.getDungeon().save();
+        this.object.dungeon().save();
         this.openNextTick(viewer, viewer.getPage());
     }
 

@@ -1,29 +1,24 @@
 package t.me.p1azmer.plugin.dungeons.integration.region;
 
-import com.griefdefender.api.claim.Claim;
-import com.griefdefender.api.claim.ClaimManager;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonRegion;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Region;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.protectionblocks.ProtectionAPI;
 import t.me.p1azmer.plugin.protectionblocks.region.RegionManager;
-import t.me.p1azmer.plugin.protectionblocks.region.impl.Region;
-import t.me.p1azmer.plugin.protectionblocks.utils.Cuboid;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
 public class RegionHandlerPB implements RegionHandler {
 
     private RegionManager regionManager;
     private DungeonPlugin plugin;
-    private Map<Dungeon, Region> claimMap;
+    private Map<Dungeon, t.me.p1azmer.plugin.protectionblocks.region.impl.Region> claimMap;
 
     public RegionHandlerPB(@NotNull DungeonPlugin plugin) {
         this.plugin = plugin;
@@ -56,48 +51,48 @@ public class RegionHandlerPB implements RegionHandler {
 
     @Override
     public void create(@NotNull Dungeon dungeon) {
-        DungeonRegion dungeonRegion = dungeon.getDungeonRegion();
-        if (!dungeonRegion.isEnabled()) return;
-
-        double regionRadius = dungeonRegion.getRadius();
-        Location location = dungeon.getLocation();
-        if (location == null) return;
-        World world = dungeon.getWorld();
-
-        String regionId = "Dungeons_" + UUID.randomUUID();
-        if (!this.regionManager.create(regionId)) return;
-        Region region = this.regionManager.getRegions().stream().filter(f -> f.getId().equals(regionId)).findFirst().orElse(null);
-        if (region == null) return;
-
-        Location first = location.clone().add(-regionRadius, regionRadius, regionRadius);
-        Location second = location.clone().add(regionRadius, -regionRadius, -regionRadius);
-        region.setCuboid(new Cuboid(first, second));
-        // TODO set the region block (rewrite in ProtectionBlocks)
-        this.claimMap.put(dungeon, region);
+//        DungeonRegion dungeonRegion = dungeon.getDungeonRegion();
+//        if (!dungeonRegion.isEnabled()) return;
+//
+//        double regionRadius = dungeonRegion.getRadius();
+//        Location location = dungeon.getLocation();
+//        if (location == null) return;
+//        World world = dungeon.getWorld();
+//
+//        String regionId = "Dungeons_" + UUID.randomUUID();
+//        if (!this.regionManager.create(regionId)) return;
+//        Region region = this.regionManager.getRegions().stream().filter(f -> f.getId().equals(regionId)).findFirst().orElse(null);
+//        if (region == null) return;
+//
+//        Location first = location.clone().add(-regionRadius, regionRadius, regionRadius);
+//        Location second = location.clone().add(regionRadius, -regionRadius, -regionRadius);
+//        region.setCuboid(new Cuboid(first, second));
+//        // TODO set the region block (rewrite in ProtectionBlocks)
+//        this.claimMap.put(dungeon, region);
     }
 
     @Override
     public void delete(@NotNull Dungeon dungeon) {
-        DungeonRegion region = dungeon.getDungeonRegion();
-        if (!region.isCreated()) return;
-
-        Region claim = this.claimMap.get(dungeon);
-        if (claim == null) return;
-
-        this.regionManager.deleteRegion(claim, false);
-        this.claimMap.remove(dungeon, claim);
+//        DungeonRegion region = dungeon.getDungeonRegion();
+//        if (!region.isCreated()) return;
+//
+//        Region claim = this.claimMap.get(dungeon);
+//        if (claim == null) return;
+//
+//        this.regionManager.deleteRegion(claim, false);
+//        this.claimMap.remove(dungeon, claim);
     }
 
     @Override
     public boolean isValidLocation(@NotNull Location location) {
         World world = location.getWorld();
         if (world == null) return false;
-        Region region = this.regionManager.getRegionByLocation(location);
+        t.me.p1azmer.plugin.protectionblocks.region.impl.Region region = this.regionManager.getRegionByLocation(location);
         return region == null;
     }
 
     @Override
-    public boolean isDungeonRegion(@NotNull Location location, @NotNull DungeonRegion dungeonRegion) {
+    public boolean isDungeonRegion(@NotNull Location location, @NotNull Region region) {
         return this.regionManager.getRegionByLocation(location) != null;
     }
 }

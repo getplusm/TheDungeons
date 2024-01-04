@@ -19,7 +19,7 @@ import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonEffect;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Effect;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class DungeonEffectListEditor extends EditorMenu<DungeonPlugin, Dungeon> implements AutoPaged<DungeonEffect> {
+public class DungeonEffectListEditor extends EditorMenu<DungeonPlugin, Dungeon> implements AutoPaged<Effect> {
 
     public DungeonEffectListEditor(@NotNull Dungeon dungeon) {
         super(dungeon.plugin(), dungeon, Config.EDITOR_TITLE_DUNGEON.get(), 45);
@@ -51,18 +51,18 @@ public class DungeonEffectListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
                     EditorManager.suggestValues(viewer.getPlayer(), Arrays.stream(PotionEffectTypeWrapper.values()).map(PotionEffectType::getName).collect(Collectors.toList()), false);
                     return false;
                 }
-                this.object.getEffectSettings().getEffects().add(new DungeonEffect(potionEffectType, 25, 1));
+                this.object.getEffectSettings().getEffects().add(new Effect(potionEffectType, 25, 1));
                 return true;
             });
         });
 
         this.addItem(Material.HOPPER, EditorLocales.EFFECT_SORT, 38).setClick((viewer, event) -> {
-            Comparator<DungeonEffect> comparator;
+            Comparator<Effect> comparator;
             t.me.p1azmer.engine.api.menu.click.ClickType type = t.me.p1azmer.engine.api.menu.click.ClickType.from(event);
             if (type == t.me.p1azmer.engine.api.menu.click.ClickType.NUMBER_1) {
-                comparator = Comparator.comparingDouble(DungeonEffect::getDuration).reversed();
+                comparator = Comparator.comparingDouble(Effect::getDuration).reversed();
             } else if (type == t.me.p1azmer.engine.api.menu.click.ClickType.NUMBER_2) {
-                comparator = Comparator.comparingDouble(DungeonEffect::getDuration).reversed();
+                comparator = Comparator.comparingDouble(Effect::getDuration).reversed();
             } else if (type == t.me.p1azmer.engine.api.menu.click.ClickType.NUMBER_3) {
                 comparator = Comparator.comparing(r -> r.getPotionEffectType().getName());
             } else return;
@@ -95,13 +95,13 @@ public class DungeonEffectListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
 
     @Override
     @NotNull
-    public List<DungeonEffect> getObjects(@NotNull Player player) {
+    public List<Effect> getObjects(@NotNull Player player) {
         return new ArrayList<>(this.object.getEffectSettings().getEffects());
     }
 
     @Override
     @NotNull
-    public ItemStack getObjectStack(@NotNull Player player, @NotNull DungeonEffect effect) {
+    public ItemStack getObjectStack(@NotNull Player player, @NotNull Effect effect) {
         ItemStack item = new ItemStack(Material.POTION);
         ItemUtil.mapMeta(item, meta -> {
             if (meta instanceof PotionMeta potionMeta)
@@ -117,7 +117,7 @@ public class DungeonEffectListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
 
     @Override
     @NotNull
-    public ItemClick getObjectClick(@NotNull DungeonEffect effect) {
+    public ItemClick getObjectClick(@NotNull Effect effect) {
         return (viewer, event) -> {
             if (event.getClick().isShiftClick() && event.getClick().isRightClick()) {
                 this.object.getEffectSettings().getEffects().remove(effect);

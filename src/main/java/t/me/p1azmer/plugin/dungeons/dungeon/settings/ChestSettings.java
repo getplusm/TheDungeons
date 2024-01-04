@@ -6,7 +6,6 @@ import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.api.placeholder.IPlaceholderMap;
 import t.me.p1azmer.engine.api.placeholder.PlaceholderMap;
 import t.me.p1azmer.engine.lang.LangManager;
-import t.me.p1azmer.engine.utils.NumberUtil;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.api.settings.AbstractSettings;
@@ -31,6 +30,7 @@ public class ChestSettings extends AbstractSettings implements IPlaceholderMap {
                          @NotNull ChestModule.OpenType openType, @NotNull Material material) {
         super(dungeon);
         this.blockLimit = blockLimit;
+
         this.stateMap = stateMap;
 
         this.bigMenu = bigMenu;
@@ -71,15 +71,14 @@ public class ChestSettings extends AbstractSettings implements IPlaceholderMap {
             map.put(stage, time);
         }
         int blockLimit = cfg.getInt(path + ".Block.Limit");
-        int blockSearchRadius = cfg.getInt(path + ".Block.Search.Radius");
 
-        boolean useOneKey = cfg.getBoolean(path+ ".Menu.Use_One_Key");
-        boolean bigMenu = cfg.getBoolean(path+ ".Menu.Big");
-        boolean separateMenu = cfg.getBoolean(path+ ".Menu.Separate");
-        boolean randomSlots = cfg.getBoolean(path+ ".Menu.Random_Slots");
+        boolean useOneKey = cfg.getBoolean(path + ".Menu.Use_One_Key");
+        boolean bigMenu = cfg.getBoolean(path + ".Menu.Big");
+        boolean separateMenu = cfg.getBoolean(path + ".Menu.Separate");
+        boolean randomSlots = cfg.getBoolean(path + ".Menu.Random_Slots");
 
-        ChestModule.OpenType openType = cfg.getEnum(path+".Open_Type", ChestModule.OpenType.class, ChestModule.OpenType.CLICK);
-        Material material = cfg.getEnum(path+".Block.Material", Material.class, Material.CHEST);
+        ChestModule.OpenType openType = cfg.getEnum(path + ".Open_Type", ChestModule.OpenType.class, ChestModule.OpenType.CLICK);
+        Material material = cfg.getEnum(path + ".Block.Material", Material.class, Material.CHEST);
         return new ChestSettings(dungeon, map, blockLimit, bigMenu, separateMenu, randomSlots, useOneKey, openType, material);
     }
 

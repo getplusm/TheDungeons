@@ -14,7 +14,7 @@ import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonRegion;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Region;
 
 import java.util.Comparator;
 import java.util.Objects;
@@ -42,7 +42,7 @@ public class RegionHandlerWG implements RegionHandler {
 
     @Override
     public void create(@NotNull Dungeon dungeon) {
-        DungeonRegion region = dungeon.getDungeonRegion();
+        Region region = dungeon.getDungeonRegion();
         if (!region.isEnabled()) return;
 
         double regionRadius = region.getRadius();
@@ -62,7 +62,7 @@ public class RegionHandlerWG implements RegionHandler {
 
     @Override
     public void delete(@NotNull Dungeon dungeon) {
-        DungeonRegion region = dungeon.getDungeonRegion();
+        Region region = dungeon.getDungeonRegion();
         if (!region.isCreated()) return;
 
         World world = BukkitAdapter.adapt(dungeon.getWorld());
@@ -94,7 +94,7 @@ public class RegionHandlerWG implements RegionHandler {
     }
 
     @Override
-    public boolean isDungeonRegion(@NotNull Location location, @NotNull DungeonRegion dungeonRegion) {
+    public boolean isDungeonRegion(@NotNull Location location, @NotNull Region region) {
         org.bukkit.World world = location.getWorld();
         if (world == null) return false;
 
@@ -106,6 +106,6 @@ public class RegionHandlerWG implements RegionHandler {
         ProtectedRegion protectedRegion = set.getRegions().stream().max(Comparator.comparingInt(ProtectedRegion::getPriority)).orElse(null);
         if (protectedRegion == null) return false;
 
-       return protectedRegion.getId().equals(dungeonRegion.getNameRaw().toLowerCase());
+       return protectedRegion.getId().equals(region.getNameRaw().toLowerCase());
     }
 }

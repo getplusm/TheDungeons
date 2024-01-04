@@ -4,7 +4,7 @@ import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.manager.Loadable;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.DungeonRegion;
+import t.me.p1azmer.plugin.dungeons.dungeon.categories.Region;
 
 public interface RegionHandler extends Loadable {
 
@@ -14,5 +14,5 @@ public interface RegionHandler extends Loadable {
 
     boolean isValidLocation(@NotNull Location location);
 
-    boolean isDungeonRegion(@NotNull Location location, @NotNull DungeonRegion dungeonRegion);
+    boolean isDungeonRegion(@NotNull Location location, @NotNull Region region);
 }

@@ -24,7 +24,7 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
 
     @Override
     protected void onLoad() {
-        this.plugin.info("Loading modules for " + this.getDungeon().getName() + "..");
+        this.plugin.info("Loading modules for " + this.getDungeon().getId() + "..");
 //        this.register(ModuleId.BOSSBAR, id -> new BossBarModule(this.getDungeon(), id));
         this.register(ModuleId.SPAWN, id -> new SpawnModule(this.getDungeon(), id));
         if (plugin.getSchematicHandler() != null)
@@ -34,7 +34,8 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
             this.register(ModuleId.HOLOGRAM, id -> new HologramModule(this.getDungeon(), id));
         this.register(ModuleId.ANNOUNCE, id -> new AnnounceModule(this.getDungeon(), id));
         this.register(ModuleId.COMMAND, id -> new CommandModule(this.getDungeon(), id));
-        this.plugin.info("Loaded " + this.getModules().size() + " modules for " + this.getDungeon().getName() + " dungeon.");
+        this.register(ModuleId.MOBS, id -> new MobModule(this.getDungeon(), id));
+        this.plugin.info("Loaded " + this.getModules().size() + " modules for " + this.getDungeon().getId() + " dungeon.");
     }
 
     @Override
@@ -43,24 +44,23 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
         this.modules.clear();
     }
 
-    private <T extends AbstractModule> boolean register(@NotNull String id, @NotNull Function<String, T> supplier) {
+    private <T extends AbstractModule> void register(@NotNull String id, @NotNull Function<String, T> supplier) {
         id = id.toLowerCase();
 
         if (this.getModule(id) != null) {
             this.plugin.error("Could not register " + id + " module! Module with such id is already registered!");
-            return false;
+            return;
         }
 
         // Init module.
         T module = supplier.apply(id);
 
         if (!this.getDungeon().getModuleSettings().isEnabled(id)) {
-            return false;
+            return;
         }
 
         module.setup();
         this.modules.put(module.getId(), module);
-        return true;
     }
 
     @NotNull

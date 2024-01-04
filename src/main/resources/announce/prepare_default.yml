@@ -1,0 +1,6 @@
+Messages:
+  - '<! prefix:\"false\" !>'
+  - '#fd5e5e&lNOTE:'
+  - '#e39fffUntil the new dungeon is spawned:'
+  - '#fdba5e%dungeon_next_stage_in% sec.'
+Global: true

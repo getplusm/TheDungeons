@@ -29,7 +29,7 @@ public class SchematicSettings extends AbstractSettings implements IPlaceholderM
         this.placeholderMap = new PlaceholderMap()
                 .add(Placeholders.SCHEMATICS_LIST, () -> Colorizer.apply(Colors.LIGHT_PURPLE + String.join("\n" + Colors.LIGHT_PURPLE, this.getSchematics())))
                 .add(Placeholders.SCHEMATICS_IGNORE_AIR, () -> LangManager.getBoolean(this.isIgnoreAirBlocks()))
-                .add(Placeholders.DUNGEON_SETTINGS_UNDERGROUND, () -> LangManager.getBoolean(this.isUnderground()))
+                .add(Placeholders.SCHEMATICS_UNDERGROUND, () -> LangManager.getBoolean(this.isUnderground()))
         ;
 
     }
