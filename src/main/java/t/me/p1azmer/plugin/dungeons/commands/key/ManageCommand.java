@@ -10,8 +10,8 @@ import t.me.p1azmer.engine.api.command.CommandResult;
 import t.me.p1azmer.engine.api.lang.LangMessage;
 import t.me.p1azmer.engine.utils.CollectionsUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.commands.CommandFlags;
+import t.me.p1azmer.plugin.dungeons.dungeon.Placeholders;
 import t.me.p1azmer.plugin.dungeons.key.Key;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 

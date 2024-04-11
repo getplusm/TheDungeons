@@ -12,6 +12,11 @@ public abstract class DungeonEvent extends Event implements Cancellable {
 
 
     public DungeonEvent(@NotNull Dungeon dungeon){
+        super(false);
+        this.dungeon = dungeon;
+    }
+    public DungeonEvent(@NotNull Dungeon dungeon, boolean async){
+        super(async);
         this.dungeon = dungeon;
     }
 

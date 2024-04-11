@@ -2,10 +2,8 @@ package t.me.p1azmer.plugin.dungeons.dungeon.editor.settings;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.menu.AutoPaged;
 import t.me.p1azmer.engine.api.menu.click.ItemClick;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
@@ -17,10 +15,10 @@ import t.me.p1azmer.engine.utils.Colors;
 import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.CommandsSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.CommandsSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
+import t.me.p1azmer.plugin.dungeons.dungeon.stage.Placeholders;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
@@ -82,6 +80,7 @@ public class CommandsSettingsEditor extends EditorMenu<DungeonPlugin, CommandsSe
                 .hideFlags()
                 .replace(s -> s
                         .replace(Placeholders.EDITOR_STAGE_NAME, stage.name())
+                        .replace(Placeholders.EDITOR_STAGE_DESCRIPTION, stage.getDescription(plugin()))
                         .replace(Placeholders.EDITOR_STAGE_COMMANDS, Colors.LIGHT_PURPLE + String.join("\n", this.object.getCommands(stage)))
                 )
                 .replace(this.object.replacePlaceholders())

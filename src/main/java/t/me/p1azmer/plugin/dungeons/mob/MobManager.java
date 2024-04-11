@@ -16,10 +16,10 @@ import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.engine.utils.random.Rnd;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Keys;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.api.mob.MobFaction;
 import t.me.p1azmer.plugin.dungeons.api.mob.MobList;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
+import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 import t.me.p1azmer.plugin.dungeons.mob.config.MobConfig;
 import t.me.p1azmer.plugin.dungeons.mob.config.MobsConfig;
@@ -80,6 +80,11 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         this.getMobs().removeAll(faction);
     }
 
+    public void killMob(@NotNull LivingEntity entity){
+        entity.remove();
+        this.getMobs().removeInvalid();
+    }
+
     public boolean createMobConfig(@NotNull String id) {
         id = StringUtil.lowerCaseUnderscore(id);
         if (this.getMobConfigById(id) != null) return false;
@@ -124,8 +129,10 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         if (customMob == null) {
             return null;
         }
-        Location location = dungeon.getLocation();
-        ChestModule module = dungeon.getModuleManager().getModule(ChestModule.class).orElse(null);
+        Location location = dungeon.getLocation().orElse(null);
+        ModuleManager moduleManager = dungeon.getModuleManager();
+
+        ChestModule module = moduleManager.getModule(ChestModule.class).orElse(null);
         if (module != null) {
             if (module.getBlocks().isEmpty()) return null;
             location = Rnd.get(module.getBlocks()).getLocation();
@@ -153,6 +160,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
                     rider.applyAttributes(riderEntity);
                     rider.applyPotionEffects(riderEntity);
                     this.setMobConfig(riderEntity, rider);
+                    this.setMobDungeon(riderEntity, dungeon);
                     mobList.getEnemies().add(riderEntity);
                 }
             }
@@ -162,6 +170,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         customMob.applyAttributes(entity);
         customMob.applyPotionEffects(entity);
         this.setMobConfig(entity, customMob);
+        this.setMobDungeon(entity, dungeon);
         mobList.getEnemies().add(entity);
         return entity;
     }
@@ -183,8 +192,17 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         PDCUtil.set(entity, Keys.ENTITY_MOB_ID, customMob.getId());
     }
 
+    private void setMobDungeon(@NotNull LivingEntity entity, @NotNull Dungeon dungeon){
+        PDCUtil.set(entity, Keys.DUNGEON_KEY_ID, dungeon.getId());
+    }
+
     public static void setLevel(@NotNull LivingEntity entity, int level) {
         PDCUtil.set(entity, Keys.ENTITY_MOB_LEVEL, level);
+    }
+
+    @Nullable
+    public static String getMobDungeonId(@NotNull LivingEntity entity){
+        return PDCUtil.getString(entity, Keys.ENTITY_MOB_DUNGEON_ID).orElse(null);
     }
 
     @NotNull

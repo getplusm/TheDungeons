@@ -7,7 +7,7 @@ import t.me.p1azmer.engine.api.placeholder.PlaceholderExpansion;
 import t.me.p1azmer.engine.utils.NumberUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestBlock;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.ChestBlock;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 
 import java.util.regex.Matcher;
@@ -23,7 +23,7 @@ public class OpenTimePlaceholder extends AbstractPlaceholder<DungeonPlugin> {
         String dungeonId = matcher.group(1);
         Dungeon dungeon = plugin.getDungeonManager().getDungeonById(dungeonId);
         if (dungeon == null) return "";
-        DungeonChestBlock chest = null;//dungeon.getNearestChest();
+        ChestBlock chest = null;//dungeon.getNearestChest();
         if (chest != null)
             return NumberUtil.format( (int) dungeon.getStageSettings().getTime(DungeonStage.OPENED) - chest.getCurrentTick());
         return "";

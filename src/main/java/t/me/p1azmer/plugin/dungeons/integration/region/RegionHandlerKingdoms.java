@@ -12,11 +12,14 @@ import org.kingdoms.data.managers.LandManager;
 import org.kingdoms.events.lands.ClaimLandEvent;
 import org.kingdoms.events.lands.UnclaimLandEvent;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
+import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
+import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.Region;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RegionHandlerKingdoms implements RegionHandler {
 
@@ -24,8 +27,8 @@ public class RegionHandlerKingdoms implements RegionHandler {
     private LandManager landManager;
     private final UUID ownerId = UUID.fromString("1492a9a4-4277-4eb6-897a-b346d76bc1e0");
     private final UUID kdPlayer = UUID.fromString("1492a9a5-4277-4eb6-897b-b346d76bc1e0");
-    private DungeonPlugin plugin;
-    private Map<Dungeon, Land> claimMap;
+    private final DungeonPlugin plugin;
+    private final Map<Dungeon, Land> claimMap = new ConcurrentHashMap<>();
 
     public RegionHandlerKingdoms(@NotNull DungeonPlugin plugin) {
         this.plugin = plugin;
@@ -40,46 +43,35 @@ public class RegionHandlerKingdoms implements RegionHandler {
             this.kingdomPlayer.joinKingdom(new Kingdom(kdPlayer, "PLAZMER_DUNGEON_KINGDOM"));
         }
         this.landManager = KingdomsDataCenter.get().getLandManager();
-        this.claimMap = new HashMap<>();
     }
 
     @Override
     public void shutdown() {
-        if (this.claimMap != null) {
-            this.claimMap.entrySet()
-                    .stream().filter(Objects::nonNull)
-                    .filter(entry -> entry.getKey().getLocation() != null && this.landManager.isLoaded(SimpleChunkLocation.of(entry.getKey().getLocation())))
-                    .forEach(f -> {
-                        this.landManager.delete(SimpleChunkLocation.of(f.getKey().getLocation()));
-                    });
-            this.claimMap.clear();
-            this.claimMap = null;
-        }
-        if (this.plugin != null) {
-            this.plugin = null;
-        }
-        if (this.landManager != null) {
-            this.landManager = null;
-        }
+        this.claimMap.entrySet()
+                .stream().filter(Objects::nonNull)
+                .filter(entry -> entry.getKey().getLocation().isPresent() && this.landManager.isLoaded(SimpleChunkLocation.of(entry.getKey().getLocation().get())))
+                .forEach(f -> {
+                    this.landManager.delete(SimpleChunkLocation.of(f.getKey().getLocation().get()));
+                });
+        this.claimMap.clear();
     }
 
     @Override
     public void create(@NotNull Dungeon dungeon) {
-        Region region = dungeon.getDungeonRegion();
-        if (!region.isEnabled()) return;
+        Region region = dungeon.getRegion();
+        Kingdom kingdom = kingdomPlayer.getKingdom();
+        if (kingdom == null || kingdomPlayer == null || !region.isEnabled()) return;
 
-        Location location = dungeon.getLocation();
-        if (location == null || kingdomPlayer.getKingdom() == null) return;
-
-        kingdomPlayer.getKingdom().claim(SimpleChunkLocation.of(location), kingdomPlayer, ClaimLandEvent.Reason.ADMIN);
-
-        this.claimMap.put(dungeon, this.landManager.getData(SimpleChunkLocation.of(location)));
+        dungeon.getLocation().ifPresent(location -> {
+            kingdom.claim(SimpleChunkLocation.of(location), kingdomPlayer, ClaimLandEvent.Reason.ADMIN);
+            this.claimMap.put(dungeon, this.landManager.getData(SimpleChunkLocation.of(location)));
+        });
         //result.claim.setPermission(this.ownerId, ClaimPermission.Build);
     }
 
     @Override
     public void delete(@NotNull Dungeon dungeon) {
-        Region region = dungeon.getDungeonRegion();
+        Region region = dungeon.getRegion();
         if (!region.isCreated()) return;
 
         Land land = this.claimMap.get(dungeon);

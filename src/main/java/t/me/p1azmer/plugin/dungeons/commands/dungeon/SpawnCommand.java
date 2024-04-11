@@ -10,7 +10,9 @@ import t.me.p1azmer.engine.api.command.CommandResult;
 import t.me.p1azmer.engine.utils.CollectionsUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Perms;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
+import t.me.p1azmer.plugin.dungeons.commands.CommandFlags;
+import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
+import t.me.p1azmer.plugin.dungeons.dungeon.Placeholders;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
@@ -24,6 +26,7 @@ public class SpawnCommand extends AbstractCommand<DungeonPlugin> {
         this.setDescription(plugin.getMessage(Lang.COMMAND_DROP_DESC));
         this.setUsage(plugin.getMessage(Lang.COMMAND_DROP_USAGE));
         this.setPlayerOnly(false);
+        this.addFlag(CommandFlags.RANDOM);
     }
 
     @Override
@@ -54,36 +57,20 @@ public class SpawnCommand extends AbstractCommand<DungeonPlugin> {
             return;
         }
 
-        Dungeon dungeon = plugin.getDungeonManager().getDungeonById(result.getArg(1));
+        DungeonManager dungeonManager = plugin.getDungeonManager();
+        Dungeon dungeon = dungeonManager.getDungeonById(result.getArg(1));
         if (dungeon == null) {
-            plugin.getMessage(Lang.DUNGEON_ERROR_INVALID).send(sender);
+            plugin.getMessage(Lang.DUNGEON_ERROR_INVALID)
+                    .send(sender);
             return;
         }
 
         World world = plugin.getServer().getWorld(result.getArg(2));
         if (world == null) {
-            plugin.getMessage(Lang.ERROR_WORLD_INVALID).send(sender);
+            plugin.getMessage(Lang.ERROR_WORLD_INVALID)
+                    .send(sender);
             return;
         }
-//        if (result.hasFlag(RANDOM)) {
-//            DungeonStage.call(dungeon, DungeonStage.PREPARE, "spawn command");
-//            plugin.runTaskLater(task -> {
-//                if (!plugin.getDungeonManager().spawnDungeon(dungeon)) {
-//                    plugin.getMessage(Lang.ERROR_RANDOM_SPAWN).send(sender);
-//                    return;
-//                }
-//                if (dungeon.getLocation() == null) {
-//                    plugin.getMessage(Lang.ERROR_DUNGEON_LOCATION_IS_EMPTY).send(sender);
-//                    return;
-//                }
-//
-//                plugin.getMessage(Lang.COMMAND_DROP_DONE)
-//                        .replace(dungeon.replacePlaceholders())
-//                        .replace(Placeholders.forLocation(dungeon.getLocation()))
-//                        .send(sender);
-//            }, 40);
-//            return;
-//        }
 
         if (result.length() != 6) {
             this.printUsage(sender);
@@ -95,7 +82,7 @@ public class SpawnCommand extends AbstractCommand<DungeonPlugin> {
         double z = result.getDouble(5, 0);
         Location location = new Location(world, x, y, z);
 
-        if (!plugin.getDungeonManager().spawnDungeon(dungeon, location)) {
+        if (!dungeonManager.spawnDungeon(dungeon, location)) {
             plugin.getMessage(Lang.COMMAND_DROP_ERROR)
                     .replace(dungeon.replacePlaceholders())
                     .send(sender);

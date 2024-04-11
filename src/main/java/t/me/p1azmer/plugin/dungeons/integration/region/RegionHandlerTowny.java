@@ -10,21 +10,21 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
+import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
+import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.Region;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RegionHandlerTowny implements RegionHandler {
 
     private TownyAPI townyAPI;
     private final UUID ownerId = UUID.fromString("1492a9a4-4277-4eb6-897a-b346d76bc1e0");
-    private DungeonPlugin plugin;
-    private Map<Dungeon, Town> claimMap;
+    private final DungeonPlugin plugin;
+    private final Map<Dungeon, Town> claimMap = new ConcurrentHashMap<>();
 
     public RegionHandlerTowny(@NotNull DungeonPlugin plugin) {
         this.plugin = plugin;
@@ -33,55 +33,44 @@ public class RegionHandlerTowny implements RegionHandler {
     @Override
     public void setup() {
         this.townyAPI = TownyAPI.getInstance();
-        this.claimMap = new HashMap<>();
     }
 
     @Override
     public void shutdown() {
-        if (this.claimMap != null) {
-            this.claimMap.entrySet()
-                    .stream().filter(Objects::nonNull)
-                    .forEach(entry -> {
-                        this.townyAPI.getDataSource().deleteTown(entry.getValue());
-                        try {
-                            TownyUniverse.getInstance().unregisterTown(entry.getValue());
-                        } catch (NotRegisteredException ignored) {
-                        }
-                    });
-            this.claimMap.clear();
-            this.claimMap = null;
-        }
-        if (this.plugin != null) {
-            this.plugin = null;
-        }
-        if (this.townyAPI != null) {
-            this.townyAPI = null;
-        }
+        this.claimMap.entrySet()
+                .stream().filter(Objects::nonNull)
+                .forEach(entry -> {
+                    this.townyAPI.getDataSource().deleteTown(entry.getValue());
+                    try {
+                        TownyUniverse.getInstance().unregisterTown(entry.getValue());
+                    } catch (NotRegisteredException ignored) {
+                    }
+                });
+        this.claimMap.clear();
     }
 
     @Override
     public void create(@NotNull Dungeon dungeon) {
-        Region region = dungeon.getDungeonRegion();
+        Region region = dungeon.getRegion();
         if (!region.isEnabled()) return;
 
-        Location location = dungeon.getLocation();
-        if (location == null) return;
+        dungeon.getLocation().ifPresent(location -> {
+            Town town = new Town(region.getName(), ownerId);
 
-        Town town = new Town(region.getName(), ownerId);
-
-        if (dungeon.getDungeonCuboid() != null)
-            dungeon.getDungeonCuboid().getBlocks().forEach(block -> {
-                TownBlock townBlock = new TownBlock(WorldCoord.parseWorldCoord(block));
-                townBlock.setTown(town, false);
-            });
-
-        this.claimMap.put(dungeon, town);
+            dungeon.getDungeonCuboid().ifPresent(cuboid ->
+                    cuboid.getBlocks().forEach(block -> {
+                        TownBlock townBlock = new TownBlock(WorldCoord.parseWorldCoord(block));
+                        townBlock.setTown(town, false);
+                    })
+            );
+            this.claimMap.put(dungeon, town);
+        });
         //result.claim.setPermission(this.ownerId, ClaimPermission.Build);
     }
 
     @Override
     public void delete(@NotNull Dungeon dungeon) {
-        Region region = dungeon.getDungeonRegion();
+        Region region = dungeon.getRegion();
         if (!region.isCreated()) return;
 
         Town town = this.claimMap.get(dungeon);

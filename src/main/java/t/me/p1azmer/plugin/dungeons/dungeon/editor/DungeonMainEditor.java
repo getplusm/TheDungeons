@@ -42,13 +42,14 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
     private DungeonRegionMainEditor regionMainEditor;
     private MainSettingsEditor settingsEditor;
     private PartySettingsEditor partySettingsEditor;
+    private GenerationSettingsEditor generationSettingsEditor;
 
     private final AutoRemovalCollection<Dungeon> rebootCache = AutoRemovalCollection.newHashSet(1, TimeUnit.MINUTES);
 
     public DungeonMainEditor(@NotNull Dungeon dungeon) {
         super(dungeon.plugin(), dungeon, Config.EDITOR_TITLE_DUNGEON.get(), 54);
 
-        this.addReturn(49).setClick((viewer, event) -> {
+        this.addReturn(53).setClick((viewer, event) -> {
             this.plugin.runTask(task -> this.plugin.getEditor().getDungeonEditor().open(viewer.getPlayer(), 1));
         });
 
@@ -126,6 +127,9 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
                 EditorLocales.COMMANDS_SETTINGS, 33).setClick((viewer, event) -> {
             this.getCommandsSettingsEditor().openNextTick(viewer.getPlayer(), 1);
         });
+        this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOTRlMDBhNjEyZGE2NDFmYWFjNzc4OWU3ZmZkZjRmZThjODY4ODQwZTc1MmUwYWFhNzc2ODYyMGFkOTkyN2U0MCJ9fX0="),
+                        EditorLocales.GENERATION_SETTINGS, 40)
+                .setClick((viewer, event) -> this.getGenerationSettingsEditor().openNextTick(viewer.getPlayer(), 1));
 
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjliMjg4OTAyMDU4MzU2NWY4OGQ1MDUzNzg3MGM1OWFhZDgwMjU5NGZhYmQ4MzdlMWQxNGY1YTA2YWUzNDUwOSJ9fX0="),
                 EditorLocales.DUNGEON_WORLD, 4).setClick((viewer, event) -> {
@@ -160,7 +164,7 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
                     dungeon.getModuleManager().getModules().forEach(module -> ItemReplacer.replace(item, module.replacePlaceholders()));
                     ItemReplacer.replace(item, dungeon.replacePlaceholders());
                     ItemReplacer.replace(item, dungeon.getHologramSettings().replacePlaceholders());
-                    ItemReplacer.replace(item, dungeon.getDungeonRegion().replacePlaceholders());
+                    ItemReplacer.replace(item, dungeon.getRegion().replacePlaceholders());
                     ItemReplacer.replace(item, dungeon.getSettings().replacePlaceholders());
                 }));
             }
@@ -242,7 +246,7 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
 
     @NotNull
     public StageSettingsEditor getStageSettingsEditor() {
-        if (this.stageSettingsEditor == null){
+        if (this.stageSettingsEditor == null) {
             this.stageSettingsEditor = new StageSettingsEditor(this.object.getStageSettings());
         }
         return stageSettingsEditor;
@@ -259,7 +263,7 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
     @NotNull
     public DungeonRegionMainEditor getRegionMainEditor() {
         if (this.regionMainEditor == null) {
-            this.regionMainEditor = new DungeonRegionMainEditor(this.object.getDungeonRegion());
+            this.regionMainEditor = new DungeonRegionMainEditor(this.object.getRegion());
         }
         return regionMainEditor;
     }
@@ -278,6 +282,14 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
             this.partySettingsEditor = new PartySettingsEditor(this.object.getPartySettings());
         }
         return partySettingsEditor;
+    }
+
+    @NotNull
+    public GenerationSettingsEditor getGenerationSettingsEditor() {
+        if (this.generationSettingsEditor == null) {
+            this.generationSettingsEditor = new GenerationSettingsEditor(this.object.getGenerationSettings());
+        }
+        return generationSettingsEditor;
     }
 
     private void save(@NotNull MenuViewer viewer) {

@@ -16,11 +16,11 @@ import t.me.p1azmer.engine.utils.Colorizer;
 import t.me.p1azmer.engine.utils.Colors;
 import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.announce.impl.Announce;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.AnnounceSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.AnnounceSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
+import t.me.p1azmer.plugin.dungeons.dungeon.stage.Placeholders;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
@@ -79,6 +79,7 @@ public class AnnounceSettingsEditor extends EditorMenu<DungeonPlugin, AnnounceSe
                 .readLocale(EditorLocales.ANNOUNCE_MODULE_OBJECT)
                 .trimmed()
                 .replace(Placeholders.EDITOR_STAGE_NAME, stage.name())
+                .replace(Placeholders.EDITOR_STAGE_DESCRIPTION, stage.getDescription(plugin()))
                 .hideFlags()
                 .replace(Placeholders.EDITOR_STAGE_ANNOUNCES, Colorizer.apply(Colors.LIGHT_PURPLE + String.join("\n", map.entrySet().stream().map(pair -> Colors.LIGHT_PURPLE + pair.getKey().getId() + " " + Colors.PURPLE + Arrays.toString(pair.getValue())).toList())))
                 .replace(this.object.replacePlaceholders())

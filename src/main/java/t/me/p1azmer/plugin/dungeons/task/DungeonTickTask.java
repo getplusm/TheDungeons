@@ -11,14 +11,17 @@ public class DungeonTickTask extends AbstractTask<DungeonPlugin> {
     private final DungeonManager manager;
 
     public DungeonTickTask(@NotNull DungeonManager manager) {
-        super(manager.plugin(), 1, false);
+        super(manager.plugin(), 1, true);
         this.manager = manager;
     }
 
     @Override
     public void action() {
+        int online = plugin.getServer().getOnlinePlayers().size();
+
         for (Dungeon dungeon : this.manager.getDungeons()) {
-            if ((plugin.getServer().getOnlinePlayers().size() < dungeon.getSettings().getMinimalOnline() || !dungeon.getSettings().isEnabled()) && !dungeon.getStage().isOpened()) {
+            boolean allowed = online >= dungeon.getSettings().getMinimalOnline() && dungeon.getSettings().isEnabled();
+            if (!allowed) {
                 dungeon.cancel(false);
                 continue;
             }

@@ -8,14 +8,15 @@ import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.*;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ModuleManager extends AbstractManager<DungeonPlugin> {
     private final Dungeon dungeon;
-    private final Map<String, AbstractModule> modules = new LinkedHashMap<>();
+    private final Map<String, AbstractModule> modules = new ConcurrentHashMap<>();
 
     public ModuleManager(@NotNull Dungeon dungeon) {
         super(dungeon.plugin());
@@ -55,9 +56,7 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
         // Init module.
         T module = supplier.apply(id);
 
-        if (!this.getDungeon().getModuleSettings().isEnabled(id)) {
-            return;
-        }
+        if (!this.getDungeon().getModuleSettings().isEnabled(id)) return;
 
         module.setup();
         this.modules.put(module.getId(), module);
@@ -86,5 +85,25 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
     @NotNull
     public Collection<AbstractModule> getModules() {
         return this.modules.values();
+    }
+
+    @NotNull
+    public Collection<AbstractModule> getActive(){
+        return this.modules
+                .values()
+                .stream()
+                .filter(AbstractModule::isActivated)
+                .collect(Collectors.toList());
+    }
+
+    public long getImportantActiveCount(){
+        return this.getActive()
+                .stream()
+                .filter(AbstractModule::isImportantly)
+                .count();
+    }
+
+    public boolean allImportantActive(){
+        return this.getImportantActiveCount() == this.getActive().size();
     }
 }

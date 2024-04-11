@@ -2,10 +2,8 @@ package t.me.p1azmer.plugin.dungeons.dungeon.editor.settings;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.menu.AutoPaged;
 import t.me.p1azmer.engine.api.menu.click.ItemClick;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
@@ -13,22 +11,20 @@ import t.me.p1azmer.engine.api.menu.impl.MenuOptions;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.editor.EditorManager;
 import t.me.p1azmer.engine.utils.Colorizer;
-import t.me.p1azmer.engine.utils.Colors;
 import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.CommandsSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.StageSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
-import t.me.p1azmer.plugin.dungeons.dungeon.stage.StageSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.stage.Placeholders;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
 public class StageSettingsEditor extends EditorMenu<DungeonPlugin, StageSettings> implements AutoPaged<DungeonStage> {
@@ -53,7 +49,7 @@ public class StageSettingsEditor extends EditorMenu<DungeonPlugin, StageSettings
 
     private void save(@NotNull MenuViewer viewer) {
         this.object.dungeon().save();
-        DungeonStage.call(this.object.dungeon(), DungeonStage.CANCELLED, "stage editor need reboot");
+        CompletableFuture.runAsync(() -> DungeonStage.call(this.object.dungeon(), DungeonStage.CANCELLED, "stage editor need reboot"));
         this.plugin.runTask(task -> this.open(viewer.getPlayer(), viewer.getPage()));
     }
 
@@ -84,6 +80,7 @@ public class StageSettingsEditor extends EditorMenu<DungeonPlugin, StageSettings
                 .hideFlags()
                 .replace(s -> s
                         .replace(Placeholders.EDITOR_STAGE_NAME, stage.name())
+                        .replace(Placeholders.EDITOR_STAGE_DESCRIPTION, stage.getDescription(plugin()))
                         .replace(Placeholders.EDITOR_STAGE_TIME, String.valueOf(this.object.getTime(stage)))
                 )
                 .replace(this.object.replacePlaceholders())

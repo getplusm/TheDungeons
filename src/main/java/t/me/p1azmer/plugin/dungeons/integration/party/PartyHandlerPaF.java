@@ -6,26 +6,10 @@ import de.simonsator.partyandfriends.spigot.api.party.PartyManager;
 import de.simonsator.partyandfriends.spigot.api.party.PlayerParty;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import t.me.p1azmer.plugin.dungeons.api.party.PartyHandler;
+import t.me.p1azmer.plugin.dungeons.api.handler.party.PartyHandler;
 
 public class PartyHandlerPaF implements PartyHandler {
-
     private PartyManager partyManager;
-
-    @Override
-    public int getPartySize(@NotNull Player player) {
-        PAFPlayer pafPlayer= PAFPlayerManager.getInstance().getPlayer(player.getUniqueId());
-        PlayerParty party=PartyManager.getInstance().getParty(pafPlayer);
-        if (party == null) return 0;
-        return party.getAllPlayers().size();
-    }
-
-    @Override
-    public boolean isInParty(@NotNull Player player) {
-        PAFPlayer pafPlayer= PAFPlayerManager.getInstance().getPlayer(player.getUniqueId());
-        PlayerParty party=PartyManager.getInstance().getParty(pafPlayer);
-        return party!=null;
-    }
 
     @Override
     public void setup() {
@@ -34,8 +18,29 @@ public class PartyHandlerPaF implements PartyHandler {
 
     @Override
     public void shutdown() {
-        if (this.partyManager != null){
-            this.partyManager = null;
-        }
+        if (this.partyManager != null) this.partyManager = null;
+    }
+
+    @Override
+    public int getPartySize(@NotNull Player player) {
+        PartyManager manager = PartyManager.getInstance();
+        PAFPlayerManager pafPlayerManager = PAFPlayerManager.getInstance();
+
+        PAFPlayer pafPlayer = pafPlayerManager.getPlayer(player.getUniqueId());
+        PlayerParty party = manager.getParty(pafPlayer);
+
+        if (party == null) return 0;
+        return party.getAllPlayers().size();
+    }
+
+    @Override
+    public boolean isInParty(@NotNull Player player) {
+        PAFPlayerManager pafPlayerManager = PAFPlayerManager.getInstance();
+        PartyManager manager = PartyManager.getInstance();
+
+        PAFPlayer pafPlayer = pafPlayerManager.getPlayer(player.getUniqueId());
+        PlayerParty party = manager.getParty(pafPlayer);
+
+        return party != null;
     }
 }

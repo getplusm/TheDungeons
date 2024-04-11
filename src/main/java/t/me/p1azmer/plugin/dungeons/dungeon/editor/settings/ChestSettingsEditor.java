@@ -18,10 +18,10 @@ import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestState;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.ChestSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.Placeholders;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.state.ChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.ChestSettings;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
@@ -34,7 +34,7 @@ import java.util.stream.IntStream;
 import static t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule.OpenType.CLICK;
 import static t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule.OpenType.TIMER;
 
-public class ChestSettingsEditor extends EditorMenu<DungeonPlugin, ChestSettings> implements AutoPaged<DungeonChestState> {
+public class ChestSettingsEditor extends EditorMenu<DungeonPlugin, ChestSettings> implements AutoPaged<ChestState> {
 
     public ChestSettingsEditor(@NotNull ChestSettings settings) {
         super(settings.dungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 36);
@@ -149,13 +149,13 @@ public class ChestSettingsEditor extends EditorMenu<DungeonPlugin, ChestSettings
 
     @Override
     @NotNull
-    public List<DungeonChestState> getObjects(@NotNull Player player) {
-        return new ArrayList<>(Arrays.stream(DungeonChestState.values()).toList());
+    public List<ChestState> getObjects(@NotNull Player player) {
+        return new ArrayList<>(Arrays.stream(ChestState.values()).toList());
     }
 
     @Override
     @NotNull
-    public ItemStack getObjectStack(@NotNull Player player, @NotNull DungeonChestState state) {
+    public ItemStack getObjectStack(@NotNull Player player, @NotNull ChestState state) {
         ItemStack item = ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmNiOGYwNjg4NWQxZGFhZmQyNmNkOTViMzQ4MmNiNTI1ZDg4MWE2N2UwZDI0NzE2MWI5MDhkOTNkNTZkMTE0ZiJ9fX0=");
         ItemReplacer.create(item)
                 .readLocale(EditorLocales.CHEST_BLOCK_STATE_OBJECT)
@@ -172,7 +172,7 @@ public class ChestSettingsEditor extends EditorMenu<DungeonPlugin, ChestSettings
 
     @Override
     @NotNull
-    public ItemClick getObjectClick(@NotNull DungeonChestState state) {
+    public ItemClick getObjectClick(@NotNull ChestState state) {
         return (viewer, event) -> {
             Player player = viewer.getPlayer();
             if (event.getClick().equals(ClickType.LEFT)) {

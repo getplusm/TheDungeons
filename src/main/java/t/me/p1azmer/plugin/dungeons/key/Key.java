@@ -1,5 +1,7 @@
 package t.me.p1azmer.plugin.dungeons.key;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -12,9 +14,10 @@ import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.engine.utils.PDCUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Keys;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.key.editor.KeyMainEditor;
 
+@Getter
+@Setter
 public class Key extends AbstractConfigHolder<DungeonPlugin> implements IPlaceholderMap, ICleanable {
 
     private String name;
@@ -24,7 +27,10 @@ public class Key extends AbstractConfigHolder<DungeonPlugin> implements IPlaceho
 
     private final PlaceholderMap placeholderMap;
 
-    public Key(@NotNull DungeonPlugin plugin, @NotNull JYML cfg) {
+    public Key(
+            @NotNull DungeonPlugin plugin,
+            @NotNull JYML cfg
+    ) {
         super(plugin, cfg);
 
         this.placeholderMap = new PlaceholderMap()
@@ -73,10 +79,6 @@ public class Key extends AbstractConfigHolder<DungeonPlugin> implements IPlaceho
         return this.editor;
     }
 
-    public String getName() {
-        return name;
-    }
-
     @NotNull
     public ItemStack getRawItem() {
         return new ItemStack(item);
@@ -87,13 +89,5 @@ public class Key extends AbstractConfigHolder<DungeonPlugin> implements IPlaceho
         ItemStack item = this.getRawItem();
         PDCUtil.set(item, Keys.DUNGEON_KEY_ID, this.getId());
         return item;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setItem(ItemStack item) {
-        this.item = item;
     }
 }

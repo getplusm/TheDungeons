@@ -13,10 +13,10 @@ import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.editor.EditorManager;
 import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
+import t.me.p1azmer.plugin.dungeons.mob.Placeholders;
 import t.me.p1azmer.plugin.dungeons.mob.config.MobConfig;
 import t.me.p1azmer.plugin.dungeons.mob.style.MobStyleType;
 

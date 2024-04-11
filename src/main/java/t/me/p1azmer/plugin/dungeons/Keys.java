@@ -8,4 +8,5 @@ public class Keys {
 
     public static final NamespacedKey ENTITY_MOB_ID = new NamespacedKey(DungeonAPI.PLUGIN, "entity.mob_id");
     public static final NamespacedKey ENTITY_MOB_LEVEL = new NamespacedKey(DungeonAPI.PLUGIN, "entity.mob_level");
+    public static final NamespacedKey ENTITY_MOB_DUNGEON_ID = new NamespacedKey(DungeonAPI.PLUGIN, "entity.dungeon_id");
 }

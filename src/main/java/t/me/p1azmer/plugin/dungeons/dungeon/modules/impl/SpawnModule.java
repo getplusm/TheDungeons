@@ -1,5 +1,7 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.modules.impl;
 
+import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
@@ -8,53 +10,122 @@ import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.Version;
 import t.me.p1azmer.engine.utils.LocationUtil;
 import t.me.p1azmer.engine.utils.random.Rnd;
-import t.me.p1azmer.plugin.dungeons.api.events.DungeonDeleteEvent;
+import t.me.p1azmer.plugin.dungeons.api.events.DungeonDespawnEvent;
 import t.me.p1azmer.plugin.dungeons.api.events.DungeonSpawnEvent;
-import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
+import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
+import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.GenerationSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 import t.me.p1azmer.plugin.dungeons.generator.RangeInfo;
 import t.me.p1azmer.plugin.dungeons.generator.config.GeneratorConfig;
-import t.me.p1azmer.plugin.dungeons.utils.Cuboid;
 
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 /*
     Thank you very much for the code idea:
     discord: b3cksgold
  */
+@Getter
 public class SpawnModule extends AbstractModule {
 
     private boolean spawned;
 
-    public SpawnModule(@NotNull Dungeon dungeon, @NotNull String id) {
+    public SpawnModule(
+            @NotNull Dungeon dungeon,
+            @NotNull String id
+    ) {
         super(dungeon, id, false, true);
     }
 
     @Override
     protected Predicate<Boolean> onLoad() {
         this.spawned = false;
-        return aBoolean -> dungeon().getStage().isCheck() && !isSpawned();
+        return aBoolean -> {
+            DungeonStage stage = getDungeon().getStage();
+            GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
+            GenerationType generationType = generationSettings.getGenerationType();
+            Optional<Location> spawnLocation = generationSettings.getSpawnLocation();
+            boolean allowedWithGeneration = !generationType.isDynamic() && spawnLocation.isPresent();
+
+            return stage.isCheck() && !isSpawned() || allowedWithGeneration;
+        };
     }
 
     @Override
     protected void onShutdown() {
-
+        this.spawned = false;
     }
 
     @Override
-    public boolean onActivate(boolean force) {
-        if (isSpawned()) return force;
+    public CompletableFuture<Boolean> onActivate(boolean force) {
+        if (isSpawned()) {
+            this.debug("Dungeon is already spawned on world");
+            return CompletableFuture.completedFuture(force);
+        }
 
-        RangeInfo rangeInfo = GeneratorConfig.LOCATION_SEARCH_RANGES.get().get(dungeon().getWorld().getName());
-        if (rangeInfo == null) {
-            this.error("Unable to start dungeon spawn '" + dungeon().getId() + "' because the location generator for this '" + dungeon().getWorld().getName() + "' world is not set!");
+        GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
+        GenerationType generationType = generationSettings.getGenerationType();
+        Optional<Location> spawnLocation = generationSettings.getSpawnLocation();
+
+        if (!generationType.isDynamic()) {
+            if (spawnLocation.isPresent()) {
+                return CompletableFuture.completedFuture(this.spawn(spawnLocation.get()));
+            }
+
+            this.error("The location of the dungeon is not set in the generation settings");
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return CompletableFuture.completedFuture(foundedRandomLocation(force));
+    }
+
+    @Override
+    public boolean onDeactivate(boolean force) {
+        GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
+        GenerationType generationType = generationSettings.getGenerationType();
+        Optional<Location> spawnLocation = generationSettings.getSpawnLocation();
+        Optional<SchematicModule> schematicModule = this.getManager().getModule(SchematicModule.class);
+
+        if (!generationType.isDynamic() && spawnLocation.isPresent()) return false;
+        if (schematicModule.isPresent() && !schematicModule.get().tryDeactivate(ActionType.FORCE)) return false;
+
+        DungeonDespawnEvent event = new DungeonDespawnEvent(this.getDungeon());
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            this.debug("Unable to deactivate the '" + this.getId() + "' module due to an Event");
             return false;
         }
 
-        World world = this.dungeon().getWorld();
+        this.spawned = false;
+        return true;
+    }
+
+    public boolean spawn(@NotNull Location result) {
+        DungeonSpawnEvent event = new DungeonSpawnEvent(this.getDungeon(), result);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            this.debug("Unable to spawn the '" + this.getId() + "' module due to an Event");
+            return false;
+        }
+        return this.spawned = true;
+    }
+
+    // TODO: rewrite with chunks for optimization
+    private boolean foundedRandomLocation(boolean force) {
+        RangeInfo rangeInfo = GeneratorConfig.LOCATION_SEARCH_RANGES.get().get(getDungeon().getWorld().getName());
+        if (rangeInfo == null) {
+            this.error("Unable to start dungeon spawn '" + getDungeon().getId() + "' because the location generator for this '" + getDungeon().getWorld().getName() + "' world is not set!");
+            return false;
+        }
+
+        World world = this.getDungeon().getWorld();
         int originX = rangeInfo.getStartX();
-        int originY = this.dungeon().getSchematicSettings().isUnderground() ? world.getMinHeight() : world.getMaxHeight();
+        boolean underground = this.getDungeon().getSchematicSettings().isUnderground();
+        int originY = underground ? world.getMinHeight() : world.getMaxHeight();
         int originZ = rangeInfo.getStartZ();
 
         int minOffset = -rangeInfo.getDistanceMin();
@@ -87,17 +158,20 @@ public class SpawnModule extends AbstractModule {
         // X and Z are randomized, now just an example for handling Y
 
         int modifiedY = originY;
-        if (this.dungeon().getSchematicSettings().isUnderground())
+        if (underground)
             modifiedY += Rnd.get(Version.isAbove(Version.V1_18_R2) ? 30 : 10);
 
-        Location result = this.dungeon().getSchematicSettings().isUnderground() ? new Location(world, randomX, modifiedY, randomZ) : LocationUtil.getFirstGroundBlock(new Location(world, randomX, modifiedY, randomZ));
+        Location possibleLoc = new Location(world, randomX, modifiedY, randomZ);
+
+        Location groundBlock = LocationUtil.getFirstGroundBlock(possibleLoc);
+        Location result = underground ? possibleLoc : groundBlock;
         Block block = result.getBlock();
         Biome biome = block.getBiome();
 
         if (!force) {
             RegionHandler handler = plugin().getRegionHandler();
-            if (handler != null){
-                if (!handler.isValidLocation(result)){
+            if (handler != null) {
+                if (!handler.isValidLocation(result)) {
                     return false;
                 }
             }
@@ -120,55 +194,7 @@ public class SpawnModule extends AbstractModule {
                 return false;
             }
         }
+
         return this.spawn(result);
-    }
-
-    @Override
-    public boolean onDeactivate() {
-        if (dungeon().getModuleManager().getModule(SchematicModule.class).isPresent() && !dungeon().getModuleManager().getModule(SchematicModule.class).get().onDeactivate()) return false;
-
-        DungeonDeleteEvent event = new DungeonDeleteEvent(this.dungeon());
-        plugin().getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            this.debug("Unable to deactivate the '"+this.getId()+"' module due to an Event");
-            return false;
-        }
-
-        this.spawned = false;
-        this.dungeon().setLocation(null);
-        this.dungeon().setCuboid(null);
-        return true;
-    }
-
-    public boolean spawn(@NotNull Location result){
-        DungeonSpawnEvent event = new DungeonSpawnEvent(this.dungeon(), result);
-        plugin().getPluginManager().callEvent(event);
-        if (event.isCancelled()){
-            this.error("Cancelled by Event");
-            return false;
-        }
-        result = event.getLocation();
-        this.dungeon().setLocation(result);
-
-        Location lowerLocation = new Location(result.getWorld(), result.getBlockX(), result.getBlockY(), result.getBlockZ());
-        Location upperLocation = new Location(result.getWorld(), result.getBlockX(), result.getBlockY(), result.getBlockZ());
-        int size = dungeon().getDungeonRegion().getRadius();
-
-        lowerLocation.subtract(size, size, size);
-        upperLocation.add(size, size, size);
-
-        if (lowerLocation.getY() > upperLocation.getY()) {
-            double temp = lowerLocation.getY();
-            lowerLocation.setY(upperLocation.getY());
-            upperLocation.setY(temp);
-        }
-        Cuboid cuboid = new Cuboid(lowerLocation, upperLocation);
-        this.dungeon().setCuboid(cuboid);
-        this.spawned = true;
-        return true;
-    }
-
-    public boolean isSpawned() {
-        return spawned;
     }
 }

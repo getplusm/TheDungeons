@@ -9,53 +9,52 @@ import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 public class CommandModule extends AbstractModule {
 
-    private Set<DungeonStage> stagesCache;
+    private Set<DungeonStage> stagesCache = new LinkedHashSet<>();
 
-    public CommandModule(@NotNull Dungeon dungeon, @NotNull String id) {
+    public CommandModule(
+            @NotNull Dungeon dungeon,
+            @NotNull String id
+    ) {
         super(dungeon, id, true);
     }
 
     @Override
     protected Predicate<Boolean> onLoad() {
-        this.stagesCache = new LinkedHashSet<>();
         return aBoolean -> true;
     }
 
     @Override
     protected void onShutdown() {
-        if (this.stagesCache != null) {
-            this.stagesCache.clear();
-            this.stagesCache = null;
-        }
+        this.stagesCache.clear();
     }
 
     @Override
-    public boolean onActivate(boolean force) {
-        return true;
+    public CompletableFuture<Boolean> onActivate(boolean force) {
+        return CompletableFuture.completedFuture(true);
     }
 
     @Override
     public void update() {
-        List<String> commands = this.dungeon().getCommandsSettings().getCommands(this.dungeon().getStage());
-        if (!commands.isEmpty() && !this.stagesCache.contains(this.dungeon().getStage())) {
+        super.update();
+        List<String> commands = this.getDungeon().getCommandsSettings().getCommands(this.getDungeon().getStage());
+        if (!commands.isEmpty() && !this.stagesCache.contains(this.getDungeon().getStage())) {
             if (this.stagesCache == null)
                 this.stagesCache = new LinkedHashSet<>();
-            stagesCache.add(this.dungeon().getStage());
+            stagesCache.add(this.getDungeon().getStage());
 
             commands.forEach(command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command));
+            debug("Commands executed");
         }
-        super.update();
     }
 
     @Override
-    public boolean onDeactivate() {
-        if (this.stagesCache != null) {
-            this.stagesCache.clear();
-        }
+    public boolean onDeactivate(boolean force) {
+        this.stagesCache.clear();
         return true;
     }
 }

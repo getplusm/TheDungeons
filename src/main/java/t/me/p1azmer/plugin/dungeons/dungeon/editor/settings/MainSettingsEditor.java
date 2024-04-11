@@ -12,7 +12,7 @@ import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.MainSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.MainSettings;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
@@ -89,7 +89,7 @@ public class MainSettingsEditor extends EditorMenu<DungeonPlugin, MainSettings> 
         this.getItems().forEach(menuItem -> {
             menuItem.getOptions().addDisplayModifier(((viewer, item) -> {
                 ItemReplacer.replace(item, dungeon.replacePlaceholders());
-                ItemReplacer.replace(item, dungeon.getDungeonRegion().replacePlaceholders());
+                ItemReplacer.replace(item, dungeon.getRegion().replacePlaceholders());
                 ItemReplacer.replace(item, dungeon.getSettings().replacePlaceholders());
             }));
         });

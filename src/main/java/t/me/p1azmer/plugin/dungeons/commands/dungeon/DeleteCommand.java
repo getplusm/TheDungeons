@@ -8,13 +8,14 @@ import t.me.p1azmer.engine.api.command.CommandResult;
 import t.me.p1azmer.engine.utils.Constants;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Perms;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
+import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
+import t.me.p1azmer.plugin.dungeons.dungeon.Placeholders;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.SpawnModule;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class DeleteCommand extends AbstractCommand<DungeonPlugin> {
 
@@ -41,17 +42,25 @@ public class DeleteCommand extends AbstractCommand<DungeonPlugin> {
             this.printUsage(sender);
             return;
         }
+        DungeonManager dungeonManager = plugin.getDungeonManager();
         if (result.getArg(1).equalsIgnoreCase(Constants.MASK_ANY)) {
-            plugin.getDungeonManager().getDungeons().stream().filter(dungeon -> dungeon.getModuleManager().getModule(SpawnModule.class).isPresent() && dungeon.getModuleManager().getModule(SpawnModule.class).get().isSpawned()).forEach(f -> f.cancel(false));
-            plugin.getMessage(Lang.COMMAND_DEL_DONE).replace(Placeholders.DUNGEON_NAME, Constants.MASK_ANY).send(sender);
+            dungeonManager.getDungeons()
+                    .forEach(f -> f.cancel(false));
+            plugin.getMessage(Lang.COMMAND_DEL_DONE)
+                    .replace(Placeholders.DUNGEON_NAME, Constants.MASK_ANY)
+                    .send(sender);
             return;
         }
 
-        Dungeon dungeon = plugin.getDungeonManager().getDungeonById(result.getArg(1));
+        Dungeon dungeon = dungeonManager.getDungeonById(result.getArg(1));
         if (dungeon == null) {
-            plugin.getMessage(Lang.DUNGEON_ERROR_INVALID).send(sender);
+            plugin.getMessage(Lang.DUNGEON_ERROR_INVALID)
+                    .send(sender);
             return;
         }
-        plugin.getMessage(Lang.COMMAND_DEL_DONE).replace(dungeon.replacePlaceholders()).send(sender);
+        CompletableFuture.runAsync(() -> dungeon.cancel(false));
+        plugin.getMessage(Lang.COMMAND_DEL_DONE)
+                .replace(dungeon.replacePlaceholders())
+                .send(sender);
     }
 }

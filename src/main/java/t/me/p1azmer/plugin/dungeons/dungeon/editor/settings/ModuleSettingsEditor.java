@@ -2,10 +2,8 @@ package t.me.p1azmer.plugin.dungeons.dungeon.editor.settings;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.menu.AutoPaged;
 import t.me.p1azmer.engine.api.menu.click.ItemClick;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
@@ -16,10 +14,14 @@ import t.me.p1azmer.engine.utils.Colorizer;
 import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.config.Config;
+import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
+import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleId;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.ModuleSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.modules.Placeholders;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.GenerationSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.MainSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.ModuleSettings;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 
 import java.util.List;
@@ -64,16 +66,24 @@ public class ModuleSettingsEditor extends EditorMenu<DungeonPlugin, ModuleSettin
     @Override
     @NotNull
     public List<String> getObjects(@NotNull Player player) {
-        return List.of(ModuleId.ANNOUNCE, ModuleId.CHEST, ModuleId.COMMAND, ModuleId.SCHEMATIC, ModuleId.HOLOGRAM, ModuleId.SPAWN);
+        return List.of(ModuleId.ANNOUNCE, ModuleId.CHEST, ModuleId.COMMAND, ModuleId.SCHEMATIC, ModuleId.HOLOGRAM, ModuleId.SPAWN, ModuleId.MOBS);
     }
 
     @Override
     @NotNull
     public ItemStack getObjectStack(@NotNull Player player, @NotNull String moduleId) {
         boolean enabled = this.object.isEnabled(moduleId);
-        ItemStack item = enabled ?
+        Dungeon dungeon = this.object.dungeon();
+        GenerationSettings settings = dungeon.getGenerationSettings();
+        GenerationType generationType = settings.getGenerationType();
+        List<String> whitelist = generationType.getModuleWhitelist();
+        boolean inWhitelist = whitelist.contains(moduleId);
+        ItemStack item = inWhitelist ?
+                ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTQ4ZDdkMWUwM2UxYWYxNDViMDEyNWFiODQxMjg1NjcyYjQyMTI2NWRhMmFiOTE1MDE1ZjkwNTg0MzhiYTJkOCJ9fX0=") :
+                enabled ?
                 ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
                 ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0=");
+
         ItemReplacer.create(item)
                 .readLocale(EditorLocales.MODULE_OBJECT)
                 .trimmed()
@@ -93,7 +103,18 @@ public class ModuleSettingsEditor extends EditorMenu<DungeonPlugin, ModuleSettin
     @NotNull
     public ItemClick getObjectClick(@NotNull String moduleId) {
         return (viewer, event) -> {
-            if (event.getClick().equals(ClickType.LEFT)) {
+            boolean isLeftClick = event.getClick().equals(ClickType.LEFT);
+
+            if (isLeftClick) {
+                Dungeon dungeon = this.object.dungeon();
+                GenerationType generationType = dungeon.getGenerationSettings().getGenerationType();
+
+                if (generationType.getModuleWhitelist().contains(moduleId)) {
+                    if (!this.object.isEnabled(moduleId))
+                        this.object.setEnabled(moduleId, true); // always true
+                    return;
+                }
+
                 this.object.setEnabled(moduleId, !this.object.isEnabled(moduleId));
                 this.save(viewer);
             }

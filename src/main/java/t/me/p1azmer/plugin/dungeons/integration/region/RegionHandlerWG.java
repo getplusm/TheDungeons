@@ -12,9 +12,9 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
-import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
+import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.Region;
+import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
 
 import java.util.Comparator;
 import java.util.Objects;
@@ -42,27 +42,26 @@ public class RegionHandlerWG implements RegionHandler {
 
     @Override
     public void create(@NotNull Dungeon dungeon) {
-        Region region = dungeon.getDungeonRegion();
+        Region region = dungeon.getRegion();
         if (!region.isEnabled()) return;
 
         double regionRadius = region.getRadius();
-        Location location = dungeon.getLocation();
-        if (location == null) return;
-        org.bukkit.World world = dungeon.getWorld();
-        if (world == null) return;
-        String regionName = region.getNameRaw();
+        dungeon.getLocation().ifPresent(location -> {
+            org.bukkit.World world = dungeon.getWorld();
+            String regionName = region.getNameRaw();
 
-        ProtectedRegion protectedRegion = new ProtectedCuboidRegion(regionName, convertToSk89qBV(location.clone().add(-regionRadius, regionRadius, regionRadius)), convertToSk89qBV(location.clone().add(regionRadius, -regionRadius, -regionRadius)));
-        Objects.requireNonNull(WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world))).addRegion(protectedRegion);
-        for (String flag : region.getFlags()) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "region flag -w " + world.getName() + " " + regionName + " " + flag);
-        }
-        region.setCreated(true);
+            ProtectedRegion protectedRegion = new ProtectedCuboidRegion(regionName, convertToSk89qBV(location.clone().add(-regionRadius, regionRadius, regionRadius)), convertToSk89qBV(location.clone().add(regionRadius, -regionRadius, -regionRadius)));
+            Objects.requireNonNull(WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world))).addRegion(protectedRegion);
+            for (String flag : region.getFlags()) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "region flag -w " + world.getName() + " " + regionName + " " + flag);
+            }
+            region.setCreated(true);
+        });
     }
 
     @Override
     public void delete(@NotNull Dungeon dungeon) {
-        Region region = dungeon.getDungeonRegion();
+        Region region = dungeon.getRegion();
         if (!region.isCreated()) return;
 
         World world = BukkitAdapter.adapt(dungeon.getWorld());

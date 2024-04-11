@@ -1,27 +1,24 @@
 package t.me.p1azmer.plugin.dungeons.api.events;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 
+@Getter
+@Setter
 public class DungeonChangeStageEvent extends DungeonEvent{
     private static final HandlerList handlerList = new HandlerList();
 
-    private DungeonStage dungeonStage;
+    private DungeonStage stage;
+    private String changeFrom;
 
-    public DungeonChangeStageEvent(@NotNull Dungeon dungeon, @NotNull DungeonStage stage) {
-        super(dungeon);
-        this.dungeonStage = stage;
-    }
-
-    @NotNull
-    public DungeonStage getDungeonStage() {
-        return dungeonStage;
-    }
-
-    public void setDungeonStage(@NotNull DungeonStage dungeonStage) {
-        this.dungeonStage = dungeonStage;
+    public DungeonChangeStageEvent(@NotNull Dungeon dungeon, @NotNull DungeonStage stage, @NotNull String changeFrom) {
+        super(dungeon, true);
+        this.stage = stage;
+        this.changeFrom = changeFrom;
     }
 
     @NotNull

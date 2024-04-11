@@ -1,5 +1,6 @@
 package t.me.p1azmer.plugin.dungeons;
 
+import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.NexPlugin;
@@ -7,18 +8,20 @@ import t.me.p1azmer.engine.api.command.GeneralCommand;
 import t.me.p1azmer.engine.command.list.ReloadSubCommand;
 import t.me.p1azmer.engine.utils.EngineUtils;
 import t.me.p1azmer.plugin.dungeons.announce.AnnounceManager;
-import t.me.p1azmer.plugin.dungeons.api.hologram.HologramHandler;
-import t.me.p1azmer.plugin.dungeons.api.party.PartyHandler;
-import t.me.p1azmer.plugin.dungeons.api.region.RegionHandler;
-import t.me.p1azmer.plugin.dungeons.api.schematic.SchematicHandler;
+import t.me.p1azmer.plugin.dungeons.api.handler.hologram.HologramHandler;
+import t.me.p1azmer.plugin.dungeons.api.handler.party.PartyHandler;
+import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
+import t.me.p1azmer.plugin.dungeons.api.handler.schematic.SchematicHandler;
 import t.me.p1azmer.plugin.dungeons.commands.EditorCommand;
 import t.me.p1azmer.plugin.dungeons.commands.dungeon.DeleteCommand;
 import t.me.p1azmer.plugin.dungeons.commands.dungeon.SpawnCommand;
 import t.me.p1azmer.plugin.dungeons.commands.key.KeyCommand;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.state.ChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
+import t.me.p1azmer.plugin.dungeons.dungeon.stage.StageLang;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.editor.EditorMainMenu;
 import t.me.p1azmer.plugin.dungeons.integration.holograms.HologramDecentHandler;
@@ -33,6 +36,7 @@ import t.me.p1azmer.plugin.dungeons.mob.style.MobStyleType;
 import t.me.p1azmer.plugin.dungeons.placeholders.DungeonPlaceholder;
 import t.me.p1azmer.plugin.dungeons.utils.SessionConsole;
 
+@Getter
 public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     private DungeonManager dungeonManager;
     private KeyManager keyManager;
@@ -41,6 +45,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
 
     private EditorMainMenu editor;
     private SessionConsole sessionConsole;
+
     private HologramHandler hologramHandler;
     private SchematicHandler schematicHandler;
     private RegionHandler regionHandler;
@@ -122,15 +127,21 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     @Override
     public void loadLang() {
         this.getLangManager().loadMissing(Lang.class);
+        this.getLangManager().loadMissing(StageLang.class);
         this.getLangManager().loadEditor(EditorLocales.class);
         this.getLangManager().loadEnum(MobStyleType.class);
         this.getLangManager().loadEnum(DungeonStage.class);
-        this.getLangManager().loadEnum(DungeonChestState.class);
+        this.getLangManager().loadEnum(ChestState.class);
+        this.getLangManager().loadEnum(GenerationType.class);
         this.getLang().saveChanges();
     }
 
     @Override
     public void registerHooks() {
+        initialIntegrations();
+    }
+
+    private void initialIntegrations() {
         if (EngineUtils.hasPlugin("HolographicDisplays")) {
             this.hologramHandler = new HologramDisplaysHandler(this);
             this.hologramHandler.setup();
@@ -196,56 +207,11 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     }
 
     @NotNull
-    public DungeonManager getDungeonManager() {
-        return dungeonManager;
-    }
-
-    @NotNull
-    public KeyManager getKeyManager() {
-        return keyManager;
-    }
-
-    @NotNull
-    public MobManager getMobManager() {
-        return mobManager;
-    }
-
-    @NotNull
-    public AnnounceManager getAnnounceManager() {
-        return announceManager;
-    }
-
-    @NotNull
     public EditorMainMenu getEditor() {
         if (this.editor == null) {
             this.editor = new EditorMainMenu(this);
         }
         return this.editor;
-    }
-
-    @NotNull
-    public SessionConsole getSessionConsole() {
-        return sessionConsole;
-    }
-
-    @Nullable
-    public HologramHandler getHologramHandler() {
-        return hologramHandler;
-    }
-
-    @Nullable
-    public SchematicHandler getSchematicHandler() {
-        return schematicHandler;
-    }
-
-    @Nullable
-    public RegionHandler getRegionHandler() {
-        return regionHandler;
-    }
-
-    @Nullable
-    public PartyHandler getPartyHandler() {
-        return partyHandler;
     }
 
     public void sendDebug(@NotNull String text) {

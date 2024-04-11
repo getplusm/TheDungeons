@@ -3,10 +3,8 @@ package t.me.p1azmer.plugin.dungeons.dungeon.editor.settings;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.menu.AutoPaged;
 import t.me.p1azmer.engine.api.menu.click.ItemClick;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
@@ -16,10 +14,10 @@ import t.me.p1azmer.engine.editor.EditorManager;
 import t.me.p1azmer.engine.utils.Colorizer;
 import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestState;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.HologramSettings;
+import t.me.p1azmer.plugin.dungeons.dungeon.Placeholders;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.state.ChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.HologramSettings;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
@@ -28,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class HologramSettingsEditor extends EditorMenu<DungeonPlugin, HologramSettings> implements AutoPaged<DungeonChestState> {
+public class HologramSettingsEditor extends EditorMenu<DungeonPlugin, HologramSettings> implements AutoPaged<ChestState> {
 
 
     public HologramSettingsEditor(@NotNull HologramSettings settings) {
@@ -74,13 +72,13 @@ public class HologramSettingsEditor extends EditorMenu<DungeonPlugin, HologramSe
 
     @Override
     @NotNull
-    public List<DungeonChestState> getObjects(@NotNull Player player) {
-        return new ArrayList<>(Arrays.stream(DungeonChestState.values()).toList());
+    public List<ChestState> getObjects(@NotNull Player player) {
+        return new ArrayList<>(Arrays.stream(ChestState.values()).toList());
     }
 
     @Override
     @NotNull
-    public ItemStack getObjectStack(@NotNull Player player, @NotNull DungeonChestState state) {
+    public ItemStack getObjectStack(@NotNull Player player, @NotNull ChestState state) {
         ItemStack item = new ItemStack(Material.FLOWER_BANNER_PATTERN);
         ItemReplacer.create(item)
                 .readLocale(EditorLocales.HOLOGRAM_OBJECT)
@@ -97,7 +95,7 @@ public class HologramSettingsEditor extends EditorMenu<DungeonPlugin, HologramSe
 
     @Override
     @NotNull
-    public ItemClick getObjectClick(@NotNull DungeonChestState state) {
+    public ItemClick getObjectClick(@NotNull ChestState state) {
         return (viewer, event) -> {
             Player player = viewer.getPlayer();
             if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {

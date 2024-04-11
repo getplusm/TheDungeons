@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import t.me.p1azmer.engine.api.lang.LangMessage;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.utils.ItemReplacer;
@@ -16,23 +17,20 @@ import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
-import java.util.List;
-
 public class AnnounceMainEditor extends EditorMenu<DungeonPlugin, Announce> {
 
     public AnnounceMainEditor(@NotNull Announce announce) {
         super(announce.plugin(), announce, Config.EDITOR_TITLE_ANNOUNCE.get(), 9);
 
         this.addReturn(8).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> announce.manager().getEditor().open(viewer.getPlayer(), 1));
+            this.plugin.runTask(task -> announce.getManager().getEditor().open(viewer.getPlayer(), 1));
         });
 
         this.addItem(Material.COMPARATOR, EditorLocales.ANNOUNCE_MESSAGES, 0).setClick((viewer, event) -> {
             this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_CHANCE, wrapper -> {
                 String text = wrapper.getText();
-                List<String> messages = announce.getMessagesRaw();
-                messages.add(text);
-                announce.setMessages(messages);
+                LangMessage messages = announce.getMessage();
+                announce.setMessage(new LangMessage(plugin(), messages.getRaw() + "\n" + text));
                 this.save(viewer);
                 return true;
             });

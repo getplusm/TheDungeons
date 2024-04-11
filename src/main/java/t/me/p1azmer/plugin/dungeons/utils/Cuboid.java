@@ -37,7 +37,7 @@ public class Cuboid {
     }
 
     public static Cuboid of(@NotNull Dungeon dungeon, @NotNull Location center) {
-        int radius = dungeon.getDungeonRegion().getRadius();
+        int radius = dungeon.getRegion().getRadius();
         int minX = center.getBlockX() - radius;
         int minY = center.getBlockY() - radius;
         int minZ = center.getBlockZ() - radius;

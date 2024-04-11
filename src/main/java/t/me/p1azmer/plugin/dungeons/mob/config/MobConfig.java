@@ -18,7 +18,7 @@ import t.me.p1azmer.engine.lang.LangManager;
 import t.me.p1azmer.engine.utils.Colorizer;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
+import t.me.p1azmer.plugin.dungeons.mob.Placeholders;
 import t.me.p1azmer.plugin.dungeons.mob.editor.MobMainEditor;
 import t.me.p1azmer.plugin.dungeons.mob.style.MobStyleType;
 

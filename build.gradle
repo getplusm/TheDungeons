@@ -1,10 +1,9 @@
 plugins {
     id 'java'
-    id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
 group = 'plazmer'
-version = '2.1.2'
+version = '3.0.0'
 
 repositories {
     mavenCentral()
@@ -70,7 +69,7 @@ dependencies {
     compileOnly group: 'com.griefdefender', name: 'api', version: '2.1.0-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.2-SNAPSHOT'
     compileOnly 'com.github.cryptomorin:kingdoms:1.16.8.1.1'
-    compileOnly 'com.github.getplusm:ProtectionBlocks:1.0.6R1'
+    compileOnly 'com.github.getplusm:ProtectionBlocks:1.0.7'
 
     compileOnly 'com.github.TechFortress:GriefPrevention:16.18'
     compileOnly 'com.github.angeschossen:LandsAPI:6.33.10'
@@ -92,7 +91,12 @@ dependencies {
     // Vault
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
 
+    // Engine
     compileOnly 'com.github.getplusm:Engine:2.4.4'
+
+    // Libs
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
 
 def targetJavaVersion = 17
@@ -119,11 +123,7 @@ processResources {
         expand props
     }
 }
-shadowJar {
-    archivesBaseName = "TheDungeons"
+jar{
     archiveClassifier.set ""
     destinationDirectory.set(rootProject.buildDir)
 }
-assemble.dependsOn(shadowJar)
-// you can change broadcast settings in editor
-// all dungeons messages send only for world players

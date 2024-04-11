@@ -46,7 +46,7 @@ public class MobListener extends AbstractListener<DungeonPlugin> {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onArenaMobCombust(EntityCombustEvent e) {
+    public void onMobCombust(EntityCombustEvent e) {
         Entity entity = e.getEntity();
         if (this.manager.isCustomMob(entity)) {
             if (e instanceof EntityCombustByEntityEvent ec) {
@@ -60,12 +60,12 @@ public class MobListener extends AbstractListener<DungeonPlugin> {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onArenaPlayerInteractEntity(PlayerInteractEntityEvent e) {
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
         e.setCancelled(!this.canInteract(e));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onArenaPlayerInteractEntity2(PlayerInteractAtEntityEvent e) {
+    public void onPlayerInteractEntity2(PlayerInteractAtEntityEvent e) {
         e.setCancelled(!this.canInteract(e));
     }
 

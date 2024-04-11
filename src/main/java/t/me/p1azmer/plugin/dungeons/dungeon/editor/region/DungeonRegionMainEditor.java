@@ -8,7 +8,7 @@ import t.me.p1azmer.engine.editor.EditorManager;
 import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.Region;
+import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
@@ -19,8 +19,8 @@ import java.util.List;
 public class DungeonRegionMainEditor extends EditorMenu<DungeonPlugin, Region> {
 
     public DungeonRegionMainEditor(@NotNull Region region) {
-        super(region.getDungeon().plugin(), region, Config.EDITOR_TITLE_DUNGEON.get(), 27);
-        Dungeon dungeon = region.getDungeon();
+        super(region.dungeon().plugin(), region, Config.EDITOR_TITLE_DUNGEON.get(), 27);
+        Dungeon dungeon = region.dungeon();
 
         this.addReturn(22).setClick((viewer, event) -> {
             this.plugin.runTask(task -> dungeon.getEditor().open(viewer.getPlayer(), 1));
@@ -91,7 +91,7 @@ public class DungeonRegionMainEditor extends EditorMenu<DungeonPlugin, Region> {
     }
 
     private void save(@NotNull MenuViewer viewer) {
-        this.object.getDungeon().save();
+        this.object.dungeon().save();
         this.plugin.runTask(task -> this.open(viewer.getPlayer(), viewer.getPage()));
     }
 }

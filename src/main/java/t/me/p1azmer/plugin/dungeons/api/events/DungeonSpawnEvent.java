@@ -10,7 +10,7 @@ public class DungeonSpawnEvent extends DungeonEvent{
     private Location location;
 
     public DungeonSpawnEvent(@NotNull Dungeon dungeon, @NotNull Location location) {
-        super(dungeon);
+        super(dungeon, true);
         this.location = location;
     }
 

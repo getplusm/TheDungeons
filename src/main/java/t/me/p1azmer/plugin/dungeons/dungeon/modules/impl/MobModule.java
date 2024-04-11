@@ -1,24 +1,40 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.modules.impl;
 
+import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
+import t.me.p1azmer.engine.utils.LocationUtil;
 import t.me.p1azmer.plugin.dungeons.api.mob.MobFaction;
 import t.me.p1azmer.plugin.dungeons.api.mob.MobList;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
+import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
+import t.me.p1azmer.plugin.dungeons.mob.MobManager;
 
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 public class MobModule extends AbstractModule {
     private MobList mobList;
+    private MobManager manager;
 
-    public MobModule(@NotNull Dungeon dungeon, @NotNull String id) {
-        super(dungeon, id, false, false);
+    public MobModule(
+            @NotNull Dungeon dungeon,
+            @NotNull String id
+    ) {
+        super(dungeon, id, true);
     }
 
     @Override
     protected Predicate<Boolean> onLoad() {
         this.mobList = new MobList();
-        return aBoolean -> dungeon().getStage().isOpened();
+        this.manager = plugin().getMobManager();
+
+        return aBoolean -> {
+            DungeonStage stage = getDungeon().getStage();
+            return stage.isOpened();
+        };
     }
 
     @Override
@@ -30,19 +46,42 @@ public class MobModule extends AbstractModule {
     }
 
     @Override
-    protected boolean onActivate(boolean force) {
-        if (!dungeon().getSettings().getMobMap().isEmpty()) {
-            dungeon().getSettings().getMobMap().forEach((mobId, amount) -> {
+    protected CompletableFuture<Boolean> onActivate(boolean force) {
+        Map<String, Integer> mobMap = getDungeon().getSettings().getMobMap();
+        MobManager mobManager = plugin().getMobManager();
+        if (!mobMap.isEmpty()) {
+            mobMap.forEach((mobId, amount) -> {
                 for (int i = 0; i < amount; i++) {
-                    plugin().getMobManager().spawnMob(dungeon(), MobFaction.ENEMY, mobId, this.mobList);
+                    plugin().runTask(sync -> mobManager.spawnMob(getDungeon(), MobFaction.ENEMY, mobId, this.mobList));
                 }
             });
-        }
-        return true;
+            this.debug("Mob spawned");
+        } else this.debug("No mobs to spawn");
+        return CompletableFuture.completedFuture(true);
     }
 
     @Override
-    protected boolean onDeactivate() {
+    public void update() {
+        this.getMobs()
+                .getAll()
+                .forEach(entity -> {
+                    Location location = this.getDungeon().getLocation().orElse(null);
+                    if (location == null) {
+                        this.manager.killMob(entity);
+                        return;
+                    }
+                    Region dungeonRegion = getDungeon().getRegion();
+                    Location entityLocation = entity.getLocation();
+
+                    if (entityLocation.distance(location) > dungeonRegion.getRadius()) { // TODO: write safe damage with radius and target
+                        Location groundBlock = LocationUtil.getFirstGroundBlock(location);
+                        entity.teleport(groundBlock);
+                    }
+                });
+    }
+
+    @Override
+    protected boolean onDeactivate(boolean force) {
         this.killMobs();
         return true;
     }
@@ -62,7 +101,8 @@ public class MobModule extends AbstractModule {
         if (this.mobList == null)
             this.mobList = new MobList();
 
-        this.mobList.getEnemies().removeIf(mob -> !mob.isValid() || mob.isDead());
+        this.mobList.getEnemies()
+                .removeIf(mob -> !mob.isValid() || mob.isDead());
         return mobList;
     }
 }

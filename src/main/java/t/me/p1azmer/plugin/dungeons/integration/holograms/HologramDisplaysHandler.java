@@ -13,17 +13,18 @@ import t.me.p1azmer.engine.utils.Colorizer;
 import t.me.p1azmer.engine.utils.LocationUtil;
 import t.me.p1azmer.engine.utils.Pair;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.api.hologram.HologramHandler;
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.DungeonChestBlock;
+import t.me.p1azmer.plugin.dungeons.api.handler.hologram.HologramHandler;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.ChestBlock;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class HologramDisplaysHandler implements HologramHandler {
 
     private HolographicDisplaysAPI hologramAPI;
-    private Map<String, Set<Pair<DungeonChestBlock, Hologram>>> holoMap;
+    private final Map<String, Set<Pair<ChestBlock, Hologram>>> holoMap = new ConcurrentHashMap<>();
 
     private final DungeonPlugin plugin;
 
@@ -34,15 +35,12 @@ public class HologramDisplaysHandler implements HologramHandler {
 
     @Override
     public void setup() {
-        this.holoMap = new HashMap<>();
     }
 
     @Override
     public void shutdown() {
-        if (this.holoMap != null) {
-            this.holoMap.values().forEach(set -> set.forEach(pair -> pair.getSecond().delete()));
-            this.holoMap = null;
-        }
+        this.holoMap.values().forEach(set -> set.forEach(pair -> pair.getSecond().delete()));
+        this.holoMap.clear();
         if (this.hologramAPI != null) {
             this.hologramAPI = null;
         }
@@ -53,56 +51,56 @@ public class HologramDisplaysHandler implements HologramHandler {
         if (module == null) return;
         plugin.runTask(sync -> {
             List<String> messages;
-            Set<Pair<DungeonChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(dungeon.getId(), set -> new HashSet<>());
-            for (DungeonChestBlock dungeonChestBlock : module.getChests()) {
-                Block block = dungeonChestBlock.getBlock();
+            Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(dungeon.getId(), set -> new HashSet<>());
+            for (ChestBlock chestBlock : module.getChests()) {
+                Block block = chestBlock.getBlock();
 
-                messages = new ArrayList<>(dungeonChestBlock.getDungeon().getHologramSettings().getMessages(dungeonChestBlock.getState()));
-                messages.replaceAll(dungeonChestBlock.replacePlaceholders());
-                Hologram hologram = this.hologramAPI.createHologram(this.fineLocation(dungeonChestBlock, block.getLocation()));
+                messages = new ArrayList<>(chestBlock.getDungeon().getHologramSettings().getMessages(chestBlock.getState()));
+                messages.replaceAll(chestBlock.replacePlaceholders());
+                Hologram hologram = this.hologramAPI.createHologram(this.fineLocation(chestBlock, block.getLocation()));
                 for (String line : messages) {
                     hologram.getLines().appendText(Colorizer.apply(line));
                 }
-                holograms.add(Pair.of(dungeonChestBlock, hologram));
+                holograms.add(Pair.of(chestBlock, hologram));
             }
         });
     }
 
     @NotNull
-    private Location fineLocation(@NotNull DungeonChestBlock dungeonChestBlock, @NotNull Location location) {
-        return LocationUtil.getCenter(location.clone()).add(0D, dungeonChestBlock.getDungeon().getHologramSettings().getOffsetY(), 0D);
+    private Location fineLocation(@NotNull ChestBlock chestBlock, @NotNull Location location) {
+        return LocationUtil.getCenter(location.clone()).add(0D, chestBlock.getDungeon().getHologramSettings().getOffsetY(), 0D);
     }
 
     @Override
     public void delete(@NotNull Dungeon dungeon) {
-        Set<Pair<DungeonChestBlock, Hologram>> set = this.holoMap.remove(dungeon.getId());
+        Set<Pair<ChestBlock, Hologram>> set = this.holoMap.remove(dungeon.getId());
         if (set == null) return;
 
         set.forEach(pair -> pair.getSecond().delete());
     }
 
     @Override
-    public void update(@NotNull DungeonChestBlock dungeonChestBlock) {
+    public void update(@NotNull ChestBlock chestBlock) {
         plugin.runTask(sync -> {
-            Set<Pair<DungeonChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(dungeonChestBlock.getDungeon().getId(), set -> new HashSet<>());
-            holograms.stream().filter(f -> f.getFirst().equals(dungeonChestBlock)).map(Pair::getSecond).toList().forEach(hologram -> {
-                List<String> messages = new ArrayList<>(dungeonChestBlock.getDungeon().getHologramSettings().getMessages(dungeonChestBlock.getState()));
-                messages.replaceAll(dungeonChestBlock.replacePlaceholders());
-                updateHologramLines(dungeonChestBlock, hologram, messages);
+            Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(chestBlock.getDungeon().getId(), set -> new HashSet<>());
+            holograms.stream().filter(f -> f.getFirst().equals(chestBlock)).map(Pair::getSecond).toList().forEach(hologram -> {
+                List<String> messages = new ArrayList<>(chestBlock.getDungeon().getHologramSettings().getMessages(chestBlock.getState()));
+                messages.replaceAll(chestBlock.replacePlaceholders());
+                updateHologramLines(chestBlock, hologram, messages);
             });
         });
     }
 
-    private void updateHologramLines(@NotNull DungeonChestBlock dungeonChestBlock, @NotNull Hologram hologram, @NotNull List<String> message) {
+    private void updateHologramLines(@NotNull ChestBlock chestBlock, @NotNull Hologram hologram, @NotNull List<String> message) {
         HologramLines lines = hologram.getLines();
         int lineCount = lines.size();
         for (int i = 0; i < Math.min(lineCount, message.size()); i++) {
             if (lines.get(i) instanceof TextHologramLine line) {
                 String originalText = line.getText();
                 String newText = message.get(i);
-                newText = dungeonChestBlock.replacePlaceholders().apply(newText);
-                newText = dungeonChestBlock.getDungeon().getSettings().replacePlaceholders().apply(newText);
-                newText = dungeonChestBlock.getDungeon().replacePlaceholders().apply(newText);
+                newText = chestBlock.replacePlaceholders().apply(newText);
+                newText = chestBlock.getDungeon().getSettings().replacePlaceholders().apply(newText);
+                newText = chestBlock.getDungeon().replacePlaceholders().apply(newText);
 
                 if (originalText == null || originalText.isEmpty() || !originalText.equals(newText)) {
                     line.setText(Colorizer.apply(newText));
@@ -118,9 +116,9 @@ public class HologramDisplaysHandler implements HologramHandler {
         } else if (message.size() > lineCount) {
             for (int i = lineCount; i < message.size(); i++) {
                 String newText = message.get(i);
-                newText = dungeonChestBlock.replacePlaceholders().apply(newText);
-                newText = dungeonChestBlock.getDungeon().getSettings().replacePlaceholders().apply(newText);
-                newText = dungeonChestBlock.getDungeon().replacePlaceholders().apply(newText);
+                newText = chestBlock.replacePlaceholders().apply(newText);
+                newText = chestBlock.getDungeon().getSettings().replacePlaceholders().apply(newText);
+                newText = chestBlock.getDungeon().replacePlaceholders().apply(newText);
                 hologram.getLines().appendText(Colorizer.apply(newText));
             }
         }

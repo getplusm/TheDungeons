@@ -18,7 +18,7 @@ import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
-import t.me.p1azmer.plugin.dungeons.dungeon.categories.Reward;
+import t.me.p1azmer.plugin.dungeons.dungeon.reward.Reward;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
@@ -44,7 +44,7 @@ public class DungeonRewardListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
             if (cursor != null && !cursor.getType().isAir()) {
                 String id = StringUtil.lowerCaseUnderscore(ItemUtil.getItemName(cursor));
                 int count = 0;
-                while (dungeon.getReward(count == 0 ? id : id + count) != null) {
+                while (dungeon.getReward(count == 0 ? id : id + count).orElse(null) != null) {
                     count++;
                 }
                 Reward reward = new Reward(dungeon, count == 0 ? id : id + count);
@@ -57,7 +57,7 @@ public class DungeonRewardListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
 
             this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_ID, wrapper -> {
                 String id = StringUtil.lowerCaseUnderscore(wrapper.getTextRaw());
-                if (dungeon.getReward(id) != null) {
+                if (dungeon.getReward(id).isPresent()) {
                     EditorManager.error(viewer.getPlayer(), plugin.getMessage(Lang.EDITOR_REWARD_ERROR_CREATE_EXIST).getLocalized());
                     return false;
                 }

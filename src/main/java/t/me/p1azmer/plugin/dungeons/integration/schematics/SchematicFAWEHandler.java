@@ -1,9 +1,6 @@
 package t.me.p1azmer.plugin.dungeons.integration.schematics;
 
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.LocalSession;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.*;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
@@ -24,11 +21,12 @@ import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldedit.world.block.BlockType;
 import com.sk89q.worldedit.world.block.BlockTypes;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.Placeholders;
-import t.me.p1azmer.plugin.dungeons.api.schematic.SchematicHandler;
+import t.me.p1azmer.plugin.dungeons.api.handler.schematic.SchematicHandler;
+import t.me.p1azmer.plugin.dungeons.dungeon.Placeholders;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 
 import java.io.BufferedInputStream;
@@ -39,11 +37,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 
 public class SchematicFAWEHandler implements SchematicHandler {
 
-    private Map<Location, EditSession> editSessionMap;
-    private Map<Dungeon, Location> placedMap;
+    private final Map<Location, EditSession> editSessionMap = new HashMap<>();
+    private final Map<Dungeon, Location> placedMap = new HashMap<>();
     private final DungeonPlugin plugin;
     private WorldEdit worldEdit;
 
@@ -53,35 +52,25 @@ public class SchematicFAWEHandler implements SchematicHandler {
 
     @Override
     public void setup() {
-        this.placedMap = new HashMap<>();
-        this.editSessionMap = new HashMap<>();
         this.worldEdit = WorldEdit.getInstance();
     }
 
     @Override
     public void shutdown() {
-        if (this.placedMap != null) {
-            this.placedMap.forEach((dungeon, location) -> this.undo(dungeon));
-            this.placedMap = null;
-        }
-        if (this.editSessionMap != null) {
-            this.editSessionMap = null;
-        }
-        if (this.worldEdit != null) {
-            this.worldEdit = null;
-        }
+        this.placedMap.forEach((dungeon, location) -> this.undo(dungeon));
+
+        this.editSessionMap.clear();
+        this.placedMap.clear();
     }
 
     @Override
-    public boolean paste(@NotNull Dungeon dungeon, @NotNull File schematicFile) {
-        Location location = dungeon.getLocation();
+    public CompletableFuture<Boolean> paste(@NotNull Dungeon dungeon, @NotNull File schematicFile) {
+        Location location = dungeon.getLocation().orElse(null);
         if (location == null) {
-            return false;
+            // TODO add debug message
+            return CompletableFuture.completedFuture(false);
         }
-
-        if (!this.undo(dungeon)) {
-            return false;
-        }
+        if (!this.undo(dungeon)) return CompletableFuture.completedFuture(false);
 
         World world = location.getWorld();
         if (world == null) {
@@ -108,35 +97,46 @@ public class SchematicFAWEHandler implements SchematicHandler {
         session.setClipboard(holder);
         BlockVector3 toVector = BlockVector3.at(location.getX(), location.getY(), location.getZ());
         com.sk89q.worldedit.world.World weWorld = BukkitAdapter.adapt(world);
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        plugin.runTask(sync -> {
+            try (EditSession editSession = this.worldEdit.newEditSession(weWorld)) {
+                editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
 
-        try (EditSession editSession = this.worldEdit.newEditSession(weWorld)) {
-            editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
+                Operation operation = session.getClipboard()
+                        .createPaste(editSession)
+                        .to(toVector)
+                        .ignoreAirBlocks(dungeon.getSchematicSettings().isIgnoreAirBlocks())
+                        .copyEntities(true)
+                        .build();
+                Operations.complete(operation);
+                Clipboard clipboard = session.getClipboard().getClipboard();
+                Region region = clipboard.getRegion();
 
-            Operation operation = session.getClipboard()
-                    .createPaste(editSession)
-                    .to(toVector)
-                    .ignoreAirBlocks(dungeon.getSchematicSettings().isIgnoreAirBlocks())
-                    .copyEntities(true)
-                    .build();
-            Operations.complete(operation);
-            Clipboard clipboard = session.getClipboard().getClipboard();
-            Region region = clipboard.getRegion();
+                BlockVector3 minimumPoint = clipboard.getRegion().getMinimumPoint();
+                BlockVector3 maximumPoint = region.getMaximumPoint();
 
-            BlockVector3 clipboardOffset = clipboard.getRegion().getMinimumPoint().subtract(clipboard.getOrigin());
-            Vector3 realTo = toVector.toVector3().add(holder.getTransform().apply(clipboardOffset.toVector3()));
-            Vector3 max = realTo.add(holder.getTransform().apply(region.getMaximumPoint().subtract(region.getMinimumPoint()).toVector3()));
-            RegionSelector selector = new CuboidRegionSelector(weWorld, realTo.toBlockPoint(), max.toBlockPoint());
+                BlockVector3 clipboardOffset = minimumPoint.subtract(clipboard.getOrigin());
+                Vector3 realTo = toVector.toVector3().add(holder.getTransform().apply(clipboardOffset.toVector3()));
+                Vector3 max = realTo.add(holder.getTransform().apply(maximumPoint.subtract(region.getMinimumPoint()).toVector3()));
+                RegionSelector selector = new CuboidRegionSelector(weWorld, realTo.toBlockPoint(), max.toBlockPoint());
 
-            session.setRegionSelector(weWorld, selector);
-            selector.learnChanges();
-            selector.explainRegionAdjust(actor, session);
+                session.setRegionSelector(weWorld, selector);
+                selector.learnChanges();
+                selector.explainRegionAdjust(actor, session);
 
-            this.getEditSessionMap().put(location, editSession);
-            this.placedMap.put(dungeon, location);
-            return true;
-        } catch (WorldEditException e) {
-            throw new RuntimeException("Reach limit of block change when paste the schematic at '" + dungeon.getId() + "' dungeon!");
-        }
+                this.extracted(dungeon, location, editSession);
+                future.complete(true);
+            } catch (WorldEditException e) {
+                future.complete(false);
+                throw new RuntimeException("Reach limit of block change when paste the schematic at '" + dungeon.getId() + "' dungeon!");
+            }
+        });
+        return future;
+    }
+
+    private void extracted(@NotNull Dungeon dungeon, @NotNull Location location, @NotNull EditSession editSession) {
+        this.getEditSessionMap().put(location, editSession);
+        this.placedMap.put(dungeon, location);
     }
 
     @Override
@@ -144,17 +144,20 @@ public class SchematicFAWEHandler implements SchematicHandler {
         if (!this.placedMap.containsKey(dungeon)) return true;
         Location location = this.placedMap.get(dungeon);
         if (location == null) return true;
-        if (!this.getEditSessionMap().containsKey(location)) return true;
+        boolean contained = this.getEditSessionMap().containsKey(location);
+        if (!contained) return true;
 
         try {
             Actor actor = this.plugin.getSessionConsole();
             EditSession editSession = this.getEditSessionMap().get(location);
+            if (editSession == null) return false;
             BlockBag blockBag = editSession.getBlockBag();
             LocalSession session = this.plugin.getSessionConsole();
 
 
             session.setWorldOverride(editSession.getWorld());
-            try (EditSession newEditSession = WorldEdit.getInstance().newEditSessionBuilder().blockBag(blockBag).actor(actor).world(editSession.getWorld()).build()) {
+            EditSessionBuilder sessionBuilder = WorldEdit.getInstance().newEditSessionBuilder();
+            try (EditSession newEditSession = sessionBuilder.blockBag(blockBag).actor(actor).world(editSession.getWorld()).build()) {
                 editSession.undo(newEditSession);
             }
 
@@ -180,6 +183,10 @@ public class SchematicFAWEHandler implements SchematicHandler {
             return false;
         }
         Clipboard clipboard = holder.getClipboard();
+        if (clipboard == null) {
+            this.plugin.error("The schematic module returned the following error: Clipboard for file not found or invalid");
+            return false;
+        }
         BlockVector3 minPoint = clipboard.getMinimumPoint();
         BlockVector3 maxPoint = clipboard.getMaximumPoint();
 
@@ -192,7 +199,11 @@ public class SchematicFAWEHandler implements SchematicHandler {
                     if (block.getBlockType() == null) continue;
                     if (block.getBlockType().getMaterial().isAir()) continue;
 
-                    BlockType chestBlock = BlockTypes.get("minecraft:" + dungeon.getChestSettings().getMaterial().name().toLowerCase(Locale.ROOT));
+                    Material material = dungeon.getChestSettings().getMaterial();
+                    String materialName = material.name();
+                    String id = "minecraft:" + materialName.toLowerCase(Locale.ROOT);
+
+                    BlockType chestBlock = BlockTypes.get(id);
                     if (block.getBlockType().equals(chestBlock)) {
                         return true;
                     }
@@ -232,7 +243,11 @@ public class SchematicFAWEHandler implements SchematicHandler {
                     if (block.getBlockType() == null) continue;
                     if (block.getBlockType().getMaterial().isAir()) continue;
 
-                    BlockType chestBlock = BlockTypes.get("minecraft:" + dungeon.getChestSettings().getMaterial().name().toLowerCase(Locale.ROOT));
+                    Material material = dungeon.getChestSettings().getMaterial();
+                    String materialName = material.name();
+                    String id = "minecraft:" + materialName.toLowerCase(Locale.ROOT);
+
+                    BlockType chestBlock = BlockTypes.get(id);
                     if (block.getBlockType().equals(chestBlock)) {
                         amount++;
                     }
@@ -252,8 +267,10 @@ public class SchematicFAWEHandler implements SchematicHandler {
         return editSessionMap;
     }
 
-    private record SchematicLoadTask(@NotNull File file,
-                                     @NotNull ClipboardFormat format) implements Callable<ClipboardHolder> {
+    private record SchematicLoadTask(
+            @NotNull File file,
+            @NotNull ClipboardFormat format
+    ) implements Callable<ClipboardHolder> {
 
         private static final Map<File, ClipboardHolder> holderCache = new WeakHashMap<>();
 
