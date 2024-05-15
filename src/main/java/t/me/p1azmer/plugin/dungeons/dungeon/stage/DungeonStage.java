@@ -9,7 +9,7 @@ import t.me.p1azmer.engine.utils.CollectionsUtil;
 import t.me.p1azmer.engine.utils.Colorizer;
 import t.me.p1azmer.engine.utils.Placeholders;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.api.events.DungeonChangeStageEvent;
+import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonChangeStageEvent;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleManager;
@@ -121,7 +121,7 @@ public enum DungeonStage {
     public static void call(@NotNull Dungeon dungeon, @NotNull DungeonStage stage, @NotNull String from) {
         DungeonPlugin plugin = dungeon.plugin();
 
-        DungeonChangeStageEvent calledEvent = new DungeonChangeStageEvent(dungeon, stage, from);
+        AsyncDungeonChangeStageEvent calledEvent = new AsyncDungeonChangeStageEvent(dungeon, stage, from);
         plugin.getPluginManager().callEvent(calledEvent);
         if (calledEvent.isCancelled()) {
             plugin.sendDebug("It was not possible to change the state of the dungeon '" + dungeon.getId() + "' from \"" + from + "\", as the event was canceled");

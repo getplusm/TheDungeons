@@ -1,11 +1,11 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.chest.state;
 
 import org.jetbrains.annotations.NotNull;
-import t.me.p1azmer.engine.api.placeholder.IPlaceholderMap;
-import t.me.p1azmer.engine.api.placeholder.PlaceholderMap;
+import t.me.p1azmer.engine.utils.placeholder.Placeholder;
+import t.me.p1azmer.engine.utils.placeholder.PlaceholderMap;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.Placeholders;
 
-public enum ChestState implements IPlaceholderMap {
+public enum ChestState implements Placeholder {
 
     WAITING,
     COOLDOWN,

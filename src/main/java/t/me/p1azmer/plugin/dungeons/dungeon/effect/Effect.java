@@ -5,12 +5,12 @@ import lombok.Setter;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
-import t.me.p1azmer.engine.api.placeholder.IPlaceholderMap;
-import t.me.p1azmer.engine.api.placeholder.PlaceholderMap;
+import t.me.p1azmer.engine.utils.placeholder.Placeholder;
+import t.me.p1azmer.engine.utils.placeholder.PlaceholderMap;
 
 @Getter
 @Setter
-public class Effect implements IPlaceholderMap {
+public class Effect implements Placeholder {
 
     private PotionEffectType potionEffectType;
     private int duration;

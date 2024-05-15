@@ -15,9 +15,9 @@ import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.manager.AbstractListener;
 import t.me.p1azmer.engine.utils.collections.AutoRemovalCollection;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.api.events.DungeonChangeStageEvent;
-import t.me.p1azmer.plugin.dungeons.api.events.DungeonDespawnEvent;
-import t.me.p1azmer.plugin.dungeons.api.events.DungeonSpawnEvent;
+import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonChangeStageEvent;
+import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonDespawnEvent;
+import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonSpawnEvent;
 import t.me.p1azmer.plugin.dungeons.api.handler.party.PartyHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
@@ -97,7 +97,7 @@ public class DungeonListener extends AbstractListener<DungeonPlugin> {
     }
 
     @EventHandler
-    public void onSpawn(DungeonSpawnEvent event){
+    public void onSpawn(AsyncDungeonSpawnEvent event){
         Dungeon dungeon = event.getDungeon();
         Location result = event.getLocation();
         Region region = dungeon.getRegion();
@@ -122,7 +122,7 @@ public class DungeonListener extends AbstractListener<DungeonPlugin> {
     }
 
     @EventHandler
-    public void onDespawn(DungeonDespawnEvent event){
+    public void onDespawn(AsyncDungeonDespawnEvent event){
         Dungeon dungeon = event.getDungeon();
         dungeon.setLocation(null);
         dungeon.setCuboid(null);
@@ -130,7 +130,7 @@ public class DungeonListener extends AbstractListener<DungeonPlugin> {
     }
 
     @EventHandler
-    public void onStageChange(DungeonChangeStageEvent event){
+    public void onStageChange(AsyncDungeonChangeStageEvent event){
         Dungeon dungeon = event.getDungeon();
         DungeonStage stage = event.getStage();
         String from = event.getChangeFrom();

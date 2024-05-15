@@ -8,11 +8,11 @@ import java.io.File;
 import java.util.concurrent.CompletableFuture;
 
 public interface SchematicHandler extends Loadable {
-    CompletableFuture<Boolean> paste(@NotNull Dungeon dungeon, @NotNull File schematicFile);
+  CompletableFuture<Boolean> paste(@NotNull Dungeon dungeon, @NotNull File schematicFile);
 
-    boolean undo(@NotNull Dungeon dungeon);
+  boolean undo(@NotNull Dungeon dungeon);
 
-    boolean containsChestBlock(@NotNull Dungeon dungeon, @NotNull File schematicFile);
+  boolean containsChestBlock(@NotNull Dungeon dungeon, @NotNull File schematicFile);
 
-    int getAmountOfChestBlocks(@NotNull Dungeon dungeon, @NotNull File schematicFile);
+  int getAmountOfChestBlocks(@NotNull Dungeon dungeon, @NotNull File schematicFile);
 }

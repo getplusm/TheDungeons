@@ -12,9 +12,9 @@ import static t.me.p1azmer.engine.utils.Colors.ORANGE;
 import static t.me.p1azmer.engine.utils.Colors.RED;
 import static t.me.p1azmer.engine.utils.Colors2.BOLD;
 import static t.me.p1azmer.engine.utils.Colors2.GRAY;
+import static t.me.p1azmer.engine.utils.Colors2.LIGHT_GRAY;
 import static t.me.p1azmer.engine.utils.Colors2.WHITE;
 import static t.me.p1azmer.engine.utils.Colors2.YELLOW;
-import static t.me.p1azmer.engine.utils.Colors2.*;
 
 public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales {
 

@@ -19,48 +19,48 @@ import java.util.concurrent.CompletableFuture;
 
 public class DeleteCommand extends AbstractCommand<DungeonPlugin> {
 
-    public DeleteCommand(@NotNull DungeonPlugin plugin) {
-        super(plugin, new String[]{"despawn", "remove", "del", "delete"}, Perms.COMMAND_DESPAWN);
-        this.setDescription(plugin.getMessage(Lang.COMMAND_DEL_DESC));
-        this.setUsage(plugin.getMessage(Lang.COMMAND_DEL_USAGE));
-    }
+  public DeleteCommand(@NotNull DungeonPlugin plugin) {
+    super(plugin, new String[]{"despawn", "remove", "del", "delete"}, Perms.COMMAND_DESPAWN);
+    this.setDescription(plugin.getMessage(Lang.COMMAND_DEL_DESC));
+    this.setUsage(plugin.getMessage(Lang.COMMAND_DEL_USAGE));
+  }
 
-    @Override
-    @NotNull
-    public List<String> getTab(@NotNull Player player, int arg, @NotNull String[] args) {
-        if (arg == 1) {
-            List<String> list = new ArrayList<>(List.of(Constants.MASK_ANY));
-            list.addAll(plugin.getDungeonManager().getDungeonIds(false));
-            return list;
-        }
-        return super.getTab(player, arg, args);
+  @Override
+  @NotNull
+  public List<String> getTab(@NotNull Player player, int arg, @NotNull String[] args) {
+    if (arg == 1) {
+      List<String> list = new ArrayList<>(List.of(Constants.MASK_ANY));
+      list.addAll(plugin.getDungeonManager().getDungeonIds(false));
+      return list;
     }
+    return super.getTab(player, arg, args);
+  }
 
-    @Override
-    protected void onExecute(@NotNull CommandSender sender, @NotNull CommandResult result) {
-        if (result.length() < 1) {
-            this.printUsage(sender);
-            return;
-        }
-        DungeonManager dungeonManager = plugin.getDungeonManager();
-        if (result.getArg(1).equalsIgnoreCase(Constants.MASK_ANY)) {
-            dungeonManager.getDungeons()
+  @Override
+  protected void onExecute(@NotNull CommandSender sender, @NotNull CommandResult result) {
+    if (result.length() < 1) {
+      this.printUsage(sender);
+      return;
+    }
+    DungeonManager dungeonManager = plugin.getDungeonManager();
+    if (result.getArg(1).equalsIgnoreCase(Constants.MASK_ANY)) {
+      dungeonManager.getDungeons()
                     .forEach(f -> f.cancel(false));
-            plugin.getMessage(Lang.COMMAND_DEL_DONE)
-                    .replace(Placeholders.DUNGEON_NAME, Constants.MASK_ANY)
-                    .send(sender);
-            return;
-        }
-
-        Dungeon dungeon = dungeonManager.getDungeonById(result.getArg(1));
-        if (dungeon == null) {
-            plugin.getMessage(Lang.DUNGEON_ERROR_INVALID)
-                    .send(sender);
-            return;
-        }
-        CompletableFuture.runAsync(() -> dungeon.cancel(false));
-        plugin.getMessage(Lang.COMMAND_DEL_DONE)
-                .replace(dungeon.replacePlaceholders())
-                .send(sender);
+      plugin.getMessage(Lang.COMMAND_DEL_DONE)
+            .replace(Placeholders.DUNGEON_NAME, Constants.MASK_ANY)
+            .send(sender);
+      return;
     }
+
+    Dungeon dungeon = dungeonManager.getDungeonById(result.getArg(1));
+    if (dungeon == null) {
+      plugin.getMessage(Lang.DUNGEON_ERROR_INVALID)
+            .send(sender);
+      return;
+    }
+    CompletableFuture.runAsync(() -> dungeon.cancel(false));
+    plugin.getMessage(Lang.COMMAND_DEL_DONE)
+          .replace(dungeon.replacePlaceholders())
+          .send(sender);
+  }
 }

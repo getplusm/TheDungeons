@@ -13,8 +13,8 @@ import org.kingdoms.events.lands.ClaimLandEvent;
 import org.kingdoms.events.lands.UnclaimLandEvent;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
-import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
+import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
 
 import java.util.Map;
 import java.util.Objects;

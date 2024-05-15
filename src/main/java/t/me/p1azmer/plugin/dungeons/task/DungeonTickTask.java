@@ -5,7 +5,6 @@ import t.me.p1azmer.engine.api.server.AbstractTask;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 
 public class DungeonTickTask extends AbstractTask<DungeonPlugin> {
     private final DungeonManager manager;

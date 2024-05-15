@@ -1,11 +1,13 @@
 plugins {
     id 'java'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
 group = 'plazmer'
-version = '3.0.0'
+version = '3.0.1'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 
     maven {
@@ -54,6 +56,7 @@ repositories {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT'
+    implementation "io.papermc:paperlib:1.0.7"
 
     // worldedit
     compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.2.15-SNAPSHOT'
@@ -92,7 +95,7 @@ dependencies {
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
 
     // Engine
-    compileOnly 'com.github.getplusm:Engine:2.4.4'
+    compileOnly 'com.github.getplusm:PLAZMER-ENGINE:2.4.6'
 
     // Libs
     compileOnly 'org.projectlombok:lombok:1.18.22'
@@ -123,7 +126,11 @@ processResources {
         expand props
     }
 }
-jar{
+
+shadowJar {
+    relocate "io.papermc.lib", "t.me.p1azmer.libs.paperlib"
+    archivesBaseName = "TheDungeons"
     archiveClassifier.set ""
     destinationDirectory.set(rootProject.buildDir)
 }
+assemble.dependsOn(shadowJar)

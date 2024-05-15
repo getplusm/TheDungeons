@@ -1,5 +1,6 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.modules.impl;
 
+import io.papermc.lib.PaperLib;
 import lombok.Getter;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
@@ -24,115 +25,123 @@ import java.util.stream.Collectors;
 
 @Getter
 public class SchematicModule extends AbstractModule {
-    private boolean generated;
-    private List<File> schematicFiles;
-    private List<String> schematics;
-    private File cachedSchematicFile;
-    private final SchematicHandler handler;
+  private boolean generated;
+  private List<File> schematicFiles;
+  private List<String> schematics;
+  private File cachedSchematicFile;
+  private final SchematicHandler handler;
 
-    public SchematicModule(
-            @NotNull Dungeon dungeon,
-            @NotNull String id
-    ) {
-        super(dungeon, id, false, true);
-        this.handler = plugin().getSchematicHandler();
-    }
+  public SchematicModule(
+    @NotNull Dungeon dungeon,
+    @NotNull String id
+  ) {
+    super(dungeon, id, false, true);
+    this.handler = plugin().getSchematicHandler();
+  }
 
-    @Override
-    protected Predicate<Boolean> onLoad() {
-        this.generated = false;
-        this.schematicFiles = new ArrayList<>();
-        this.schematics = this.getDungeon().getSchematicSettings().getSchematics();
-        this.setSchematicFiles(
-                schematics.stream()
-                        .map(this::getFileByName)
-                        .collect(Collectors.toList())
-        );
+  @Override
+  protected Predicate<Boolean> onLoad() {
+    this.generated = false;
+    this.schematicFiles = new ArrayList<>();
+    this.schematics = this.getDungeon().getSchematicSettings().getSchematics();
+    this.setSchematicFiles(
+      schematics.stream()
+                .map(this::getFileByName)
+                .collect(Collectors.toList())
+    );
 
-        for (File schematicFile : new ArrayList<>(this.getSchematicFiles())) {
-            if (schematicFile != null && !schematicFile.exists()) {
-                try {
-                    String filePath = Config.DIR_SCHEMATICS + schematicFile.getName();
-                    File file = new File(plugin().getDataFolder() + filePath);
-                    if (FileUtil.create(file)) {
-                        try {
-                            InputStream input = plugin().getClass().getResourceAsStream(filePath);
-                            if (input != null) FileUtil.copy(input, file);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                } catch (Exception ignored) {
-                }
+    for (File schematicFile : new ArrayList<>(this.getSchematicFiles())) {
+      if (schematicFile != null && !schematicFile.exists()) {
+        try {
+          String filePath = Config.DIR_SCHEMATICS + schematicFile.getName();
+          File file = new File(plugin().getDataFolder() + filePath);
+          if (FileUtil.create(file)) {
+            try {
+              InputStream input = plugin().getClass().getResourceAsStream(filePath);
+              if (input != null) FileUtil.copy(input, file);
+            } catch (Exception ex) {
+              ex.printStackTrace();
             }
+          }
+        } catch (Exception ignored) {
         }
-
-        return aBoolean -> {
-            Optional<SpawnModule> spawnModule = this.getManager().getModule(SpawnModule.class);
-            DungeonStage dungeonStage = getDungeon().getStage();
-            GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
-            GenerationType generationType = generationSettings.getGenerationType();
-            Optional<Location> spawnLocation = generationSettings.getSpawnLocation();
-
-            boolean allowedWithGeneration = !generationType.isDynamic() && spawnLocation.isPresent();
-            boolean hasSchematic = handler != null && !this.getSchematicFiles().isEmpty() && !this.schematics.isEmpty();
-            boolean stageAllowed = dungeonStage.isCheck() || dungeonStage.isPrepare();
-            boolean spawnModuleIsReady = spawnModule.isPresent() && spawnModule.get().isSpawned();
-
-            if (allowedWithGeneration && hasSchematic) return true;
-            return hasSchematic && stageAllowed && spawnModuleIsReady && !isGenerated();
-
-        };
+      }
     }
 
-    @Override
-    protected void onShutdown() {
-        this.generated = false;
-        handler.undo(this.getDungeon());
-        this.cachedSchematicFile = null;
+    return aBoolean -> {
+      Optional<SpawnModule> spawnModule = this.getManager().getModule(SpawnModule.class);
+      DungeonStage dungeonStage = getDungeon().getStage();
+      GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
+      GenerationType generationType = generationSettings.getGenerationType();
+      Optional<Location> spawnLocation = generationSettings.getSpawnLocation();
+
+      boolean allowedWithGeneration = !generationType.isDynamic() && spawnLocation.isPresent();
+      boolean hasSchematic = handler != null && !this.getSchematicFiles().isEmpty() && !this.schematics.isEmpty();
+      boolean stageAllowed = dungeonStage.isCheck() || dungeonStage.isPrepare();
+      boolean spawnModuleIsReady = spawnModule.isPresent() && spawnModule.get().isSpawned();
+
+      if (allowedWithGeneration && hasSchematic) return true;
+      return hasSchematic && stageAllowed && spawnModuleIsReady && !isGenerated();
+
+    };
+  }
+
+  @Override
+  protected void onShutdown() {
+    this.generated = false;
+    handler.undo(this.getDungeon());
+    this.cachedSchematicFile = null;
+  }
+
+  @Override
+  public CompletableFuture<Boolean> onActivate(boolean force) {
+    Location location = this.getDungeon().getLocation().orElse(null);
+    if (location == null) {
+      this.error("Cannot found Dungeon Location!");
+      return CompletableFuture.completedFuture(false);
     }
 
-    @Override
-    public CompletableFuture<Boolean> onActivate(boolean force) {
-        Location location = this.getDungeon().getLocation().orElse(null);
-        if (location == null) {
-            this.error("Cannot found Dungeon Location!");
-            return CompletableFuture.completedFuture(false);
-        }
+    PaperLib.getChunkAtAsync(location).thenAccept(chunk -> {
+      if (!chunk.isGenerated() || !chunk.isLoaded()) {
+        this.plugin().runTask(task -> chunk.getWorld().loadChunk(chunk));
+      }
+    }).join();
 
-        this.cachedSchematicFile = Rnd.get(this.getSchematicFiles());
-        this.generated = true;
-        return handler.paste(this.getDungeon(), this.cachedSchematicFile);
-    }
+    this.cachedSchematicFile = Rnd.get(this.getSchematicFiles());
+    return handler.paste(this.getDungeon(), this.cachedSchematicFile).thenApply(result -> {
+      this.generated = true;
+      return result;
+    });
+  }
 
-    @Override
-    public boolean onDeactivate(boolean force) {
-        GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
-        GenerationType generationType = generationSettings.getGenerationType();
-        Optional<Location> spawnLocation = generationSettings.getSpawnLocation();
-        Optional<ChestModule> module = this.getManager().getModule(ChestModule.class);
+  @Override
+  public boolean onDeactivate(boolean force) {
+    GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
+    GenerationType generationType = generationSettings.getGenerationType();
+    Optional<Location> spawnLocation = generationSettings.getSpawnLocation();
+    Optional<ChestModule> module = this.getManager().getModule(ChestModule.class);
 
-        if (!generationType.isDynamic() && spawnLocation.isPresent()) return false;
-        if (module.isPresent() && !module.get().tryDeactivate(ActionType.FORCE)) return false;
+    if (!generationType.isDynamic() && spawnLocation.isPresent()) return false;
+    if (module.isPresent() && !module.get().tryDeactivate(ActionType.FORCE)) return false;
 
-        if (!this.generated) return true;
+    if (!this.generated) return true;
 
-        this.generated = false;
-        this.cachedSchematicFile = null;
+    this.generated = false;
+    this.cachedSchematicFile = null;
 
-        CompletableFuture.runAsync(() -> handler.undo(this.getDungeon()));
-        return true;
-    }
+    CompletableFuture.runAsync(() -> handler.undo(this.getDungeon()));
+    return true;
+  }
 
 
-    public void setSchematicFiles(@NotNull List<File> schematicFiles) {
-        this.schematicFiles = schematicFiles;
-    }
+  public void setSchematicFiles(@NotNull List<File> schematicFiles) {
+    this.schematicFiles = schematicFiles;
+  }
 
-    @NotNull
-    public File getFileByName(@NotNull String name) {
-        if (!name.endsWith(".schem")) name = name + ".schem";
+  @NotNull
+  public File getFileByName(@NotNull String name) {
+    if (!name.endsWith(".schem")) name = name + ".schem";
 
-        return new File(plugin().getDataFolder() + Config.DIR_SCHEMATICS + name);
-    }
+    return new File(plugin().getDataFolder() + Config.DIR_SCHEMATICS + name);
+  }
 }

@@ -3,9 +3,9 @@ package t.me.p1azmer.plugin.dungeons.dungeon.modules;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.config.JYML;
-import t.me.p1azmer.engine.api.placeholder.IPlaceholderMap;
-import t.me.p1azmer.engine.api.placeholder.PlaceholderMap;
 import t.me.p1azmer.engine.utils.StringUtil;
+import t.me.p1azmer.engine.utils.placeholder.Placeholder;
+import t.me.p1azmer.engine.utils.placeholder.PlaceholderMap;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 @Getter
-public abstract class AbstractModule implements IPlaceholderMap {
+public abstract class AbstractModule implements Placeholder {
     private final Dungeon dungeon;
     private final String id;
     private final String name;

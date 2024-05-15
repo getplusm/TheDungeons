@@ -20,7 +20,6 @@ import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleId;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.Placeholders;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.GenerationSettings;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.MainSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.ModuleSettings;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 
