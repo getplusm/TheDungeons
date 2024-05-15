@@ -1,3 +1,4 @@
+## [Version for Folia](https://github.com/Euphillya/TheDungeons-Folia)
 ![Overview Image](https://cdn.discordapp.com/attachments/810884357543165963/1130614435854159872/overview.png)
 [Discord](https://discord.gg/ajnPb3fdKq) | [Documentation](https://github.com/getplusm/Dungeons/wiki) | [Donate](https://boosty.to/p1azmer)
 
