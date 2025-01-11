@@ -19,39 +19,33 @@ import java.util.List;
 public class DungeonRegionMainEditor extends EditorMenu<DungeonPlugin, Region> {
 
     public DungeonRegionMainEditor(@NotNull Region region) {
-        super(region.dungeon().plugin(), region, Config.EDITOR_TITLE_DUNGEON.get(), 27);
-        Dungeon dungeon = region.dungeon();
+        super(region.getDungeon().plugin(), region, Config.EDITOR_TITLE_DUNGEON.get(), 27);
+        Dungeon dungeon = region.getDungeon();
 
-        this.addReturn(22).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> dungeon.getEditor().open(viewer.getPlayer(), 1));
-        });
+        this.addReturn(22).setClick((viewer, event) -> this.plugin.runTask(task -> dungeon.getEditor().open(viewer.getPlayer(), 1)));
 
 
-        this.addItem(Material.NAME_TAG, EditorLocales.REGION_NAME, 2).setClick((viewer, event) -> {
-            this.handleInput(viewer, Lang.EDITOR_ENTER_DISPLAY_NAME, wrapper -> {
-                region.setName(wrapper.getText());
-                dungeon.save();
-                return true;
-            });
-        });
+        this.addItem(Material.NAME_TAG, EditorLocales.REGION_NAME, 2).setClick((viewer, event) -> this.handleInput(viewer, Lang.EDITOR_ENTER_DISPLAY_NAME, wrapper -> {
+            region.setName(wrapper.getText());
+            dungeon.save();
+            return true;
+        }));
 
         this.addItem(region.isEnabled() ? Material.EMERALD_BLOCK : Material.REDSTONE_BLOCK, EditorLocales.REGION_ENABLED, 0).setClick((viewer, event) -> {
             region.setEnabled(!region.isEnabled());
             this.save(viewer);
         });
 
-        this.addItem(Material.COMPARATOR, EditorLocales.REGION_RADIUS, 4).setClick((viewer, event) -> {
-            this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_CHANCE, wrapper -> {
-                int radius = wrapper.asInt();
-                if (radius <= 0) {
-                    EditorManager.error(viewer.getPlayer(), plugin().getMessage(Lang.ERROR_NUMBER_INVALID).replace("%num%", radius).getLocalized());
-                    return false;
-                }
-                region.setRadius(radius);
-                dungeon.save();
-                return true;
-            });
-        });
+        this.addItem(Material.COMPARATOR, EditorLocales.REGION_RADIUS, 4).setClick((viewer, event) -> this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_CHANCE, wrapper -> {
+            int radius = wrapper.asInt();
+            if (radius <= 0) {
+                EditorManager.error(viewer.getPlayer(), plugin().getMessage(Lang.ERROR_NUMBER_INVALID).replace("%num%", radius).getLocalized());
+                return false;
+            }
+            region.setRadius(radius);
+            dungeon.save();
+            return true;
+        }));
 
 
         this.addItem(Material.ARMOR_STAND, EditorLocales.REGION_FLAGS, 6).setClick((viewer, event) -> {
@@ -91,7 +85,7 @@ public class DungeonRegionMainEditor extends EditorMenu<DungeonPlugin, Region> {
     }
 
     private void save(@NotNull MenuViewer viewer) {
-        this.object.dungeon().save();
+        this.object.getDungeon().save();
         this.plugin.runTask(task -> this.open(viewer.getPlayer(), viewer.getPage()));
     }
 }

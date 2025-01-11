@@ -12,12 +12,15 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
+import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
+import t.me.p1azmer.plugin.dungeons.scheduler.ThreadSync;
 
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.logging.Level;
 
 public class RegionHandlerWG implements RegionHandler {
 
@@ -46,6 +49,7 @@ public class RegionHandlerWG implements RegionHandler {
         if (!region.isEnabled()) return;
 
         double regionRadius = region.getRadius();
+        ThreadSync threadSync = dungeon.getThreadSync();
         dungeon.getLocation().ifPresent(location -> {
             org.bukkit.World world = dungeon.getWorld();
             String regionName = region.getNameRaw();
@@ -53,7 +57,11 @@ public class RegionHandlerWG implements RegionHandler {
             ProtectedRegion protectedRegion = new ProtectedCuboidRegion(regionName, convertToSk89qBV(location.clone().add(-regionRadius, regionRadius, regionRadius)), convertToSk89qBV(location.clone().add(regionRadius, -regionRadius, -regionRadius)));
             Objects.requireNonNull(WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world))).addRegion(protectedRegion);
             for (String flag : region.getFlags()) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "region flag -w " + world.getName() + " " + regionName + " " + flag);
+                String command = "region flag -w " + world.getName() + " " + regionName + " " + flag;
+                threadSync.sync(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command)).exceptionally(throwable -> {
+                    DungeonPlugin.getLog().log(Level.SEVERE, "Failed to set flag for region " + regionName);
+                    return null;
+                });
             }
             region.setCreated(true);
         });
@@ -105,6 +113,6 @@ public class RegionHandlerWG implements RegionHandler {
         ProtectedRegion protectedRegion = set.getRegions().stream().max(Comparator.comparingInt(ProtectedRegion::getPriority)).orElse(null);
         if (protectedRegion == null) return false;
 
-       return protectedRegion.getId().equals(region.getNameRaw().toLowerCase());
+        return protectedRegion.getId().equals(region.getNameRaw().toLowerCase());
     }
 }

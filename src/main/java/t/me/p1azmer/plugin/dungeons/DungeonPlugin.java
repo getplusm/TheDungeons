@@ -1,6 +1,8 @@
 package t.me.p1azmer.plugin.dungeons;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.NexPlugin;
 import t.me.p1azmer.engine.api.command.GeneralCommand;
@@ -12,17 +14,20 @@ import t.me.p1azmer.plugin.dungeons.api.handler.party.PartyHandler;
 import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.api.handler.schematic.SchematicHandler;
 import t.me.p1azmer.plugin.dungeons.commands.EditorCommand;
+import t.me.p1azmer.plugin.dungeons.commands.dungeon.DebugCommand;
 import t.me.p1azmer.plugin.dungeons.commands.dungeon.DeleteCommand;
 import t.me.p1azmer.plugin.dungeons.commands.dungeon.SpawnCommand;
 import t.me.p1azmer.plugin.dungeons.commands.key.KeyCommand;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.state.ChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.type.ChestState;
 import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.StageLang;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.editor.EditorMainMenu;
+import t.me.p1azmer.plugin.dungeons.generator.LocationGenerator;
+import t.me.p1azmer.plugin.dungeons.integration.holograms.FancyHologramsHandler;
 import t.me.p1azmer.plugin.dungeons.integration.holograms.HologramDecentHandler;
 import t.me.p1azmer.plugin.dungeons.integration.holograms.HologramDisplaysHandler;
 import t.me.p1azmer.plugin.dungeons.integration.party.PartyHandlerPaF;
@@ -33,23 +38,32 @@ import t.me.p1azmer.plugin.dungeons.lang.Lang;
 import t.me.p1azmer.plugin.dungeons.mob.MobManager;
 import t.me.p1azmer.plugin.dungeons.mob.style.MobStyleType;
 import t.me.p1azmer.plugin.dungeons.placeholders.DungeonPlaceholder;
+import t.me.p1azmer.plugin.dungeons.scheduler.ThreadSync;
 import t.me.p1azmer.plugin.dungeons.utils.SessionConsole;
+import t.me.p1azmer.plugin.dungeons.utils.debug.ErrorManager;
+
+import java.util.logging.Logger;
 
 @Getter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
-    private DungeonManager dungeonManager;
-    private KeyManager keyManager;
-    private MobManager mobManager;
-    private AnnounceManager announceManager;
+    @Getter
+    static Logger log;
+    DungeonManager dungeonManager;
+    KeyManager keyManager;
+    MobManager mobManager;
+    AnnounceManager announceManager;
 
-    private EditorMainMenu editor;
-    private SessionConsole sessionConsole;
+    EditorMainMenu editor;
 
-    private HologramHandler hologramHandler;
-    private SchematicHandler schematicHandler;
-    private RegionHandler regionHandler;
-    private PartyHandler partyHandler;
-    private DungeonPlaceholder placeholder;
+    HologramHandler hologramHandler;
+    SchematicHandler schematicHandler;
+    RegionHandler regionHandler;
+    PartyHandler partyHandler;
+    DungeonPlaceholder placeholder;
+
+    ThreadSync threadSync;
+    LocationGenerator locationGenerator;
 
     @Override
     protected @NotNull DungeonPlugin getSelf() {
@@ -58,6 +72,11 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
 
     @Override
     public void enable() {
+        log = getLogger();
+
+        this.threadSync = new ThreadSync(this);
+        this.locationGenerator = new LocationGenerator(regionHandler);
+
         this.keyManager = new KeyManager(this);
         this.keyManager.setup();
 
@@ -67,11 +86,8 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
         this.announceManager = new AnnounceManager(this);
         this.announceManager.setup();
 
-        this.dungeonManager = new DungeonManager(this);
+        this.dungeonManager = new DungeonManager(this, locationGenerator, threadSync);
         this.dungeonManager.setup();
-
-        if (this.schematicHandler != null)
-            this.sessionConsole = new SessionConsole(this);
     }
 
     @Override
@@ -92,7 +108,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
             this.keyManager.shutdown();
             this.keyManager = null;
         }
-        if (this.announceManager != null){
+        if (this.announceManager != null) {
             this.announceManager.shutdown();
             this.announceManager = null;
         }
@@ -116,6 +132,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
             this.placeholder.shutdown();
             this.placeholder = null;
         }
+        ErrorManager.clear();
     }
 
     @Override
@@ -144,46 +161,51 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
         if (EngineUtils.hasPlugin("HolographicDisplays")) {
             this.hologramHandler = new HologramDisplaysHandler(this);
             this.hologramHandler.setup();
-            this.warn("Use HD for hologram handler");
+            this.warn("Using HD for hologram handler");
         } else if (EngineUtils.hasPlugin("DecentHolograms")) {
             this.hologramHandler = new HologramDecentHandler();
             this.hologramHandler.setup();
-            this.warn("Use DecentHolograms for hologram handler");
+            this.warn("Using DecentHolograms for hologram handler");
+        } else if (EngineUtils.hasPlugin("FancyHolograms")) {
+            this.hologramHandler = new FancyHologramsHandler();
+            this.hologramHandler.setup();
+            this.warn("Using FancyHolograms for hologram handler");
         }
         if (EngineUtils.hasPlugin("WorldGuard")) {
             this.regionHandler = new RegionHandlerWG();
             this.regionHandler.setup();
-            this.warn("Use WorldGuard for region handler");
+            this.warn("Using WorldGuard for region handler");
         } else if (EngineUtils.hasPlugin("GriefPrevention")) {
             this.regionHandler = new RegionHandlerGP(this);
             this.regionHandler.setup();
-            this.warn("Use GriefPrevention for region handler");
+            this.warn("Using GriefPrevention for region handler");
         } else if (EngineUtils.hasPlugin("GriefDefender")) {
             this.regionHandler = new RegionHandlerGD(this);
             this.regionHandler.setup();
-            this.warn("Use GriefDefender for region handler");
+            this.warn("Using GriefDefender for region handler");
         } else if (EngineUtils.hasPlugin("KingdomsX")) {
-            this.regionHandler = new RegionHandlerKingdoms(this);
+            this.regionHandler = new RegionHandlerKingdoms();
             this.regionHandler.setup();
-            this.warn("Use KingdomsX for region handler");
+            this.warn("Using KingdomsX for region handler");
         } else if (EngineUtils.hasPlugin("Towny")) {
-            this.regionHandler = new RegionHandlerTowny(this);
+            this.regionHandler = new RegionHandlerTowny();
             this.regionHandler.setup();
-            this.warn("Use Towny for region handler");
+            this.warn("Using Towny for region handler");
         } else if (EngineUtils.hasPlugin("ProtectionBlocks")) {
-            this.regionHandler = new RegionHandlerPB(this);
-            this.regionHandler.setup();
-            this.warn("Use ProtectionBlocks for region handler");
+//            this.regionHandler = new RegionHandlerPB(this);
+//            this.regionHandler.setup();
+//            this.warn("Using ProtectionBlocks for region handler");
+            this.warn("ProtectionBlocks plugin is not supported");
         }
         if (EngineUtils.hasPlugin("PartyAndFriends")) {
             this.partyHandler = new PartyHandlerPaF();
             this.partyHandler.setup();
-            this.warn("Use PartyAndFriends for party handler");
+            this.warn("Using PartyAndFriends for party handler");
         }
         if (EngineUtils.hasPlugin("WorldEdit") || EngineUtils.hasPlugin("FastAsyncWorldEdit")) {
-            this.schematicHandler = new SchematicFAWEHandler(this);
+            this.schematicHandler = new SchematicFAWEHandler(new SessionConsole(this));
             this.schematicHandler.setup();
-            this.warn("Use " + (EngineUtils.hasPlugin("WorldEdit") ? "WorldEdit" : "FAWE") + " for schematic handler!");
+            this.warn("Using " + (EngineUtils.hasPlugin("WorldEdit") ? "WorldEdit" : "FAWE") + " for schematic handler!");
         }
         if (EngineUtils.hasPlaceholderAPI()) {
             this.placeholder = new DungeonPlaceholder(this);
@@ -197,6 +219,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
         mainCommand.addChildren(new SpawnCommand(this));
         mainCommand.addChildren(new DeleteCommand(this));
         mainCommand.addChildren(new KeyCommand(this));
+        mainCommand.addChildren(new DebugCommand(this));
         mainCommand.addChildren(new ReloadSubCommand<>(this, Perms.COMMAND_RELOAD));
     }
 
@@ -214,6 +237,6 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     }
 
     public void sendDebug(@NotNull String text) {
-        if (Config.DEBUG.get()) this.debug(text);
+        this.debug(text);
     }
 }

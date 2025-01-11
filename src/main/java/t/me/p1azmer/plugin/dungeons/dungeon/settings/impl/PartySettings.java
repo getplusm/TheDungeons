@@ -24,7 +24,7 @@ public class PartySettings extends AbstractSettings {
         super(dungeon);
         this.enabled = enabled;
         this.size = size;
-        this.placeholderMap = new PlaceholderMap()
+        this.placeholders = new PlaceholderMap()
                 .add(Placeholders.PARTY_ENABLED, () -> LangManager.getBoolean(this.isEnabled()))
                 .add(Placeholders.PARTY_SIZE, () -> String.valueOf(this.getSize()))
         ;

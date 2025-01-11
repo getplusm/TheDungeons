@@ -9,7 +9,7 @@ import t.me.p1azmer.engine.utils.NumberUtil;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.engine.utils.placeholder.PlaceholderMap;
 import t.me.p1azmer.plugin.dungeons.api.settings.AbstractSettings;
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.state.ChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.type.ChestState;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.Placeholders;
 
@@ -32,10 +32,10 @@ public class HologramSettings extends AbstractSettings {
         super(dungeon);
         this.offsetY = offsetY;
         this.stateMessagesMap = stateMessagesMap;
-        this.placeholderMap = new PlaceholderMap()
+        this.placeholders = new PlaceholderMap()
                 .add(Placeholders.DUNGEON_HOLOGRAM_CHEST_OFFSET_Y, () -> NumberUtil.format(this.getOffsetY()))
         ;
-        stateMessagesMap.forEach((state, strings) -> this.placeholderMap
+        stateMessagesMap.forEach((state, strings) -> this.placeholders
                 .add(Placeholders.DUNGEON_HOLOGRAM_MESSAGES.apply(state), () -> String.join("\n", Colorizer.apply(strings))));
     }
 

@@ -29,25 +29,21 @@ import java.util.stream.IntStream;
 public class ModuleSettingsEditor extends EditorMenu<DungeonPlugin, ModuleSettings> implements AutoPaged<String> {
 
     public ModuleSettingsEditor(@NotNull ModuleSettings settings) {
-        super(settings.dungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 36);
+        super(settings.getDungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 36);
 
-        this.addReturn(31).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> settings.dungeon().getEditor().open(viewer.getPlayer(), 1));
-        });
+        this.addReturn(31).setClick((viewer, event) -> this.plugin.runTask(task -> settings.getDungeon().getEditor().open(viewer.getPlayer(), 1)));
         this.addNextPage(32);
         this.addPreviousPage(30);
 
         this.getItems().forEach(menuItem -> {
             if (menuItem.getOptions().getDisplayModifier() == null) {
-                menuItem.getOptions().setDisplayModifier(((viewer, item) -> {
-                    ItemReplacer.replace(item, settings.replacePlaceholders());
-                }));
+                menuItem.getOptions().setDisplayModifier(((viewer, item) -> ItemReplacer.replace(item, settings.replacePlaceholders())));
             }
         });
     }
 
     private void save(@NotNull MenuViewer viewer) {
-        this.object.dungeon().save();
+        this.object.getDungeon().save();
         this.plugin.runTask(task -> this.open(viewer.getPlayer(), viewer.getPage()));
     }
 
@@ -72,7 +68,7 @@ public class ModuleSettingsEditor extends EditorMenu<DungeonPlugin, ModuleSettin
     @NotNull
     public ItemStack getObjectStack(@NotNull Player player, @NotNull String moduleId) {
         boolean enabled = this.object.isEnabled(moduleId);
-        Dungeon dungeon = this.object.dungeon();
+        Dungeon dungeon = this.object.getDungeon();
         GenerationSettings settings = dungeon.getGenerationSettings();
         GenerationType generationType = settings.getGenerationType();
         List<String> whitelist = generationType.getModuleWhitelist();
@@ -80,8 +76,8 @@ public class ModuleSettingsEditor extends EditorMenu<DungeonPlugin, ModuleSettin
         ItemStack item = inWhitelist ?
                 ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTQ4ZDdkMWUwM2UxYWYxNDViMDEyNWFiODQxMjg1NjcyYjQyMTI2NWRhMmFiOTE1MDE1ZjkwNTg0MzhiYTJkOCJ9fX0=") :
                 enabled ?
-                ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
-                ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0=");
+                        ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
+                        ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0=");
 
         ItemReplacer.create(item)
                 .readLocale(EditorLocales.MODULE_OBJECT)
@@ -105,7 +101,7 @@ public class ModuleSettingsEditor extends EditorMenu<DungeonPlugin, ModuleSettin
             boolean isLeftClick = event.getClick().equals(ClickType.LEFT);
 
             if (isLeftClick) {
-                Dungeon dungeon = this.object.dungeon();
+                Dungeon dungeon = this.object.getDungeon();
                 GenerationType generationType = dungeon.getGenerationSettings().getGenerationType();
 
                 if (generationType.getModuleWhitelist().contains(moduleId)) {

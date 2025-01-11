@@ -1,17 +1,15 @@
 package t.me.p1azmer.plugin.dungeons.lang;
 
-import org.bukkit.Sound;
 import t.me.p1azmer.engine.api.lang.LangKey;
 import t.me.p1azmer.engine.lang.EngineLang;
 import t.me.p1azmer.engine.utils.Colors2;
 import t.me.p1azmer.plugin.dungeons.dungeon.Placeholders;
 
-import static t.me.p1azmer.engine.utils.Colors.*;
+import static t.me.p1azmer.engine.utils.Colors2.*;
 
 public class Lang extends EngineLang {
     public static final LangKey COMMAND_EDITOR_DESC = LangKey.of("Command.Editor.Desc",
             "Open the dungeon and key editor.");
-
 
     public static final LangKey COMMAND_DROP_USAGE = LangKey.of("Command.Drop.Usage",
             "<dungeon_id> <world> <x> <y> <z>");
@@ -21,9 +19,6 @@ public class Lang extends EngineLang {
             GRAY + "Dungeon " + YELLOW + Placeholders.DUNGEON_NAME + GRAY + " has been placed at coordinates " + YELLOW + Placeholders.LOCATION_X + "," +
                     " " + Placeholders.LOCATION_Y + "," +
                     " " + Placeholders.LOCATION_Z + GRAY + " in world " + YELLOW + Placeholders.LOCATION_WORLD + GRAY + ".");
-    public static final LangKey COMMAND_DROP_RANDOM_SUCCESS = LangKey.of("Command.Drop.Random.Success",
-            GRAY + "The dungeon '" + YELLOW + Placeholders.DUNGEON_NAME + GRAY + "' has a location generation stage started\n" +
-                    "after which it will be spawned according to the usual procedure");
     public static final LangKey COMMAND_DROP_ERROR = LangKey.of("Command.Drop.Error",
             RED + "An error occurred while trying to spawn a " + LIGHT_PURPLE + Placeholders.DUNGEON_NAME + RED + "! See the error in the console");
 
@@ -89,39 +84,25 @@ public class Lang extends EngineLang {
 
 
     public static final LangKey DUNGEON_OPEN_ERROR_NO_KEY = LangKey.of("Dungeon.Open.Error.NoKey",
-            "<! type:\"titles:20:80:20\" sound:\"" + Sound.ENTITY_VILLAGER_NO.name() + "\" !>" +
+            "<! type:\"titles:20:80:20\" !>" +
                     Colors2.RED + BOLD + "\nOops!" +
                     Colors2.GRAY + "\nYou don't have the key for this Dungeon!");
     public static final LangKey DUNGEON_OPEN_ERROR_NO_HOLD_KEY = LangKey.of("Dungeon.Open.Error.NoHoldKey",
-            "<! type:\"titles:20:80:20\" sound:\"" + Sound.ENTITY_VILLAGER_NO.name() + "\" !>" +
+            "<! type:\"titles:20:80:20\" !>" +
                     Colors2.RED + BOLD + "\nOops!" +
                     Colors2.GRAY + "\nYou must be holding the key to open the Dungeon!");
 
     // editor
-    public static final LangKey EDITOR_GENERIC_ENTER_CURRENCY = LangKey.of("Editor.Generic.Enter.Currency",
-            GRAY + "Enter " + GREEN + "[Currency]");
-    public static final LangKey EDITOR_GENERIC_ENTER_NAME = LangKey.of("Editor.Generic.Enter.Name",
-            GRAY + "Enter " + GREEN + "[Display Name]");
-    public static final LangKey EDITOR_GENERIC_ENTER_DESCRIPTION = LangKey.of("Editor.Generic.Enter.Description",
-            GRAY + "Enter " + GREEN + "[Description]");
-    public static final LangKey EDITOR_GENERIC_ENTER_COMMAND = LangKey.of("Editor.Generic.Enter.Command",
-            GRAY + "Enter " + GREEN + "[Command]");
-    public static final LangKey EDITOR_GENERIC_ENTER_NUMBER = LangKey.of("Editor.Generic.Enter.Number",
-            GRAY + "Enter " + GREEN + "[Number]");
-    public static final LangKey EDITOR_GENERIC_ENTER_PERCENT = LangKey.of("Editor.Generic.Enter.Percent",
-            GRAY + "Enter " + GREEN + "[Percent Amount]");
-    public static final LangKey EDITOR_GENERIC_ENTER_SECONDS = LangKey.of("Editor.Generic.Enter.Seconds",
-            GRAY + "Enter " + GREEN + "[Seconds Amount]");
     public static final LangKey EDITOR_ENTER_DISPLAY_NAME = LangKey.of("Editor.Enter.DisplayName",
             GRAY + "Enter " + GREEN + "[Displayed Name]");
+    public static final LangKey EDITOR_GENERIC_ENTER_NAME = LangKey.of("Editor.Generic.Enter.Name",
+            GRAY + "Enter " + GREEN + "[Display Name]");
     public static final LangKey EDITOR_ENTER_SCHEMATIC = LangKey.of("Editor.Enter.Schematic",
             GRAY + "Enter " + GREEN + "[Dungeon Schematic]");
     public static final LangKey EDITOR_DUNGEON_ENTER_HOLOGRAM_TEXT = LangKey.of("Editor.Dungeon.Enter.Hologram.Text",
             GRAY + "Enter " + GREEN + "[Text]");
     public static final LangKey EDITOR_DUNGEON_ENTER_HOLOGRAM_OFFSET = LangKey.of("Editor.Crate.Enter.Hologram.Offset",
             GRAY + "Enter " + GREEN + "[Offset Value]");
-    public static final LangKey EDITOR_DUNGEON_ENTER_MINIMAL_ONLINE = LangKey.of("Editor.Crate.Enter.Minimal_Online",
-            GRAY + "Enter " + GREEN + "[Online Value]");
 
     public static final LangKey EDITOR_DUNGEON_ENTER_ID = LangKey.of("Editor.Dungeon.Enter.Id",
             GRAY + "Enter " + GREEN + "[Dungeon ID]");
@@ -143,9 +124,6 @@ public class Lang extends EngineLang {
     public static final LangKey EDITOR_REWARD_ENTER_COMMAND = LangKey.of("Editor.Reward.Enter.Command",
             GRAY + "Enter " + GREEN + "[Command]");
 
-    public static final LangKey EDITOR_DUNGEON_ENTER_FLAG = LangKey.of("Editor.Dungeon.Enter.Region.Flag",
-            GRAY + "Enter " + GREEN + "[Flag allow/deny]");
-
     public static final LangKey EDITOR_EFFECT_ENTER_TYPE = LangKey.of("Editor.Effect.Enter.Type",
             GRAY + "Enter " + GREEN + "[PotionEffect Type]");
     public static final LangKey EDITOR_EFFECT_ENTER_DURATION = LangKey.of("Editor.Effect.Enter.Duration",
@@ -153,8 +131,6 @@ public class Lang extends EngineLang {
     public static final LangKey EDITOR_EFFECT_ENTER_AMPLIFIER = LangKey.of("Editor.Effect.Enter.Amplifier",
             GRAY + "Enter " + GREEN + "[Amplifier]");
 
-    public static final LangKey EDITOR_DUNGEON_WRITE_BLOCKS_AMOUNT = LangKey.of("Editor.Dungeon.Enter.Blocks.Amount",
-            GRAY + "Enter " + GREEN + "[Blocks Amount]");
     public static final LangKey EDITOR_DUNGEON_WRITE_CHEST_BLOCK_MATERIAL = LangKey.of("Editor.Dungeon.Enter.Blocks.Material",
             GRAY + "Enter " + GREEN + "[Chest-Block Material]");
     public static final LangKey EDITOR_DUNGEON_WRITE_POSITIVE_VALUE = LangKey.of("Editor.Dungeon.Write.Positive_Value",
@@ -162,12 +138,6 @@ public class Lang extends EngineLang {
     public static final LangKey EDITOR_DUNGEON_WRITE_VALUE = LangKey.of("Editor.Dungeon.Write.Value",
             GREEN + GRAY + "Enter " + GREEN + "value" + GRAY + "...");
 
-    public static final LangKey ERROR_GENERATOR_LOCATION_NOT_FOUND = LangKey.of("Messages.Error.Generator.Location.Not_Found",
-            RED + "Location cannot generate for '%dungeon_id%'!");
-    public static final LangKey ERROR_RANDOM_SPAWN = LangKey.of("Messages.Error.Dungeon.Spawn.Random",
-            RED + "Dungeon cannot spawn, see error in console!");
-    public static final LangKey ERROR_DUNGEON_LOCATION_IS_EMPTY = LangKey.of("Messages.Error.Dungeon.Location.Empty",
-            RED + "The dungeon location is empty or has not been created");
     public static final LangKey EDITOR_DUNGEON_ERROR_VALUE_IS_NOT_CORRECT = LangKey.of("Messages.Error.Dungeon.Editor.Value.Not_Correct",
             RED + "Value is not correct!");
     public static final LangKey DUNGEON_BACKTRACK_PLAYER_WHEN_CLOSE = LangKey.of("Messages.Dungeon.Backtrack_When_Close",

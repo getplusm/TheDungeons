@@ -1,30 +1,24 @@
 package t.me.p1azmer.plugin.dungeons.api.settings;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import t.me.p1azmer.engine.utils.placeholder.Placeholder;
 import t.me.p1azmer.engine.utils.placeholder.PlaceholderMap;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 
+@Getter
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 public abstract class AbstractSettings implements Placeholder {
-  protected Dungeon dungeon;
-  protected PlaceholderMap placeholderMap;
+    Dungeon dungeon;
+    @NonFinal
+    PlaceholderMap placeholders = new PlaceholderMap();
 
-  public AbstractSettings(@NotNull Dungeon dungeon) {
-    this.dungeon = dungeon;
-  }
-
-  @NotNull
-  public Dungeon dungeon() {
-    return dungeon;
-  }
-
-  public DungeonPlugin plugin() {
-    return this.dungeon().plugin();
-  }
-
-  @Override
-  public @NotNull PlaceholderMap getPlaceholders() {
-    return this.placeholderMap;
-  }
+    public DungeonPlugin plugin() {
+        return this.getDungeon().plugin();
+    }
 }

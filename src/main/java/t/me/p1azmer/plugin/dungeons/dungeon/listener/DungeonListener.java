@@ -1,5 +1,7 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.listener;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -16,9 +18,10 @@ import t.me.p1azmer.engine.api.manager.AbstractListener;
 import t.me.p1azmer.engine.utils.collections.AutoRemovalCollection;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonChangeStageEvent;
-import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonDespawnEvent;
 import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonSpawnEvent;
+import t.me.p1azmer.plugin.dungeons.api.events.DungeonDespawnEvent;
 import t.me.p1azmer.plugin.dungeons.api.handler.party.PartyHandler;
+import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
@@ -34,10 +37,10 @@ import t.me.p1azmer.plugin.dungeons.utils.Cuboid;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DungeonListener extends AbstractListener<DungeonPlugin> {
-
-    private final DungeonManager manager;
-    private final AutoRemovalCollection<Player> messageCache = AutoRemovalCollection.newHashSet(3, TimeUnit.SECONDS);
+    DungeonManager manager;
+    AutoRemovalCollection<Player> messageCache = AutoRemovalCollection.newHashSet(3, TimeUnit.SECONDS);
 
     public DungeonListener(@NotNull DungeonManager manager) {
         super(manager.plugin());
@@ -48,22 +51,22 @@ public class DungeonListener extends AbstractListener<DungeonPlugin> {
     public void onDungeonUse(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
-        if (block == null || (event.useInteractedBlock() == Event.Result.DENY && block.getType() != Material.BARRIER)) return;
+        if (block == null || (event.useInteractedBlock() == Event.Result.DENY && block.getType() != Material.BARRIER)) {
+            return;
+        }
 
         Dungeon dungeon = this.manager.getDungeonByBlock(block);
         if (dungeon == null) return;
 
         event.setCancelled(true);
-
         if (event.getHand() != EquipmentSlot.HAND) return;
 
         this.manager.interactDungeon(player, dungeon, block);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (event.getTo() == null) return;
 
         Dungeon dungeon = manager.getDungeonByLocation(event.getTo(), event.getTo().getBlock());
         if (dungeon == null) return;
@@ -96,8 +99,8 @@ public class DungeonListener extends AbstractListener<DungeonPlugin> {
         }
     }
 
-    @EventHandler
-    public void onSpawn(AsyncDungeonSpawnEvent event){
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onSpawn(AsyncDungeonSpawnEvent event) {
         Dungeon dungeon = event.getDungeon();
         Location result = event.getLocation();
         Region region = dungeon.getRegion();
@@ -118,19 +121,23 @@ public class DungeonListener extends AbstractListener<DungeonPlugin> {
         }
         Cuboid cuboid = new Cuboid(lowerLocation, upperLocation);
         dungeon.setCuboid(cuboid);
-        plugin.sendDebug(dungeon.getId() + ": Location & Cuboid success installed");
+        if (Config.OTHER_DEBUG.get()) {
+            plugin.sendDebug(dungeon.getId() + ": Location & Cuboid success installed");
+        }
     }
 
-    @EventHandler
-    public void onDespawn(AsyncDungeonDespawnEvent event){
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onDespawn(DungeonDespawnEvent event) {
         Dungeon dungeon = event.getDungeon();
         dungeon.setLocation(null);
         dungeon.setCuboid(null);
-        plugin.sendDebug(dungeon.getId() + ": Location & Cuboid success removed");
+        if (Config.OTHER_DEBUG.get()) {
+            plugin.sendDebug(dungeon.getId() + ": Location & Cuboid success removed");
+        }
     }
 
-    @EventHandler
-    public void onStageChange(AsyncDungeonChangeStageEvent event){
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onStageChange(AsyncDungeonChangeStageEvent event) {
         Dungeon dungeon = event.getDungeon();
         DungeonStage stage = event.getStage();
         String from = event.getChangeFrom();
@@ -149,9 +156,11 @@ public class DungeonListener extends AbstractListener<DungeonPlugin> {
             dungeon.cancel(false);
             return;
         }
+
+        if (Config.OTHER_DEBUG.get()) {
+            plugin.sendDebug("Call the dungeon '" + dungeon.getId() + "' from " + from + ". Change stage to " + stage.name() + " from " + dungeon.getStage().name());
+        }
         dungeon.setStage(stage);
         dungeon.setSelfTick(0);
-
-        plugin.sendDebug("Call the dungeon '" + dungeon.getId() + "' from " + from + ". Change stage to " + stage.name() + " from " + dungeon.getStage().name());
     }
 }

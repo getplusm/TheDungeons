@@ -31,7 +31,7 @@ public class GenerationSettings extends AbstractSettings {
         this.generationType = generationType;
         this.spawnLocation = spawnLocation;
 
-        this.placeholderMap = new PlaceholderMap()
+        this.placeholders = new PlaceholderMap()
                 .add(Placeholders.DUNGEON_SETTINGS_GENERATION_TYPE, () -> plugin().getLangManager().getEnum(this.getGenerationType()))
                 .add(Placeholders.DUNGEON_SETTINGS_GENERATION_LOCATION, () -> {
                     if (this.spawnLocation == null) return Colorizer.apply(Colors2.RED + "X");

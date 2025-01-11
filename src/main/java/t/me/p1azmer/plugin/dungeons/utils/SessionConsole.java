@@ -61,10 +61,6 @@ public class SessionConsole extends LocalSession implements Actor {
         return true;
     }
 
-    public void setPermission(String permission, boolean value) {
-
-    }
-
     @Override
     public String getName() {
         return "CONSOLE";
@@ -80,21 +76,21 @@ public class SessionConsole extends LocalSession implements Actor {
     @Override
     public void printDebug(String msg) {
         for (String part : msg.split("\n")) {
-            plugin.getLogger().info("§7" + part);
+            plugin.getLogger().info(part);
         }
     }
 
     @Override
     public void print(String msg) {
         for (String part : msg.split("\n")) {
-            plugin.getLogger().info("§c" + part);
+            plugin.getLogger().info(part);
         }
     }
 
     @Override
     public void printError(String msg) {
         for (String part : msg.split("\n")) {
-            plugin.getLogger().info("§c" + part);
+            plugin.getLogger().severe(part);
         }
     }
 

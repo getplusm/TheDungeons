@@ -9,9 +9,9 @@ import t.me.p1azmer.engine.lang.LangManager;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.engine.utils.placeholder.PlaceholderMap;
 import t.me.p1azmer.plugin.dungeons.api.settings.AbstractSettings;
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.state.ChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.type.ChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.type.OpenType;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.Placeholders;
 
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import java.util.Map;
 public class ChestSettings extends AbstractSettings {
     private final Map<ChestState, Integer> stateMap;
     private int blockLimit;
-    private ChestModule.OpenType openType;
+    private OpenType openType;
     private Material material;
     private boolean bigMenu, separateMenu, randomSlots, useOneKeyForMenu;
 
@@ -34,7 +34,7 @@ public class ChestSettings extends AbstractSettings {
             boolean separateMenu,
             boolean randomSlots,
             boolean useOneKeyForMenu,
-            @NotNull ChestModule.OpenType openType,
+            @NotNull OpenType openType,
             @NotNull Material material
     ) {
         super(dungeon);
@@ -50,7 +50,7 @@ public class ChestSettings extends AbstractSettings {
         this.openType = openType;
         this.material = material;
 
-        this.placeholderMap = new PlaceholderMap()
+        this.placeholders = new PlaceholderMap()
                 .add(Placeholders.DUNGEON_SETTINGS_CHEST_BLOCK_LIMIT, () -> String.valueOf(this.getBlockLimit()))
                 .add(Placeholders.DUNGEON_SETTINGS_OPEN_TYPE, () -> this.getOpenType().name())
                 .add(Placeholders.DUNGEON_SETTINGS_CHEST_MATERIAL, () -> this.getMaterial().name())
@@ -59,7 +59,7 @@ public class ChestSettings extends AbstractSettings {
                 .add(Placeholders.DUNGEON_SETTINGS_SEPARATE_CHEST_BLOCK, () -> LangManager.getBoolean(this.isSeparateMenu()))
                 .add(Placeholders.DUNGEON_SETTINGS_USE_ONE_KEY_FOR_CHEST, () -> LangManager.getBoolean(this.isUseOneKeyForMenu()))
         ;
-        stateMap.forEach((state, time) -> this.placeholderMap.add(
+        stateMap.forEach((state, time) -> this.placeholders.add(
                 t.me.p1azmer.plugin.dungeons.dungeon.chest.Placeholders.DUNGEON_CHEST_STATE_TIME
                         .apply(state), () -> String.valueOf(time)));
     }
@@ -89,7 +89,7 @@ public class ChestSettings extends AbstractSettings {
         boolean separateMenu = cfg.getBoolean(path + ".Menu.Separate");
         boolean randomSlots = cfg.getBoolean(path + ".Menu.Random_Slots");
 
-        ChestModule.OpenType openType = cfg.getEnum(path + ".Open_Type", ChestModule.OpenType.class, ChestModule.OpenType.CLICK);
+        OpenType openType = cfg.getEnum(path + ".Open_Type", OpenType.class, OpenType.CLICK);
         Material material = cfg.getEnum(path + ".Block.Material", Material.class, Material.CHEST);
         return new ChestSettings(dungeon, map, blockLimit, bigMenu, separateMenu, randomSlots, useOneKey, openType, material);
     }

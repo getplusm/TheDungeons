@@ -1,5 +1,7 @@
 package t.me.p1azmer.plugin.dungeons.mob;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
@@ -8,6 +10,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import t.me.p1azmer.engine.Version;
 import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.api.manager.AbstractManager;
 import t.me.p1azmer.engine.utils.LocationUtil;
@@ -27,12 +30,10 @@ import t.me.p1azmer.plugin.dungeons.mob.kill.MobKillReward;
 
 import java.util.*;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class MobManager extends AbstractManager<DungeonPlugin> {
-
-    public static final String DIR_MOBS = "/mobs/";
-
-    private Map<String, MobConfig> mobConfigMap;
-    private MobList mobList;
+    Map<String, MobConfig> mobConfigMap;
+    MobList mobList;
 
     public MobManager(@NotNull DungeonPlugin plugin) {
         super(plugin);
@@ -41,6 +42,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
     @Override
     public void onLoad() {
         this.mobConfigMap = new HashMap<>();
+        String DIR_MOBS = "/mobs/";
         this.plugin.getConfigManager().extractResources(DIR_MOBS);
 
         for (JYML cfg : JYML.loadAll(plugin.getDataFolder() + DIR_MOBS, false)) {
@@ -80,7 +82,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         this.getMobs().removeAll(faction);
     }
 
-    public void killMob(@NotNull LivingEntity entity){
+    public void killMob(@NotNull LivingEntity entity) {
         entity.remove();
         this.getMobs().removeInvalid();
     }
@@ -95,7 +97,15 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         mobConfig.setEntityType(EntityType.ZOMBIE);
         mobConfig.setName(StringUtil.capitalizeUnderscored(mobConfig.getEntityType().name().toLowerCase()));
         mobConfig.setNameVisible(true);
-        mobConfig.getAttributes().put(Attribute.GENERIC_MAX_HEALTH, 20D);
+
+        Attribute healthAttribute;
+        if (Version.isBehind(Version.MC_1_21_3)) {
+            healthAttribute = Attribute.GENERIC_MAX_HEALTH;
+        } else {
+            healthAttribute = Attribute.valueOf("MAX_HEALTH");
+        }
+
+        mobConfig.getAttributes().put(healthAttribute, 20D);
 
         mobConfig.save();
         mobConfig.load();
@@ -123,28 +133,29 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         return this.mobConfigMap.get(id.toLowerCase());
     }
 
-    @Nullable
-    public LivingEntity spawnMob(@NotNull Dungeon dungeon, @NotNull MobFaction faction, @NotNull String mobId, @NotNull MobList mobList) {
+    public void spawnMob(@NotNull Dungeon dungeon, @NotNull MobFaction faction, @NotNull String mobId, @NotNull MobList mobList) {
         MobConfig customMob = this.getMobConfigById(mobId);
         if (customMob == null) {
-            return null;
+            return;
         }
         Location location = dungeon.getLocation().orElse(null);
         ModuleManager moduleManager = dungeon.getModuleManager();
 
         ChestModule module = moduleManager.getModule(ChestModule.class).orElse(null);
         if (module != null) {
-            if (module.getBlocks().isEmpty()) return null;
+            if (module.getBlocks().isEmpty()) {
+                return;
+            }
             location = Rnd.get(module.getBlocks()).getLocation();
             location = LocationUtil.getPointOnCircle(location, Rnd.get(-5, 5), Rnd.get(-5, 5), Rnd.get(-5, 5));
             location = LocationUtil.getFirstGroundBlock(location);
         }
-        if (location == null) return null;
+        if (location == null) return;
 
         EntityType type = customMob.getEntityType();
-        LivingEntity entity = this.spawnMob(plugin, faction, type, location);
+        LivingEntity entity = this.spawnMob(type, location);
         if (entity == null) {
-            return null;
+            return;
         }
 
         String riderId = customMob.getRiderId();
@@ -152,7 +163,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
             MobConfig rider = this.getMobConfigById(riderId);
             if (rider != null) {
                 EntityType riderType = rider.getEntityType();
-                LivingEntity riderEntity = this.spawnMob(plugin, faction, riderType, location);
+                LivingEntity riderEntity = this.spawnMob(riderType, location);
                 if (riderEntity != null) {
                     entity.addPassenger(riderEntity);
 
@@ -172,10 +183,9 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         this.setMobConfig(entity, customMob);
         this.setMobDungeon(entity, dungeon);
         mobList.getEnemies().add(entity);
-        return entity;
     }
 
-    public LivingEntity spawnMob(@NotNull DungeonPlugin plugin, @NotNull MobFaction faction, @NotNull EntityType type, @NotNull Location location) {
+    public LivingEntity spawnMob(@NotNull EntityType type, @NotNull Location location) {
         World world = location.getWorld();
         if (world == null) return null;
 
@@ -184,7 +194,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
             return null;
         }
 
-        plugin.runTask(sync -> bukkitEntity.teleport(location));
+        bukkitEntity.teleport(location);
         return bukkitEntity;
     }
 
@@ -192,7 +202,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         PDCUtil.set(entity, Keys.ENTITY_MOB_ID, customMob.getId());
     }
 
-    private void setMobDungeon(@NotNull LivingEntity entity, @NotNull Dungeon dungeon){
+    private void setMobDungeon(@NotNull LivingEntity entity, @NotNull Dungeon dungeon) {
         PDCUtil.set(entity, Keys.DUNGEON_KEY_ID, dungeon.getId());
     }
 
@@ -201,7 +211,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
     }
 
     @Nullable
-    public static String getMobDungeonId(@NotNull LivingEntity entity){
+    public static String getMobDungeonId(@NotNull LivingEntity entity) {
         return PDCUtil.getString(entity, Keys.ENTITY_MOB_DUNGEON_ID).orElse(null);
     }
 

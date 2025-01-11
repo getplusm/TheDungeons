@@ -41,7 +41,7 @@ public class DungeonRewardListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
 
         this.addCreation(EditorLocales.REWARD_CREATE, 52).setClick((viewer, event) -> {
             ItemStack cursor = event.getCursor();
-            if (cursor != null && !cursor.getType().isAir()) {
+            if (!cursor.getType().isAir()) {
                 String id = StringUtil.lowerCaseUnderscore(ItemUtil.getItemName(cursor));
                 int count = 0;
                 while (dungeon.getReward(count == 0 ? id : id + count).orElse(null) != null) {
@@ -81,13 +81,11 @@ public class DungeonRewardListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
             this.save(viewer);
         });
 
-        this.addItem(Material.CHEST_MINECART, REWARDS_LIMITS, 45).setClick((viewer, event) -> {
-            this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_UNI_LIMIT, wrapper -> {
-                dungeon.getRewardSettings().setLimit(wrapper.asUniInt());
-                dungeon.save();
-                return true;
-            });
-        }).getOptions().setDisplayModifier((viewer, itemStack) -> {
+        this.addItem(Material.CHEST_MINECART, REWARDS_LIMITS, 45).setClick((viewer, event) -> this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_UNI_LIMIT, wrapper -> {
+            dungeon.getRewardSettings().setLimit(wrapper.asUniInt());
+            dungeon.save();
+            return true;
+        })).getOptions().setDisplayModifier((viewer, itemStack) -> {
             itemStack.setAmount(Math.max(1, dungeon.getRewardSettings().getLimit().getMaxValue()));
             ItemReplacer.create(itemStack)
                     .readLocale(REWARDS_LIMITS)

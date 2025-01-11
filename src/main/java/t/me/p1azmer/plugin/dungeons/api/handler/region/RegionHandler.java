@@ -8,11 +8,11 @@ import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
 
 public interface RegionHandler extends Loadable {
 
-  void create(@NotNull Dungeon dungeon);
+    void create(@NotNull Dungeon dungeon);
 
-  void delete(@NotNull Dungeon dungeon);
+    void delete(@NotNull Dungeon dungeon);
 
-  boolean isValidLocation(@NotNull Location location);
+    boolean isValidLocation(@NotNull Location location);
 
-  boolean isDungeonRegion(@NotNull Location location, @NotNull Region region);
+    boolean isDungeonRegion(@NotNull Location location, @NotNull Region region);
 }

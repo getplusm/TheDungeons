@@ -1,6 +1,6 @@
 package t.me.p1azmer.plugin.dungeons.dungeon;
 
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.state.ChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.type.ChestState;
 
 import java.util.function.Function;
 

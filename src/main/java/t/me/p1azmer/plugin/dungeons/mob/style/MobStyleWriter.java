@@ -1,8 +1,12 @@
 package t.me.p1azmer.plugin.dungeons.mob.style;
 
+import org.bukkit.entity.Cat;
+import org.bukkit.entity.Villager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.utils.StringUtil;
+
+import java.util.Optional;
 
 public interface MobStyleWriter<E, T> {
 
@@ -46,6 +50,36 @@ public interface MobStyleWriter<E, T> {
         @Override
         default T[] values() {
             return this.getEnumClass().getEnumConstants();
+        }
+    }
+
+    interface WriteCat<E, T extends Cat.Type> extends MobStyleWriter<E, T> {
+
+        @Nullable
+        @Override
+        default T parse(@NotNull String value) {
+            return (T) Optional.ofNullable(Cat.Type.valueOf(value)).orElse(null);
+        }
+
+        @NotNull
+        @Override
+        default T[] values() {
+            return (T[]) Cat.Type.values();
+        }
+    }
+
+    interface WriteVillagerProfession<E, T extends Villager.Profession> extends MobStyleWriter<E, T> {
+
+        @Nullable
+        @Override
+        default T parse(@NotNull String value) {
+            return (T) Optional.ofNullable(Villager.Profession.valueOf(value)).orElse(null);
+        }
+
+        @NotNull
+        @Override
+        default T[] values() {
+            return (T[]) Villager.Profession.values();
         }
     }
 }

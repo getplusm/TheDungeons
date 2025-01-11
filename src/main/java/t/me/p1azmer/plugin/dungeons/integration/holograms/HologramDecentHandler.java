@@ -7,8 +7,8 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.utils.Colorizer;
-import t.me.p1azmer.engine.utils.LocationUtil;
 import t.me.p1azmer.engine.utils.Pair;
+import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.handler.hologram.HologramHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.ChestBlock;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
@@ -19,6 +19,7 @@ import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.MainSettings;
 
 import java.util.*;
 import java.util.function.UnaryOperator;
+import java.util.logging.Level;
 
 public class HologramDecentHandler implements HologramHandler {
 
@@ -40,27 +41,31 @@ public class HologramDecentHandler implements HologramHandler {
         Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(dungeon.getId(), set -> new HashSet<>());
         List<String> messages;
 
-        for (ChestBlock chestBlock : module.getChests()) {
-            Block block = chestBlock.getBlock();
-            HologramSettings hologramSettings = chestBlock.getDungeon().getHologramSettings();
-            List<String> messageList = hologramSettings.getMessages(chestBlock.getState());
-            messages = new ArrayList<>(messageList);
-            messages.replaceAll(chestBlock.replacePlaceholders());
+        try {
+            for (ChestBlock chestBlock : module.getChests()) {
+                Block block = chestBlock.getBlock();
+                HologramSettings hologramSettings = chestBlock.getDungeon().getHologramSettings();
+                List<String> messageList = hologramSettings.getMessages(chestBlock.getState());
+                messages = new ArrayList<>(messageList);
+                messages.replaceAll(chestBlock.replacePlaceholders());
 
-            Location location = fineLocation(chestBlock, block.getLocation());
-            Hologram hologram = DHAPI.createHologram(UUID.randomUUID().toString(), location, messages);
+                Location location = fineLocation(chestBlock, block.getLocation());
+                Hologram hologram = DHAPI.createHologram(UUID.randomUUID().toString(), location, messages);
 
-            hologram.showAll();
-            holograms.add(Pair.of(chestBlock, hologram));
+                hologram.showAll();
+                holograms.add(Pair.of(chestBlock, hologram));
+            }
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Failed to create hologram for " + module.getId() + " module", exception);
         }
-        module.debug("Installed " + holograms.size() + " holograms for "+ ModuleId.HOLOGRAM+" Module");
+        module.debug("Installed " + holograms.size() + " holograms for " + ModuleId.HOLOGRAM + " Module");
     }
 
     @NotNull
     private Location fineLocation(@NotNull ChestBlock chestBlock, @NotNull Location location) {
         Dungeon dungeon = chestBlock.getDungeon();
         HologramSettings hologramSettings = dungeon.getHologramSettings();
-        return LocationUtil.getCenter(location).add(0D, hologramSettings.getOffsetY(), 0D);
+        return location.toCenterLocation().add(0D, hologramSettings.getOffsetY(), 0D);
     }
 
     @Override

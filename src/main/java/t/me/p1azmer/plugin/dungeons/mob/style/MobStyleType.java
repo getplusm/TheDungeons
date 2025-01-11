@@ -1,10 +1,17 @@
 package t.me.p1azmer.plugin.dungeons.mob.style;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.stream.Stream;
 
+@Getter
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum MobStyleType {
 
     BABY(MobStyleWrapper.BABY),
@@ -21,25 +28,15 @@ public enum MobStyleType {
     CAT_TYPE(MobStyleWrapper.CAT_TYPE),
     MUSHROOM_VARIANT(MobStyleWrapper.MUSHROOM_VARIANT),
     VILLAGER_PROFESSION(MobStyleWrapper.VILLAGER),
-    ZOMBIE_VILLAGER_PROFESSION(MobStyleWrapper.VILLAGER_ZOMBIE),
-    ;
+    ZOMBIE_VILLAGER_PROFESSION(MobStyleWrapper.VILLAGER_ZOMBIE);
 
-    private final MobStyleWrapper<?, ?> wrapper;
-
-    MobStyleType(@NotNull MobStyleWrapper<?, ?> wrapper) {
-        this.wrapper = wrapper;
-    }
-
-    @NotNull
-    public MobStyleWrapper<?, ?> getWrapper() {
-        return wrapper;
-    }
+    MobStyleWrapper<?, ?> wrapper;
 
     public boolean isApplicable(@NotNull EntityType type) {
         Class<?> clazz = type.getEntityClass();
         if (clazz == null) return false;
 
-        return this.getWrapper().getEntityClass().isAssignableFrom(clazz);
+        return getWrapper().getEntityClass().isAssignableFrom(clazz);
     }
 
     @NotNull

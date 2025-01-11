@@ -3,7 +3,7 @@ package t.me.p1azmer.plugin.dungeons.editor;
 import t.me.p1azmer.engine.api.editor.EditorLocale;
 import t.me.p1azmer.engine.utils.EngineUtils;
 import t.me.p1azmer.plugin.dungeons.dungeon.Placeholders;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.type.OpenType;
 
 import static t.me.p1azmer.engine.utils.Colors.BLUE;
 import static t.me.p1azmer.engine.utils.Colors.GREEN;
@@ -113,7 +113,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .name("Chest Block Settings")
             .click(LMB, "Navigate")
             .build();
-    public static EditorLocale CHEST_BLOCK_STATE_OBJECT = builder(PREFIX + "Dungeon.Settings.Chest.Object")
+    public static final EditorLocale CHEST_BLOCK_STATE_OBJECT = builder(PREFIX + "Dungeon.Settings.Chest.Object")
             .name(LIGHT_PURPLE + t.me.p1azmer.plugin.dungeons.dungeon.chest.Placeholders.DUNGEON_CHEST_STATE_NAME)
             .text("Sets the duration of", "this state in seconds")
             .emptyLine()
@@ -141,7 +141,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .click(LMB, "Change").build();
     public static final EditorLocale DUNGEON_SETTINGS_OPEN_TYPE = builder(PREFIX + "Dungeon.Settings.Chest.Open_Type")
             .name("Chest Opening Type")
-            .text("Sets the type of opening for the dungeon", GREEN + ChestModule.OpenType.CLICK.name() + GRAY + " - Opens the dungeon on click", GREEN + ChestModule.OpenType.TIMER.name() + GRAY + " - Opens the dungeon based on a timer").emptyLine()
+            .text("Sets the type of opening for the dungeon", GREEN + OpenType.CLICK.name() + GRAY + " - Opens the dungeon on click", GREEN + OpenType.TIMER.name() + GRAY + " - Opens the dungeon based on a timer").emptyLine()
             .currentHeader()
             .current("Type", t.me.p1azmer.plugin.dungeons.dungeon.settings.Placeholders.DUNGEON_SETTINGS_OPEN_TYPE).emptyLine()
             .click(LMB, "Change").build();
@@ -175,7 +175,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .name("Modules Settings")
             .click(LMB, "Navigate")
             .build();
-    public static EditorLocale MODULE_OBJECT = builder(PREFIX + "Dungeon.Module.Object")
+    public static final EditorLocale MODULE_OBJECT = builder(PREFIX + "Dungeon.Module.Object")
             .name(LIGHT_PURPLE + t.me.p1azmer.plugin.dungeons.dungeon.modules.Placeholders.MODULE_ID)
             .text(
                     "Sets whether this module is enabled/disabled",
@@ -193,7 +193,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .name("Commands Settings")
             .click(LMB, "Navigate")
             .build();
-    public static EditorLocale COMMANDS_OBJECT = builder(PREFIX + "Dungeon.Modules.Commands.Object")
+    public static final EditorLocale COMMANDS_OBJECT = builder(PREFIX + "Dungeon.Modules.Commands.Object")
             .name(LIGHT_PURPLE + t.me.p1azmer.plugin.dungeons.dungeon.stage.Placeholders.EDITOR_STAGE_NAME)
             .text("Sets the commands for the given stage,",
                     "which will be executed as soon as the dungeon moves to it")
@@ -209,7 +209,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .name("Announce Settings")
             .click(LMB, "Navigate")
             .build();
-    public static EditorLocale ANNOUNCE_MODULE_OBJECT = builder(PREFIX + "Dungeon.Modules.Announce.Object")
+    public static final EditorLocale ANNOUNCE_MODULE_OBJECT = builder(PREFIX + "Dungeon.Modules.Announce.Object")
             .name(LIGHT_PURPLE + t.me.p1azmer.plugin.dungeons.dungeon.stage.Placeholders.EDITOR_STAGE_NAME)
             .text(
                     "Preview:",
@@ -225,7 +225,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .click(LMB, "Navigate")
             .build();
 
-    public static EditorLocale HOLOGRAM_OBJECT = builder(PREFIX + "Dungeon.Modules.Holograms.Object")
+    public static final EditorLocale HOLOGRAM_OBJECT = builder(PREFIX + "Dungeon.Modules.Holograms.Object")
             .name(LIGHT_PURPLE + t.me.p1azmer.plugin.dungeons.dungeon.chest.Placeholders.DUNGEON_CHEST_STATE_NAME)
             .text("Sets the message that will be", "over the chest block in this state")
             .emptyLine()
@@ -250,13 +250,13 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .click(LMB, "Navigate")
             .build();
 
-    public static EditorLocale STAGES_OBJECT = builder(PREFIX + "Dungeon.Stages.Object")
+    public static final EditorLocale STAGES_OBJECT = builder(PREFIX + "Dungeon.Stages.Object")
             .name(LIGHT_PURPLE + t.me.p1azmer.plugin.dungeons.dungeon.stage.Placeholders.EDITOR_STAGE_NAME)
             .text(
                     "Sets the time period for",
                     "this stage of the dungeon",
                     "",
-                    WHITE+"Description:",
+                    WHITE + "Description:",
                     t.me.p1azmer.plugin.dungeons.dungeon.stage.Placeholders.EDITOR_STAGE_DESCRIPTION
             )
             .emptyLine()
@@ -271,7 +271,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .click(LMB, "Navigate")
             .build();
 
-    public static EditorLocale SCHEMATICS_LIST = builder(PREFIX + "Dungeon.Modules.Schematics.List")
+    public static final EditorLocale SCHEMATICS_LIST = builder(PREFIX + "Dungeon.Modules.Schematics.List")
             .name("List of Schematics")
             .text("Sets the list of schematics to be", "randomly selected for the dungeon.",
                     RED + "You cannot leave the list empty if", RED + "you have this module enabled!")
@@ -351,7 +351,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
                     WHITE + "Static " + GRAY + "-" + LIGHT_GRAY + " the position of this dungeon will always be the same",
                     WHITE + "Dynamic " + GRAY + "-" + LIGHT_GRAY + " the position of the dungeon will always be",
                     LIGHT_GRAY + "random based on the settings of the generator",
-                    WHITE + "Updatable " + GRAY + "-" + LIGHT_GRAY + " the position of the dungeon will be static,",
+                    RED + "(not ready) " + WHITE + " Updatable " + GRAY + "-" + LIGHT_GRAY + " the position of the dungeon will be static,",
                     LIGHT_GRAY + "but its schematics will be created and deleted according to the timer settings"
             )
             .emptyLine()

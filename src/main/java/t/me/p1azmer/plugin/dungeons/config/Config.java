@@ -40,7 +40,7 @@ public class Config {
                     "Title of the key editor menu"
             )
             .mapReader(Colorizer::apply);
-    public static final JOption<Boolean> DEBUG = JOption.create(
+    public static final JOption<Boolean> OTHER_DEBUG = JOption.create(
             "Settings.Debug.Other",
             false,
             "Enables plugin debugging"

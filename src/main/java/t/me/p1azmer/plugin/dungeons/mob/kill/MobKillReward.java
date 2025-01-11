@@ -1,5 +1,9 @@
 package t.me.p1azmer.plugin.dungeons.mob.kill;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -12,17 +16,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Getter
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MobKillReward {
 
-    private final String mobId;
-    private final List<String> commands;
-    private final Map<String, Pair<ItemStack, Double>> itemsMap;
-
-    public MobKillReward(@NotNull String mobId, @NotNull List<String> commands, @NotNull Map<String, Pair<ItemStack, Double>> itemsMap) {
-        this.mobId = mobId.toLowerCase();
-        this.commands = commands;
-        this.itemsMap = itemsMap;
-    }
+    String mobId;
+    List<String> commands;
+    Map<String, Pair<ItemStack, Double>> itemsMap;
 
     @NotNull
     public static MobKillReward read(@NotNull JYML cfg, @NotNull String path, @NotNull String id) {
@@ -51,20 +52,5 @@ public class MobKillReward {
             }
         });
         this.getCommands().forEach(command -> PlayerUtil.dispatchCommand(player, command));
-    }
-
-    @NotNull
-    public String getMobId() {
-        return mobId;
-    }
-
-    @NotNull
-    public Map<String, Pair<ItemStack, Double>> getItemsMap() {
-        return itemsMap;
-    }
-
-    @NotNull
-    public List<String> getCommands() {
-        return commands;
     }
 }

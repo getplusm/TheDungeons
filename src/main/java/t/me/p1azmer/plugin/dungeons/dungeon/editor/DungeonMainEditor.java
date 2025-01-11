@@ -49,17 +49,13 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
     public DungeonMainEditor(@NotNull Dungeon dungeon) {
         super(dungeon.plugin(), dungeon, Config.EDITOR_TITLE_DUNGEON.get(), 54);
 
-        this.addReturn(53).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.plugin.getEditor().getDungeonEditor().open(viewer.getPlayer(), 1));
-        });
+        this.addReturn(53).setClick((viewer, event) -> this.plugin.runTask(task -> this.plugin.getEditor().getDungeonEditor().open(viewer.getPlayer(), 1)));
 
-        this.addItem(Material.NAME_TAG, EditorLocales.DUNGEON_NAME, 3).setClick((viewer, event) -> {
-            this.handleInput(viewer, Lang.EDITOR_ENTER_DISPLAY_NAME, wrapper -> {
-                dungeon.setName(wrapper.getText());
-                dungeon.save();
-                return true;
-            });
-        });
+        this.addItem(Material.NAME_TAG, EditorLocales.DUNGEON_NAME, 3).setClick((viewer, event) -> this.handleInput(viewer, Lang.EDITOR_ENTER_DISPLAY_NAME, wrapper -> {
+            dungeon.setName(wrapper.getText());
+            dungeon.save();
+            return true;
+        }));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjIxNWU4ZWJlZmYwYTIwMDhmMTRiZGEwNzJmNzU2MTVkYWNhYzBjNGRhYmM5MGQ5ZDUyY2MzMjE0ZTVjNTM1NyJ9fX0="),
                 EditorLocales.DUNGEON_KEYS, 5).setClick((viewer, event) -> {
             if (event.isLeftClick()) {
@@ -77,56 +73,32 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
 
         // other editors
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzQzMWFlN2RjZDFlMmRkMzZjMzNhMGM5YTExNmI1NmUxNGFjZGFmMGRhZmIyYTA0OTg2ZDY1YWVhMGUzNTMxNCJ9fX0="),
-                EditorLocales.HOLOGRAM_SETTINGS, 19).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.getHologramEditor().open(viewer.getPlayer(), 1));
-        });
+                EditorLocales.HOLOGRAM_SETTINGS, 19).setClick((viewer, event) -> this.plugin.runTask(task -> this.getHologramEditor().open(viewer.getPlayer(), 1)));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjhiZGM3YTFkNmNmZjc2YTkyNTU2NTJkMzE2NTUzMjI4NWFjYzNhOWQxYzBmMTJmMzljYTAwNzc2OWE3ZWExNCJ9fX0="),
-                EditorLocales.CHEST_BLOCK_SETTINGS, 20).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.getChestStateSettingsEditor().open(viewer.getPlayer(), 1));
-        });
+                EditorLocales.CHEST_BLOCK_SETTINGS, 20).setClick((viewer, event) -> this.plugin.runTask(task -> this.getChestStateSettingsEditor().open(viewer.getPlayer(), 1)));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGFlN2JmNDUyMmIwM2RmY2M4NjY1MTMzNjNlYWE5MDQ2ZmRkZmQ0YWE2ZjFmMDg4OWYwM2MxZTYyMTZlMGVhMCJ9fX0="),
-                EditorLocales.ANNOUNCE_SETTINGS, 21).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.getAnnounceSettingsEditor().open(viewer.getPlayer(), 1));
-        });
+                EditorLocales.ANNOUNCE_SETTINGS, 21).setClick((viewer, event) -> this.plugin.runTask(task -> this.getAnnounceSettingsEditor().open(viewer.getPlayer(), 1)));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWZiNzc5ZTU0Nzc5YWZiMmM2ZmQwNjE5YWI0ZTgwNTZmNmQ5MTQwM2U4ZjQyYzJlYzQ1YzdmNjIxMTcwMmVkZiJ9fX0="),
-                EditorLocales.MODULES_SETTINGS, 22).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.getModuleSettingsEditor().open(viewer.getPlayer(), 1));
-        });
+                EditorLocales.MODULES_SETTINGS, 22).setClick((viewer, event) -> this.plugin.runTask(task -> this.getModuleSettingsEditor().open(viewer.getPlayer(), 1)));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODJjZGUwNjhlOTlhNGY5OGMzMWY4N2I0Y2MwNmJlMTRiMjI5YWNhNGY3MjgxYTQxNmM3ZTJmNTUzMjIzZGI3NCJ9fX0="),
-                EditorLocales.DUNGEON_REWARDS, 23).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.getEditorRewards().open(viewer.getPlayer(), 1));
-        });
+                EditorLocales.DUNGEON_REWARDS, 23).setClick((viewer, event) -> this.plugin.runTask(task -> this.getEditorRewards().open(viewer.getPlayer(), 1)));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzhjZWI4NjMxYWRkN2NiYjU2NWRjYjcwNWYxMjEyMzQ5Y2NjZDc1NTk2NWM0NmE5MjI4NTJjOWZkOTQ4YjRiYiJ9fX0="),
-                EditorLocales.DUNGEON_EFFECTS, 24).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.getEffectEditor().open(viewer.getPlayer(), 1));
-        });
+                EditorLocales.DUNGEON_EFFECTS, 24).setClick((viewer, event) -> this.plugin.runTask(task -> this.getEffectEditor().open(viewer.getPlayer(), 1)));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjhlMTZiZjlkNTYxNTlkZjI1ODlmZjc2NTZmODdjYWYwZjc2MjQwZDE0ZGZhNTU2ZjJiN2FjZGUzNzYzMWY4ZCJ9fX0="),
-                EditorLocales.SCHEMATICS_SETTINGS, 25).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.getSchematicsSettingsEditor().open(viewer.getPlayer(), 1));
-        });
+                EditorLocales.SCHEMATICS_SETTINGS, 25).setClick((viewer, event) -> this.plugin.runTask(task -> this.getSchematicsSettingsEditor().open(viewer.getPlayer(), 1)));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzIyODM5ZDVjN2ZjMDY3ODA2MmYxYzZjOGYyN2IzMzIwOTQzODRlM2JiNWM0YjVlYmQxNjc2YjI3OWIwNmJmIn19fQ=="),
-                EditorLocales.DUNGEON_REGION, 29).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.getRegionMainEditor().open(viewer.getPlayer(), 1));
-        });
+                EditorLocales.DUNGEON_REGION, 29).setClick((viewer, event) -> this.plugin.runTask(task -> this.getRegionMainEditor().open(viewer.getPlayer(), 1)));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjg2YjlkNThiY2QxYTU1NWY5M2U3ZDg2NTkxNTljZmQyNWI4ZGQ2ZTliY2UxZTk3MzgyMjgyNDI5MTg2MiJ9fX0="),
-                EditorLocales.STAGES_SETTINGS, 30).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.getStageSettingsEditor().open(viewer.getPlayer(), 1));
-        });
+                EditorLocales.STAGES_SETTINGS, 30).setClick((viewer, event) -> this.plugin.runTask(task -> this.getStageSettingsEditor().open(viewer.getPlayer(), 1)));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTMxOGVlNTI3OGUwOGQ5ZTZmZTkxNjNlYzQyNjdjNzkxZjUyNDhhMzU3ZjVmNzgwZDYzNDY4MTJjNzA0ZWI4ZiJ9fX0="),
-                EditorLocales.DUNGEON_SETTINGS, 31).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.getSettingsEditor().open(viewer.getPlayer(), 1));
-        });
+                EditorLocales.DUNGEON_SETTINGS, 31).setClick((viewer, event) -> this.plugin.runTask(task -> this.getSettingsEditor().open(viewer.getPlayer(), 1)));
 //        this.addItem(barrierHead, EditorLocales.DUNGEON_PARTICLE, 16).setClick((viewer, event) -> {
 //            viewer.getPlayer().sendMessage(Colorizer.apply("&cThis page will be available later\nFollow the news in our discord: &lhttps://discord.gg/ajnPb3fdKq"));
 //        });
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzZjYmFlNzI0NmNjMmM2ZTg4ODU4NzE5OGM3OTU5OTc5NjY2YjRmNWE0MDg4ZjI0ZTI2ZTA3NWYxNDBhZTZjMyJ9fX0="),
-                EditorLocales.DUNGEON_PARTY, 32).setClick((viewer, event) -> {
-            this.getPartySettingsEditor().openNextTick(viewer.getPlayer(), 1);
-        });
+                EditorLocales.DUNGEON_PARTY, 32).setClick((viewer, event) -> this.getPartySettingsEditor().openNextTick(viewer.getPlayer(), 1));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZWQ5MjQ0ODkyODJhYmViMzhhZWFjYmY0YzBlYjNhZDQwMGQ1MjU3ZmZiM2E2MDViODdjZjIzMWM5MmZhMmY0YyJ9fX0="),
-                EditorLocales.COMMANDS_SETTINGS, 33).setClick((viewer, event) -> {
-            this.getCommandsSettingsEditor().openNextTick(viewer.getPlayer(), 1);
-        });
+                EditorLocales.COMMANDS_SETTINGS, 33).setClick((viewer, event) -> this.getCommandsSettingsEditor().openNextTick(viewer.getPlayer(), 1));
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOTRlMDBhNjEyZGE2NDFmYWFjNzc4OWU3ZmZkZjRmZThjODY4ODQwZTc1MmUwYWFhNzc2ODYyMGFkOTkyN2U0MCJ9fX0="),
                         EditorLocales.GENERATION_SETTINGS, 40)
                 .setClick((viewer, event) -> this.getGenerationSettingsEditor().openNextTick(viewer.getPlayer(), 1));

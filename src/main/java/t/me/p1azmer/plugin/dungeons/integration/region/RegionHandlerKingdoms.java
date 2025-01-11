@@ -11,7 +11,6 @@ import org.kingdoms.data.KingdomsDataCenter;
 import org.kingdoms.data.managers.LandManager;
 import org.kingdoms.events.lands.ClaimLandEvent;
 import org.kingdoms.events.lands.UnclaimLandEvent;
-import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
@@ -27,12 +26,7 @@ public class RegionHandlerKingdoms implements RegionHandler {
     private LandManager landManager;
     private final UUID ownerId = UUID.fromString("1492a9a4-4277-4eb6-897a-b346d76bc1e0");
     private final UUID kdPlayer = UUID.fromString("1492a9a5-4277-4eb6-897b-b346d76bc1e0");
-    private final DungeonPlugin plugin;
     private final Map<Dungeon, Land> claimMap = new ConcurrentHashMap<>();
-
-    public RegionHandlerKingdoms(@NotNull DungeonPlugin plugin) {
-        this.plugin = plugin;
-    }
 
     @Override
     public void setup() {
@@ -50,9 +44,7 @@ public class RegionHandlerKingdoms implements RegionHandler {
         this.claimMap.entrySet()
                 .stream().filter(Objects::nonNull)
                 .filter(entry -> entry.getKey().getLocation().isPresent() && this.landManager.isLoaded(SimpleChunkLocation.of(entry.getKey().getLocation().get())))
-                .forEach(f -> {
-                    this.landManager.delete(SimpleChunkLocation.of(f.getKey().getLocation().get()));
-                });
+                .forEach(f -> this.landManager.delete(SimpleChunkLocation.of(f.getKey().getLocation().get())));
         this.claimMap.clear();
     }
 

@@ -20,12 +20,10 @@ import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 public class GenerationSettingsEditor extends EditorMenu<DungeonPlugin, GenerationSettings> {
 
     public GenerationSettingsEditor(@NotNull GenerationSettings settings) {
-        super(settings.dungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 9);
-        Dungeon dungeon = settings.dungeon();
+        super(settings.getDungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 9);
+        Dungeon dungeon = settings.getDungeon();
 
-        this.addReturn(8).setClick((viewer, event) -> {
-            dungeon.getEditor().openNextTick(viewer.getPlayer(), 1);
-        });
+        this.addReturn(8).setClick((viewer, event) -> dungeon.getEditor().openNextTick(viewer.getPlayer(), 1));
 
 
         this.addItem(new ItemStack(Material.PLAYER_HEAD), EditorLocales.DUNGEON_SETTINGS_GENERATION_TYPE, 2)
@@ -51,7 +49,7 @@ public class GenerationSettingsEditor extends EditorMenu<DungeonPlugin, Generati
                         Player player = viewer.getPlayer();
                         Location location = player.getLocation();
                         settings.setSpawnLocation(location);
-                    }else if (clickType == ClickType.SHIFT_RIGHT){
+                    } else if (clickType == ClickType.SHIFT_RIGHT) {
                         settings.setSpawnLocation(null);
                     }
 
@@ -72,7 +70,7 @@ public class GenerationSettingsEditor extends EditorMenu<DungeonPlugin, Generati
     }
 
     private void save(@NotNull MenuViewer viewer) {
-        this.object.dungeon().save();
+        this.object.getDungeon().save();
         this.openNextTick(viewer.getPlayer(), viewer.getPage());
     }
 }

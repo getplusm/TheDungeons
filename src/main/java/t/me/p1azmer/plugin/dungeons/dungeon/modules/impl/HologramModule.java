@@ -1,22 +1,22 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.modules.impl;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.plugin.dungeons.api.handler.hologram.HologramHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class HologramModule extends AbstractModule {
-    private ChestModule chestModule;
-    private final HologramHandler handler;
+    final HologramHandler handler;
 
-    public HologramModule(
-            @NotNull Dungeon dungeon,
-            @NotNull String id
-    ) {
+    ChestModule chestModule;
+
+    public HologramModule(@NotNull Dungeon dungeon, @NotNull String id) {
         super(dungeon, id, true);
         this.handler = plugin().getHologramHandler();
     }
@@ -36,11 +36,11 @@ public class HologramModule extends AbstractModule {
     }
 
     @Override
-    public CompletableFuture<Boolean> onActivate(boolean force) {
+    public boolean onActivate(boolean force) {
         this.debug("Starting initialize holograms");
         handler.create(this.getDungeon(), this.chestModule);
 
-        return CompletableFuture.completedFuture(true);
+        return true;
     }
 
     @Override

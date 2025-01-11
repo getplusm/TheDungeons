@@ -3,8 +3,13 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
-group = 'plazmer'
-version = '3.0.1'
+group = 'com.github.getplusm'
+description = 'TheDungeons'
+version = '4.0.0'
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenLocal()
@@ -19,22 +24,9 @@ repositories {
         url = "https://oss.sonatype.org/content/groups/public/"
     }
 
-    // Spigot API * start
-    maven {
-        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
-
-        // As of Gradle 5.1, you can limit this to only those
-        // dependencies you expect from it
-        content {
-            includeGroup 'org.bukkit'
-            includeGroup 'org.spigotmc'
-        }
-    }
-    maven { url "https://repo.dmulloy2.net/repository/public/" }
-    // Spigot API * end
-
     // Holographic Displays
     maven { url = 'https://repo.codemc.io/repository/maven-public/' }
+    maven { url = 'https://repo.fancyplugins.de/releases' }
     //WorldGuard API
     maven { url = 'https://maven.enginehub.org/repo/' }
     // PAPI
@@ -52,16 +44,15 @@ repositories {
 
     // towny
     maven { url = 'https://repo.glaremasters.me/repository/towny/' }
+
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT'
-    implementation "io.papermc:paperlib:1.0.7"
+    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
 
     // worldedit
     compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.2.15-SNAPSHOT'
     compileOnly 'com.sk89q.worldedit:worldedit-core:7.2.15-SNAPSHOT'
-
 
     // party
     compileOnly 'de.simonsator:spigot-party-api-for-party-and-friends:1.0.7-RELEASE'
@@ -69,7 +60,7 @@ dependencies {
 
     // regions
     compileOnly 'com.palmergames.bukkit.towny:towny:0.100.0.0'
-    compileOnly group: 'com.griefdefender', name: 'api', version: '2.1.0-SNAPSHOT'
+    compileOnly 'com.griefdefender:api:2.1.0-SNAPSHOT'
     compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.2-SNAPSHOT'
     compileOnly 'com.github.cryptomorin:kingdoms:1.16.8.1.1'
     compileOnly 'com.github.getplusm:ProtectionBlocks:1.0.7'
@@ -80,42 +71,33 @@ dependencies {
     // holo
     compileOnly 'me.filoghost.holographicdisplays:holographicdisplays-api:3.0.0'
     compileOnly 'com.github.decentsoftware-eu:decentholograms:2.8.3'
+    compileOnly 'de.oliver:FancyHolograms:2.2.0'
 
     compileOnly 'com.github.LoneDev6:API-ItemsAdder:3.5.0b'
     compileOnly 'net.Indyuce:MMOItems-API:6.9.2-SNAPSHOT'
     compileOnly 'io.lumine:MythicLib-dist:1.5.2-SNAPSHOT'
 
     // PAPI
-    compileOnly 'me.clip:placeholderapi:2.11.3'
+    compileOnly 'me.clip:placeholderapi:2.11.5'
     compileOnly 'com.mojang:authlib:1.5.21'
 
     // LP
     compileOnly 'net.luckperms:api:5.4'
-    // Vault
-    compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
 
     // Engine
-    compileOnly 'com.github.getplusm:PLAZMER-ENGINE:2.4.6'
+    compileOnly 'com.github.getplusm:PLAZMER-ENGINE:2.4.9'
 
     // Libs
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'com.github.caseyscarborough:pastebin-api-java:0.1.3'
+    compileOnly 'com.cjcrafter:foliascheduler:0.6.3'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
-def targetJavaVersion = 17
-java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        options.release = targetJavaVersion
-    }
+shadowJar {
+    archiveClassifier.set(null)
+    configurations = [project.configurations.runtimeClasspath, project.configurations.shadow]
+    archiveFileName.set(project.description + '-' + project.version + '.jar')
 }
 
 processResources {
@@ -126,11 +108,3 @@ processResources {
         expand props
     }
 }
-
-shadowJar {
-    relocate "io.papermc.lib", "t.me.p1azmer.libs.paperlib"
-    archivesBaseName = "TheDungeons"
-    archiveClassifier.set ""
-    destinationDirectory.set(rootProject.buildDir)
-}
-assemble.dependsOn(shadowJar)

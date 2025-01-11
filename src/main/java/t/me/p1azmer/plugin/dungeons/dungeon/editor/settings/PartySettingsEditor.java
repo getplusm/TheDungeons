@@ -16,12 +16,10 @@ import t.me.p1azmer.plugin.dungeons.lang.Lang;
 public class PartySettingsEditor extends EditorMenu<DungeonPlugin, PartySettings> {
 
     public PartySettingsEditor(@NotNull PartySettings settings) {
-        super(settings.dungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 27);
-        Dungeon dungeon = settings.dungeon();
+        super(settings.getDungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 27);
+        Dungeon dungeon = settings.getDungeon();
 
-        this.addReturn(22).setClick((viewer, event) -> {
-            dungeon.getEditor().openNextTick(viewer.getPlayer(), 1);
-        });
+        this.addReturn(22).setClick((viewer, event) -> dungeon.getEditor().openNextTick(viewer.getPlayer(), 1));
 
 
         this.addItem(settings.isEnabled() ? Material.EMERALD_BLOCK : Material.REDSTONE_BLOCK, EditorLocales.PARTY_ENABLED, 0).setClick((viewer, event) -> {
@@ -29,18 +27,16 @@ public class PartySettingsEditor extends EditorMenu<DungeonPlugin, PartySettings
             this.save(viewer);
         });
 
-        this.addItem(Material.COMPARATOR, EditorLocales.PARTY_SIZE, 8).setClick((viewer, event) -> {
-            this.handleInput(viewer, Lang.EDITOR_DUNGEON_WRITE_VALUE, wrapper -> {
-                int size = wrapper.asInt();
-                if (size <= 0) {
-                    EditorManager.error(viewer.getPlayer(), plugin().getMessage(Lang.ERROR_NUMBER_INVALID).replace("%num%", size).getLocalized());
-                    return false;
-                }
-                settings.setSize(size);
-                dungeon.save();
-                return true;
-            });
-        });
+        this.addItem(Material.COMPARATOR, EditorLocales.PARTY_SIZE, 8).setClick((viewer, event) -> this.handleInput(viewer, Lang.EDITOR_DUNGEON_WRITE_VALUE, wrapper -> {
+            int size = wrapper.asInt();
+            if (size <= 0) {
+                EditorManager.error(viewer.getPlayer(), plugin().getMessage(Lang.ERROR_NUMBER_INVALID).replace("%num%", size).getLocalized());
+                return false;
+            }
+            settings.setSize(size);
+            dungeon.save();
+            return true;
+        }));
 
         this.getItems().forEach(menuItem -> {
             if (menuItem.getOptions().getDisplayModifier() == null) {
@@ -57,7 +53,7 @@ public class PartySettingsEditor extends EditorMenu<DungeonPlugin, PartySettings
     }
 
     private void save(@NotNull MenuViewer viewer) {
-        this.object.dungeon().save();
+        this.object.getDungeon().save();
         this.openNextTick(viewer.getPlayer(), viewer.getPage());
     }
 }

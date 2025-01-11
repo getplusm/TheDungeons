@@ -16,7 +16,7 @@ import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.Placeholders;
-import t.me.p1azmer.plugin.dungeons.dungeon.chest.state.ChestState;
+import t.me.p1azmer.plugin.dungeons.dungeon.chest.type.ChestState;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.HologramSettings;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
@@ -30,32 +30,26 @@ public class HologramSettingsEditor extends EditorMenu<DungeonPlugin, HologramSe
 
 
     public HologramSettingsEditor(@NotNull HologramSettings settings) {
-        super(settings.dungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 36);
+        super(settings.getDungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 36);
 
-        this.addReturn(31).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> settings.dungeon().getEditor().open(viewer.getPlayer(), 1));
-        });
+        this.addReturn(31).setClick((viewer, event) -> this.plugin.runTask(task -> settings.getDungeon().getEditor().open(viewer.getPlayer(), 1)));
         this.addNextPage(32);
         this.addPreviousPage(30);
-        this.addItem(Material.FEATHER, EditorLocales.DUNGEON_HOLOGRAM_Y_OFFSET, 4).setClick((viewer, event) -> {
-            this.handleInput(viewer, Lang.EDITOR_DUNGEON_ENTER_HOLOGRAM_OFFSET, wrapper -> {
-                settings.setOffsetY(wrapper.asAnyDouble(1.5));
-                this.save(viewer);
-                return true;
-            });
-        });
+        this.addItem(Material.FEATHER, EditorLocales.DUNGEON_HOLOGRAM_Y_OFFSET, 4).setClick((viewer, event) -> this.handleInput(viewer, Lang.EDITOR_DUNGEON_ENTER_HOLOGRAM_OFFSET, wrapper -> {
+            settings.setOffsetY(wrapper.asAnyDouble(1.5));
+            this.save(viewer);
+            return true;
+        }));
 
         this.getItems().forEach(menuItem -> {
             if (menuItem.getOptions().getDisplayModifier() == null) {
-                menuItem.getOptions().setDisplayModifier(((viewer, item) -> {
-                    ItemReplacer.replace(item, settings.replacePlaceholders());
-                }));
+                menuItem.getOptions().setDisplayModifier(((viewer, item) -> ItemReplacer.replace(item, settings.replacePlaceholders())));
             }
         });
     }
 
     private void save(@NotNull MenuViewer viewer) {
-        this.object.dungeon().save();
+        this.object.getDungeon().save();
         this.plugin.runTask(task -> this.open(viewer.getPlayer(), viewer.getPage()));
     }
 

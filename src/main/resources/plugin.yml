@@ -4,10 +4,12 @@ main: t.me.p1azmer.plugin.dungeons.DungeonPlugin
 api-version: '1.17'
 author: "plazmer"
 description: "Dungeons - Automatic generation in any world"
+folia-support: true
 depend: [ PLAZMER-ENGINE ]
 softdepend:
   - ProtectionBlocks
   - HolographicDisplays
+  - FancyHolograms
   - DecentHolograms
   - WorldEdit
   - WorldGuard

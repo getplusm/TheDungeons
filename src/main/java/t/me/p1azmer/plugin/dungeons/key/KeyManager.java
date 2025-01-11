@@ -58,7 +58,7 @@ public class KeyManager extends AbstractManager<DungeonPlugin> {
 
         JYML cfg = new JYML(this.plugin.getDataFolder() + Config.DIR_KEYS, id + ".yml");
         Key key = new Key(this.plugin, cfg);
-        key.setName("&a"+StringUtil.capitalizeFully(id) + " Key");
+        key.setName("&a" + StringUtil.capitalizeFully(id) + " Key");
 
         ItemStack item = new ItemStack(Material.TRIPWIRE_HOOK);
         ItemReplacer.create(item).setDisplayName(key.getName()).writeMeta();

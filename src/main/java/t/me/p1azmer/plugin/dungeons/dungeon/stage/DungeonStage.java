@@ -1,13 +1,17 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.stage;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.lang.LangKey;
 import t.me.p1azmer.engine.lang.LangManager;
-import t.me.p1azmer.engine.utils.CollectionsUtil;
 import t.me.p1azmer.engine.utils.Colorizer;
 import t.me.p1azmer.engine.utils.Placeholders;
+import t.me.p1azmer.engine.utils.collections.Lists;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonChangeStageEvent;
 import t.me.p1azmer.plugin.dungeons.config.Config;
@@ -18,27 +22,25 @@ import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.StageSettings;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum DungeonStage {
-    FREEZE(StageLang.FREEZE),
-    CHECK(StageLang.CHECK),
-    PREPARE(StageLang.PREPARE),
-    CLOSED(StageLang.CLOSED),
-    WAITING_PLAYERS(StageLang.WAITING_PLAYERS),
-    OPENING(StageLang.OPENING),
-    OPENED(StageLang.OPENED),
-    DELETING(StageLang.DELETING),
-    CANCELLED(StageLang.CANCELLED),
+    FREEZE(StageLang.FREEZE), // стадия заморозки/бездействия
+    CHECK(StageLang.CHECK), // стадия проверки данжа перед отправкой на prepare
+    PREPARE(StageLang.PREPARE), // подготовка данжа к спавну (генерация структуры)
+    CLOSED(StageLang.CLOSED), // закрытие данжа, чтобы никто не мог в него войти
+    WAITING_PLAYERS(StageLang.WAITING_PLAYERS), // стадия ожидания игроков. Дополнительная стадия для ожидания
+    OPENING(StageLang.OPENING), // стадия открытия. Дополнительная стадия для ожидания
+    OPENED(StageLang.OPENED), // стадия когда данж уже открыт
+    DELETING(StageLang.DELETING), // удаление данжа. Очистка структуры и т.п
+    CANCELLED(StageLang.CANCELLED), // стадия отмены
     REBOOTED(StageLang.REBOOTED);
 
-    private final LangKey localization;
-
-    DungeonStage(@NotNull LangKey localization) {
-        this.localization = localization;
-    }
+    LangKey localization;
 
     @NotNull
     public String getDescription(@NotNull DungeonPlugin plugin) {
-        return plugin.getMessage(this.getLocalization()).normalizeLines();
+        return plugin.getMessage(getLocalization()).normalizeLines();
     }
 
     public boolean isFreeze() {
@@ -105,26 +107,17 @@ public enum DungeonStage {
         }
 
         if (timer.get() == stageSettings.getTime(this)) {
-            call(dungeon, CollectionsUtil.next(dungeon.getStage(), stage -> stage != dungeon.getStage()), "self class");
+            call(dungeon, Lists.next(dungeon.getStage(), stage -> stage != dungeon.getStage()), "self class");
         } else {
             timer.incrementAndGet();
         }
     }
 
-    /**
-     * Handles setting up a new stage for a dungeon
-     *
-     * @param dungeon - dungeon
-     * @param stage   - called stage
-     * @param from    - for debug messages
-     */
     public static void call(@NotNull Dungeon dungeon, @NotNull DungeonStage stage, @NotNull String from) {
-        DungeonPlugin plugin = dungeon.plugin();
-
         AsyncDungeonChangeStageEvent calledEvent = new AsyncDungeonChangeStageEvent(dungeon, stage, from);
-        plugin.getPluginManager().callEvent(calledEvent);
+        Bukkit.getPluginManager().callEvent(calledEvent);
         if (calledEvent.isCancelled()) {
-            plugin.sendDebug("It was not possible to change the state of the dungeon '" + dungeon.getId() + "' from \"" + from + "\", as the event was canceled");
+            DungeonPlugin.getLog().severe("It was not possible to change the state of the dungeon '" + dungeon.getId() + "' from \"" + from + "\", as the event was cancelled");
         }
     }
 }

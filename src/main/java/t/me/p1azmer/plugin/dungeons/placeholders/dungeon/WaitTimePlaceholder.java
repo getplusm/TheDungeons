@@ -15,22 +15,22 @@ import java.util.regex.Matcher;
 public class WaitTimePlaceholder extends AbstractPlaceholder<DungeonPlugin> {
 
 
-  public WaitTimePlaceholder(@NotNull PlaceholderExpansion<DungeonPlugin> expansion) {
-    super(expansion);
-  }
+    public WaitTimePlaceholder(@NotNull PlaceholderExpansion<DungeonPlugin> expansion) {
+        super(expansion);
+    }
 
-  @Override
-  public String parse(@NotNull Matcher matcher, @Nullable Player player) {
-    String dungeonId = matcher.group(1);
-    Dungeon dungeon = plugin.getDungeonManager().getDungeonById(dungeonId);
-    if (dungeon == null) return "";
-    if (dungeon.getStage().isWaitingPlayers())
-      return NumberUtil.format(dungeon.getStageSettings().getTime(DungeonStage.WAITING_PLAYERS) - dungeon.getNextStageTime());
-    return "";
-  }
+    @Override
+    public String parse(@NotNull Matcher matcher, @Nullable Player player) {
+        String dungeonId = matcher.group(1);
+        Dungeon dungeon = plugin.getDungeonManager().getDungeonById(dungeonId);
+        if (dungeon == null) return "";
+        if (dungeon.getStage().isWaitingPlayers())
+            return NumberUtil.format(dungeon.getStageSettings().getTime(DungeonStage.WAITING_PLAYERS) - dungeon.getNextStageTime());
+        return "";
+    }
 
-  @Override
-  public @NotNull String getRegex() {
-    return "wait_time_(.*)";
-  }
+    @Override
+    public @NotNull String getRegex() {
+        return "wait_time_(.*)";
+    }
 }

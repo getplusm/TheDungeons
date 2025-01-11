@@ -1,6 +1,9 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.modules;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.utils.StringUtil;
@@ -14,34 +17,33 @@ import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.GenerationSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.ModuleSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
+import t.me.p1azmer.plugin.dungeons.utils.debug.ErrorManager;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 @Getter
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public abstract class AbstractModule implements Placeholder {
-    private final Dungeon dungeon;
-    private final String id;
-    private final String name;
-    private final boolean updatable, importantly;
-    private final DungeonManager dungeonManager;
-    private final ModuleManager manager;
-    private final ModuleSettings settings;
-    private Predicate<Boolean> canEnable;
+    Dungeon dungeon;
+    String id;
+    String name;
+    boolean updatable, importantly;
+    DungeonManager dungeonManager;
+    ModuleManager manager;
+    ModuleSettings settings;
     protected final JYML cfg;
     protected PlaceholderMap placeholderMap;
 
-    // cache
-    private ActionType actionType = ActionType.NATURAL;
-    private boolean activated;
+    @NonFinal
+    ActionType actionType = ActionType.NATURAL;
+    @NonFinal
+    Predicate<Boolean> canEnable;
+    @NonFinal
+    boolean activated;
 
-    public AbstractModule(
-            @NotNull Dungeon dungeon,
-            @NotNull String id,
-            boolean updatable,
-            boolean importantly
-    ) {
+    public AbstractModule(@NotNull Dungeon dungeon, @NotNull String id,
+                          boolean updatable, boolean importantly) {
         this.dungeon = dungeon;
         this.id = id;
         this.name = StringUtil.capitalizeUnderscored(id);
@@ -57,11 +59,7 @@ public abstract class AbstractModule implements Placeholder {
         ;
     }
 
-    public AbstractModule(
-            @NotNull Dungeon dungeon,
-            @NotNull String id,
-            boolean updatable
-    ) {
+    public AbstractModule(@NotNull Dungeon dungeon, @NotNull String id, boolean updatable) {
         this(dungeon, id, updatable, false);
     }
 
@@ -70,21 +68,23 @@ public abstract class AbstractModule implements Placeholder {
     }
 
     public void shutdown() {
-        CompletableFuture.runAsync(() -> this.tryDeactivate(ActionType.FORCE));
+        this.tryDeactivate(ActionType.FORCE);
         this.onShutdown();
     }
 
     protected abstract Predicate<Boolean> onLoad();
 
-    protected abstract CompletableFuture<Boolean> onActivate(boolean force);
+    protected boolean onActivate(boolean force) {
+        return true;
+    }
 
     protected abstract boolean onDeactivate(boolean force);
 
     protected abstract void onShutdown();
 
 
-    public CompletableFuture<Boolean> tryActive(@NotNull AbstractModule.ActionType actionType) {
-        if (!this.getSettings().isEnabled(this.getId())) return CompletableFuture.completedFuture(false);
+    public boolean tryActive(@NotNull AbstractModule.ActionType actionType) {
+        if (!this.getSettings().isEnabled(this.getId())) return false;
 
         return switch (actionType) {
             case FORCE -> {
@@ -93,11 +93,11 @@ public abstract class AbstractModule implements Placeholder {
                 yield this.onActivate(true);
             }
             case NATURAL -> {
-                boolean active = this.activated = this.canEnable.test(true) && this.onActivate(false).join();
+                boolean active = this.activated = this.canEnable.test(true) && this.onActivate(false);
                 this.actionType = actionType;
-                yield CompletableFuture.completedFuture(active);
+                yield active;
             }
-            case SHUTDOWN -> CompletableFuture.completedFuture(false);
+            case SHUTDOWN -> false;
         };
     }
 
@@ -129,10 +129,8 @@ public abstract class AbstractModule implements Placeholder {
         boolean canActivate = this.getActionType().isForce() || canEnable.test(true);
 
         if (canActivate && !isActivated()) {
-            this.tryActive(this.getActionType())
-                    .thenAcceptAsync(aBoolean -> {
-                        if (!aBoolean && isImportantly()) this.getDungeon().cancel(false);
-                    });
+            boolean result = this.tryActive(this.getActionType());
+            if (!result && isImportantly()) this.getDungeon().cancel(false);
         } else {
             DungeonStage stage = this.getDungeon().getStage();
             boolean cancelled = stage.isDeleting() || stage.isCancelled();
@@ -154,6 +152,7 @@ public abstract class AbstractModule implements Placeholder {
 
     protected void error(@NotNull String message) {
         this.plugin().error("[" + this.getName() + " Module of '" + this.getDungeon().getId() + "']: " + message);
+        ErrorManager.addError(message);
     }
 
     protected void warn(@NotNull String message) {
@@ -161,8 +160,9 @@ public abstract class AbstractModule implements Placeholder {
     }
 
     public void debug(@NotNull String message) {
-        if (Config.MODULE_DEBUG.get())
+        if (Config.MODULE_DEBUG.get()) {
             this.plugin().debug("[" + this.getName() + " Module of '" + this.getDungeon().getId() + "']: " + message);
+        }
     }
 
     @Getter

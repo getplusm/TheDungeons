@@ -9,7 +9,6 @@ import com.palmergames.bukkit.towny.object.WorldCoord;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
-import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
@@ -23,12 +22,7 @@ public class RegionHandlerTowny implements RegionHandler {
 
     private TownyAPI townyAPI;
     private final UUID ownerId = UUID.fromString("1492a9a4-4277-4eb6-897a-b346d76bc1e0");
-    private final DungeonPlugin plugin;
     private final Map<Dungeon, Town> claimMap = new ConcurrentHashMap<>();
-
-    public RegionHandlerTowny(@NotNull DungeonPlugin plugin) {
-        this.plugin = plugin;
-    }
 
     @Override
     public void setup() {

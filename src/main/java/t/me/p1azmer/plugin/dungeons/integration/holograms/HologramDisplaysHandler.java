@@ -10,7 +10,6 @@ import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.utils.Colorizer;
-import t.me.p1azmer.engine.utils.LocationUtil;
 import t.me.p1azmer.engine.utils.Pair;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.handler.hologram.HologramHandler;
@@ -20,6 +19,7 @@ import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 public class HologramDisplaysHandler implements HologramHandler {
 
@@ -49,9 +49,11 @@ public class HologramDisplaysHandler implements HologramHandler {
     @Override
     public void create(@NotNull Dungeon dungeon, @Nullable ChestModule module) {
         if (module == null) return;
-        plugin.runTask(sync -> {
-            List<String> messages;
-            Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(dungeon.getId(), set -> new HashSet<>());
+
+        List<String> messages;
+        Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(dungeon.getId(), set -> new HashSet<>());
+
+        try {
             for (ChestBlock chestBlock : module.getChests()) {
                 Block block = chestBlock.getBlock();
 
@@ -63,12 +65,14 @@ public class HologramDisplaysHandler implements HologramHandler {
                 }
                 holograms.add(Pair.of(chestBlock, hologram));
             }
-        });
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Failed to create hologram for " + module.getId() + " module", exception);
+        }
     }
 
     @NotNull
     private Location fineLocation(@NotNull ChestBlock chestBlock, @NotNull Location location) {
-        return LocationUtil.getCenter(location.clone()).add(0D, chestBlock.getDungeon().getHologramSettings().getOffsetY(), 0D);
+        return location.toCenterLocation().add(0D, chestBlock.getDungeon().getHologramSettings().getOffsetY(), 0D);
     }
 
     @Override
@@ -81,13 +85,11 @@ public class HologramDisplaysHandler implements HologramHandler {
 
     @Override
     public void update(@NotNull ChestBlock chestBlock) {
-        plugin.runTask(sync -> {
-            Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(chestBlock.getDungeon().getId(), set -> new HashSet<>());
-            holograms.stream().filter(f -> f.getFirst().equals(chestBlock)).map(Pair::getSecond).toList().forEach(hologram -> {
-                List<String> messages = new ArrayList<>(chestBlock.getDungeon().getHologramSettings().getMessages(chestBlock.getState()));
-                messages.replaceAll(chestBlock.replacePlaceholders());
-                updateHologramLines(chestBlock, hologram, messages);
-            });
+        Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(chestBlock.getDungeon().getId(), set -> new HashSet<>());
+        holograms.stream().filter(f -> f.getFirst().equals(chestBlock)).map(Pair::getSecond).toList().forEach(hologram -> {
+            List<String> messages = new ArrayList<>(chestBlock.getDungeon().getHologramSettings().getMessages(chestBlock.getState()));
+            messages.replaceAll(chestBlock.replacePlaceholders());
+            updateHologramLines(chestBlock, hologram, messages);
         });
     }
 

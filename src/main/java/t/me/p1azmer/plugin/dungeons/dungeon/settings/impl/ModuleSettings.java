@@ -24,7 +24,7 @@ public class ModuleSettings extends AbstractSettings {
     ) {
         super(dungeon);
         this.moduleSettingsMap = moduleSettingsMap;
-        this.placeholderMap = new PlaceholderMap();
+        this.placeholders = new PlaceholderMap();
     }
 
     @NotNull
@@ -42,13 +42,14 @@ public class ModuleSettings extends AbstractSettings {
         }
     }
 
-    public void setEnabled(@NotNull String moduleId, boolean value){
+    public void setEnabled(@NotNull String moduleId, boolean value) {
         this.getModuleSettingsMap().put(moduleId, value);
     }
 
     public boolean isEnabled(@NonNull String moduleId) {
         return this.getModuleSettingsMap().getOrDefault(moduleId, true);
     }
+
     public boolean isEnabled(@NonNull AbstractModule module) {
         return this.isEnabled(module.getId());
     }

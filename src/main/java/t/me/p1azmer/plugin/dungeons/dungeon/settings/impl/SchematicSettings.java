@@ -33,7 +33,7 @@ public class SchematicSettings extends AbstractSettings {
         this.ignoreAirBlocks = ignoreAirBlocks;
         this.underground = underground;
 
-        this.placeholderMap = new PlaceholderMap()
+        this.placeholders = new PlaceholderMap()
                 .add(Placeholders.SCHEMATICS_LIST, () -> Colorizer.apply(Colors.LIGHT_PURPLE + String.join("\n" + Colors.LIGHT_PURPLE, this.getSchematics())))
                 .add(Placeholders.SCHEMATICS_IGNORE_AIR, () -> LangManager.getBoolean(this.isIgnoreAirBlocks()))
                 .add(Placeholders.SCHEMATICS_UNDERGROUND, () -> LangManager.getBoolean(this.isUnderground()))

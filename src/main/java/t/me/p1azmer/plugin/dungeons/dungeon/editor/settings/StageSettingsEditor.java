@@ -30,26 +30,22 @@ import java.util.stream.IntStream;
 public class StageSettingsEditor extends EditorMenu<DungeonPlugin, StageSettings> implements AutoPaged<DungeonStage> {
 
     public StageSettingsEditor(@NotNull StageSettings settings) {
-        super(settings.dungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 36);
+        super(settings.getDungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 36);
 
-        this.addReturn(31).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> settings.dungeon().getEditor().open(viewer.getPlayer(), 1));
-        });
+        this.addReturn(31).setClick((viewer, event) -> this.plugin.runTask(task -> settings.getDungeon().getEditor().open(viewer.getPlayer(), 1)));
         this.addNextPage(32);
         this.addPreviousPage(30);
 
         this.getItems().forEach(menuItem -> {
             if (menuItem.getOptions().getDisplayModifier() == null) {
-                menuItem.getOptions().setDisplayModifier(((viewer, item) -> {
-                    ItemReplacer.replace(item, settings.replacePlaceholders());
-                }));
+                menuItem.getOptions().setDisplayModifier(((viewer, item) -> ItemReplacer.replace(item, settings.replacePlaceholders())));
             }
         });
     }
 
     private void save(@NotNull MenuViewer viewer) {
-        this.object.dungeon().save();
-        CompletableFuture.runAsync(() -> DungeonStage.call(this.object.dungeon(), DungeonStage.CANCELLED, "stage editor need reboot"));
+        this.object.getDungeon().save();
+        CompletableFuture.runAsync(() -> DungeonStage.call(this.object.getDungeon(), DungeonStage.CANCELLED, "stage editor need reboot"));
         this.plugin.runTask(task -> this.open(viewer.getPlayer(), viewer.getPage()));
     }
 

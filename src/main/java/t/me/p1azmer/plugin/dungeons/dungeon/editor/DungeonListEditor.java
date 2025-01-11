@@ -29,21 +29,17 @@ public class DungeonListEditor extends EditorMenu<DungeonPlugin, DungeonManager>
     public DungeonListEditor(@NotNull DungeonManager manager) {
         super(manager.plugin(), manager, Config.EDITOR_TITLE_DUNGEON.get(), 45);
 
-        this.addReturn(39).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> this.plugin.getEditor().open(viewer.getPlayer(), 1));
-        });
+        this.addReturn(39).setClick((viewer, event) -> this.plugin.runTask(task -> this.plugin.getEditor().open(viewer.getPlayer(), 1)));
         this.addNextPage(44);
         this.addPreviousPage(36);
 
-        this.addCreation(EditorLocales.DUNGEON_CREATE, 41).setClick((viewer, event) -> {
-            this.handleInput(viewer, Lang.EDITOR_DUNGEON_ENTER_ID, wrapper -> {
-                if (!manager.create(StringUtil.lowerCaseUnderscore(wrapper.getTextRaw()))) {
-                    EditorManager.error(viewer.getPlayer(), plugin.getMessage(Lang.DUNGEON_ERROR_EXISTS).getLocalized());
-                    return false;
-                }
-                return true;
-            });
-        });
+        this.addCreation(EditorLocales.DUNGEON_CREATE, 41).setClick((viewer, event) -> this.handleInput(viewer, Lang.EDITOR_DUNGEON_ENTER_ID, wrapper -> {
+            if (!manager.create(StringUtil.lowerCaseUnderscore(wrapper.getTextRaw()))) {
+                EditorManager.error(viewer.getPlayer(), plugin.getMessage(Lang.DUNGEON_ERROR_EXISTS).getLocalized());
+                return false;
+            }
+            return true;
+        }));
     }
 
     @Override

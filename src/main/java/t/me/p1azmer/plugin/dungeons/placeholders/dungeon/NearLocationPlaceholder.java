@@ -14,23 +14,23 @@ import java.util.regex.Matcher;
 
 public class NearLocationPlaceholder extends AbstractPlaceholder<DungeonPlugin> {
 
-  public NearLocationPlaceholder(@NotNull PlaceholderExpansion<DungeonPlugin> expansion) {
-    super(expansion);
-  }
+    public NearLocationPlaceholder(@NotNull PlaceholderExpansion<DungeonPlugin> expansion) {
+        super(expansion);
+    }
 
-  @Override
-  public String parse(@NotNull Matcher matcher, @Nullable Player player) {
-    Dungeon dungeon = plugin.getDungeonManager().getNearestDungeon();
-    if (dungeon == null) return "";
+    @Override
+    public String parse(@NotNull Matcher matcher, @Nullable Player player) {
+        Dungeon dungeon = plugin.getDungeonManager().getNearestDungeon();
+        if (dungeon == null) return "";
 
-    Location location = dungeon.getLocation().orElse(null);
-    if (location == null) return "";
+        Location location = dungeon.getLocation().orElse(null);
+        if (location == null) return "";
 
-    return Placeholders.forLocation(location).apply("%location_world% ⚊ %location_x%, %location_y%, %location_z%");
-  }
+        return Placeholders.forLocation(location).apply("%location_world% ⚊ %location_x%, %location_y%, %location_z%");
+    }
 
-  @Override
-  public @NotNull String getRegex() {
-    return "nearest_location";
-  }
+    @Override
+    public @NotNull String getRegex() {
+        return "nearest_location";
+    }
 }

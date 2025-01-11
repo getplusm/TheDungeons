@@ -1,5 +1,8 @@
 package t.me.p1azmer.plugin.dungeons.dungeon;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -15,59 +18,69 @@ import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.listener.DungeonListener;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.SpawnModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.SchematicSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
+import t.me.p1azmer.plugin.dungeons.generator.LocationGenerator;
 import t.me.p1azmer.plugin.dungeons.generator.config.GeneratorConfig;
 import t.me.p1azmer.plugin.dungeons.integration.region.RegionHandlerWG;
+import t.me.p1azmer.plugin.dungeons.scheduler.ThreadSync;
 import t.me.p1azmer.plugin.dungeons.task.DungeonTickTask;
 import t.me.p1azmer.plugin.dungeons.utils.Cuboid;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DungeonManager extends AbstractManager<DungeonPlugin> {
-    private final Map<String, Dungeon> dungeonMap = new ConcurrentHashMap<>();
-    private DungeonTickTask dungeonTickTask;
+    Map<String, Dungeon> dungeonMap = new ConcurrentHashMap<>();
+    LocationGenerator locationGenerator;
+    ThreadSync threadSync;
+    @NonFinal
+    DungeonTickTask dungeonTickTask;
 
-    public DungeonManager(@NotNull DungeonPlugin plugin) {
+    public DungeonManager(@NotNull DungeonPlugin plugin,
+                          @NotNull LocationGenerator locationGenerator, @NotNull ThreadSync threadSync) {
         super(plugin);
+        this.locationGenerator = locationGenerator;
+        this.threadSync = threadSync;
     }
 
     @Override
     protected void onLoad() {
-        this.plugin.getConfig().initializeOptions(GeneratorConfig.class);
-        this.plugin.getConfigManager().extractResources(Config.DIR_DUNGEONS);
-
         RegionHandler regionHandler = plugin.getRegionHandler();
 
-        for (JYML cfg : JYML.loadAll(plugin.getDataFolder() + Config.DIR_DUNGEONS, true)) {
-            Dungeon dungeon = new Dungeon(this, cfg);
-            if (dungeon.load()) {
-                this.dungeonMap.put(dungeon.getId(), dungeon);
-                if (regionHandler != null && regionHandler.getClass().equals(RegionHandlerWG.class)) {
-                    SchematicSettings schematicSettings = dungeon.getSchematicSettings();
-                    Region dungeonRegion = dungeon.getRegion();
+        Executors.newSingleThreadScheduledExecutor().execute(() -> {
+            this.plugin.getConfig().initializeOptions(GeneratorConfig.class);
+            this.plugin.getConfigManager().extractResources(Config.DIR_DUNGEONS);
 
-                    if (schematicSettings.isUnderground() && dungeonRegion.isEnabled() && !dungeonRegion.getFlags().contains("build")) {
-                        plugin.error("Please note that the dungeon '" + dungeon.getId() + "' is set to be underground, but its region does not have building rights!");
+            for (JYML cfg : JYML.loadAll(plugin.getDataFolder() + Config.DIR_DUNGEONS, true)) {
+                Dungeon dungeon = new Dungeon(this, cfg, locationGenerator, threadSync);
+                if (dungeon.load()) {
+                    this.dungeonMap.put(dungeon.getId(), dungeon);
+                    if (regionHandler != null && regionHandler.getClass().equals(RegionHandlerWG.class)) {
+                        SchematicSettings schematicSettings = dungeon.getSchematicSettings();
+                        Region dungeonRegion = dungeon.getRegion();
+
+                        if (schematicSettings.isUnderground() && dungeonRegion.isEnabled() && !dungeonRegion.getFlags().contains("build")) {
+                            plugin.error("Please note that the dungeon '" + dungeon.getId() + "' is set to be underground, but its region does not have building rights!");
+                        }
                     }
-                }
-                dungeon.getModuleManager().setup();
-            } else this.plugin.error("Dungeon not loaded: '" + cfg.getFile().getName() + "'.");
-        }
-        this.plugin.info("Loaded " + this.getDungeonMap().size() + " dungeons.");
+                    dungeon.getModuleManager().setup();
+                } else this.plugin.error("Dungeon not loaded: '" + cfg.getFile().getName() + "'.");
+            }
+            this.plugin.info("Loaded " + this.getDungeonMap().size() + " dungeons.");
+        });
 
         this.addListener(new DungeonListener(this));
-
         this.dungeonTickTask = new DungeonTickTask(this);
-        this.dungeonTickTask.start();
     }
 
     @Override
@@ -80,7 +93,7 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
         });
         this.dungeonMap.clear();
         if (this.dungeonTickTask != null) {
-            this.dungeonTickTask.stop();
+            this.dungeonTickTask.shutdown();
             this.dungeonTickTask = null;
         }
     }
@@ -92,7 +105,7 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
         }
 
         JYML cfg = new JYML(this.plugin.getDataFolder() + Config.DIR_DUNGEONS, id + ".yml");
-        Dungeon dungeon = new Dungeon(this, cfg);
+        Dungeon dungeon = new Dungeon(this, cfg, locationGenerator, threadSync);
         dungeon.setName("&a&l" + StringUtil.capitalizeUnderscored(dungeon.getId()) + " Dungeon");
         dungeon.setWorld(plugin.getServer().getWorlds()
                 .stream()
@@ -106,13 +119,11 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
         return true;
     }
 
-    public boolean delete(@NotNull Dungeon dungeon) {
+    public void delete(@NotNull Dungeon dungeon) {
         if (dungeon.getFile().delete()) {
             dungeon.clear();
             this.getDungeonMap().remove(dungeon.getId());
-            return true;
         }
-        return false;
     }
 
     @NotNull
@@ -184,31 +195,30 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
 
     @Nullable
     public Dungeon getNearestDungeon() {
-        return this.getDungeonMap()
-                .values()
-                .stream()
-                .filter(f -> !f.getStage().isFreeze() && !f.getStage().isCancelled() && !f.getStage().isClosed()).min(Comparator.comparingInt(Dungeon::getNextStageTime))
-                .orElse(null);
+        return this.getDungeonMap().values().stream()
+                .filter(f -> !f.getStage().isFreeze() && !f.getStage().isCancelled() && !f.getStage().isClosed())
+                .min(Comparator.comparingInt(Dungeon::getNextStageTime)).orElse(null);
     }
 
-    public boolean spawnDungeon(@NotNull Dungeon dungeon, @NotNull Location location) {
+    public CompletableFuture<Boolean> spawnDungeon(@NotNull Dungeon dungeon, @NotNull Location location) {
         ModuleManager moduleManager = dungeon.getModuleManager();
-        SpawnModule module = moduleManager.getModule(SpawnModule.class).orElse(null);
+        SpawnModule spawnModule = moduleManager.getModule(SpawnModule.class).orElse(null);
+        return CompletableFuture.supplyAsync(() -> {
+            if (spawnModule == null) {
+                plugin.error("Error spawning dungeon '" + dungeon.getId() + "' via command, because the dungeon spawning module is disabled or not loaded!");
+                return false;
+            }
 
-        if (module == null) {
-            plugin.error("Error spawning dungeon '" + dungeon.getId() + "' via command, because the dungeon spawning module is disabled or not loaded!");
-            return false;
-        }
-
-        CompletableFuture.runAsync(()->{
             dungeon.cancel(false);
             dungeon.setLocation(location);
-            module.spawn(location);
-            DungeonStage.call(dungeon, DungeonStage.OPENED, "Dungeon Manager via command");
-
-            moduleManager.getModules().forEach(founder -> founder.tryActive(AbstractModule.ActionType.FORCE));
+            spawnModule.spawn(location);
+            DungeonStage.call(dungeon, DungeonStage.OPENING, "Dungeon Manager via command");
+            dungeonTickTask.tryActivateDungeonModules(dungeon);
+            return true;
+        }).exceptionally(throwable -> {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Error spawning dungeon '" + dungeon.getId() + "' via command", throwable);
+            return false;
         });
-        return true;
     }
 
     public void interactDungeon(@NotNull Player player, @NotNull Dungeon dungeon, @NotNull Block block) {

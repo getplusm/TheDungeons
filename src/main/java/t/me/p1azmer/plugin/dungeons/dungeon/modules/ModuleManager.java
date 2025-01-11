@@ -1,33 +1,38 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.modules;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.manager.AbstractManager;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.*;
+import t.me.p1azmer.plugin.dungeons.generator.LocationGenerator;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ModuleManager extends AbstractManager<DungeonPlugin> {
-    private final Dungeon dungeon;
-    private final Map<String, AbstractModule> modules = new ConcurrentHashMap<>();
+    Dungeon dungeon;
+    LocationGenerator locationGenerator;
+    LinkedHashMap<String, AbstractModule> modules = new LinkedHashMap<>();
 
-    public ModuleManager(@NotNull Dungeon dungeon) {
+    public ModuleManager(@NotNull Dungeon dungeon, @NotNull LocationGenerator locationGenerator) {
         super(dungeon.plugin());
         this.dungeon = dungeon;
+        this.locationGenerator = locationGenerator;
     }
 
     @Override
     protected void onLoad() {
         this.plugin.info("Loading modules for " + this.getDungeon().getId() + "..");
 //        this.register(ModuleId.BOSSBAR, id -> new BossBarModule(this.getDungeon(), id));
-        this.register(ModuleId.SPAWN, id -> new SpawnModule(this.getDungeon(), id));
+        this.register(ModuleId.SPAWN, id -> new SpawnModule(this.getDungeon(), id, locationGenerator));
         if (plugin.getSchematicHandler() != null)
             this.register(ModuleId.SCHEMATIC, id -> new SchematicModule(this.getDungeon(), id));
         this.register(ModuleId.CHEST, id -> new ChestModule(this.getDungeon(), id));
@@ -88,7 +93,7 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
     }
 
     @NotNull
-    public Collection<AbstractModule> getActive(){
+    public Collection<AbstractModule> getActive() {
         return this.modules
                 .values()
                 .stream()
@@ -96,14 +101,14 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
                 .collect(Collectors.toList());
     }
 
-    public long getImportantActiveCount(){
+    public long getImportantActiveCount() {
         return this.getActive()
                 .stream()
                 .filter(AbstractModule::isImportantly)
                 .count();
     }
 
-    public boolean allImportantActive(){
+    public boolean allImportantActive() {
         return this.getImportantActiveCount() == this.getActive().size();
     }
 }

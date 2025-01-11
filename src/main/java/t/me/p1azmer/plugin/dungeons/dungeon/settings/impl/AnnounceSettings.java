@@ -1,7 +1,9 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.settings.impl;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.utils.StringUtil;
@@ -15,17 +17,16 @@ import java.util.*;
 
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AnnounceSettings extends AbstractSettings {
-    private final Map<DungeonStage, Map<Announce, int[]>> announceMap;
-    private final PlaceholderMap placeholderMap;
+    Map<DungeonStage, Map<Announce, int[]>> announceMap;
+    Map<DungeonStage, Set<Announce>> cachedAnnounceSet;
 
-    public AnnounceSettings(
-            @NotNull Dungeon dungeon,
-            @NotNull Map<DungeonStage, Map<Announce, int[]>> announceMap
-    ) {
+    public AnnounceSettings(@NotNull Dungeon dungeon, @NotNull Map<DungeonStage, Map<Announce, int[]>> announceMap) {
         super(dungeon);
         this.announceMap = announceMap;
-        this.placeholderMap = new PlaceholderMap();
+        this.cachedAnnounceSet = new HashMap<>();
+        this.placeholders = new PlaceholderMap();
     }
 
     @NotNull
@@ -57,7 +58,7 @@ public class AnnounceSettings extends AbstractSettings {
     }
 
     public void write(@NotNull JYML cfg, @NotNull String path) {
-        for (Map.Entry<DungeonStage, Map<Announce, int[]>> entry : this.getAnnounceMap().entrySet()) {
+        for (Map.Entry<DungeonStage, Map<Announce, int[]>> entry : announceMap.entrySet()) {
             if (entry.getValue().isEmpty()) {
                 cfg.set(path + ".Map." + entry.getKey().name(), Collections.emptyMap());
             } else {
@@ -69,21 +70,25 @@ public class AnnounceSettings extends AbstractSettings {
     }
 
     @NotNull
-    public Set<Announce> getAnnounces(@NotNull DungeonStage stage, int time) {
-        return this.getAnnounceMap().entrySet().stream()
-                .filter(entry -> entry.getKey().equals(stage) && entry.getValue()
-                        .entrySet()
-                        .stream()
-                        .anyMatch(f -> Arrays.stream(f.getValue()).anyMatch(i -> i == time)))
+    public Set<Announce> getAnnounces(@NotNull DungeonStage dungeonStage, int time) {
+        return announceMap.entrySet().stream()
+                .filter(entry -> {
+                    DungeonStage stage = entry.getKey();
+                    Map<Announce, int[]> announceMap = entry.getValue();
+                    return dungeonStage.equals(stage) && announceMap.entrySet().stream().anyMatch(f -> {
+                        return Arrays.stream(f.getValue()).anyMatch(i -> i == time);
+                    });
+                })
                 .flatMap(founder -> founder.getValue().keySet().stream())
-                .findFirst()
-                .map(Collections::singleton)
-                .orElse(Collections.emptySet());
+                .findFirst().map(Collections::singleton).orElse(Collections.emptySet());
     }
 
     @NotNull
     public Map<Announce, int[]> getAnnounceMap(@NotNull DungeonStage stage) {
-        return new HashMap<>(this.getAnnounceMap().entrySet().stream().filter(entry -> entry.getKey().equals(stage)).map(Map.Entry::getValue).findFirst().orElse(Collections.emptyMap()));
+        return new HashMap<>(this.getAnnounceMap().entrySet().stream()
+                .filter(entry -> entry.getKey().equals(stage))
+                .map(Map.Entry::getValue)
+                .findFirst().orElse(Collections.emptyMap()));
     }
 
     public void setAnnounce(@NotNull DungeonStage stage, @NotNull Map<Announce, int[]> map) {

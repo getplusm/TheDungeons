@@ -1,11 +1,13 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.settings.impl;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.config.JYML;
-import t.me.p1azmer.engine.utils.placeholder.PlaceholderMap;
 import t.me.p1azmer.plugin.dungeons.api.settings.AbstractSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.effect.Effect;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
@@ -15,19 +17,15 @@ import java.util.List;
 
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class EffectSettings extends AbstractSettings {
-    private boolean enabled;
-    private List<Effect> effects;
+    boolean enabled;
+    @NonFinal List<Effect> effects;
 
-    public EffectSettings(
-            @NotNull Dungeon dungeon,
-            boolean enabled,
-            @NotNull List<Effect> effects
-    ) {
+    public EffectSettings(@NotNull Dungeon dungeon, boolean enabled, @NotNull List<Effect> effects) {
         super(dungeon);
         this.enabled = enabled;
         this.effects = effects;
-        this.placeholderMap = new PlaceholderMap();
     }
 
     @NotNull

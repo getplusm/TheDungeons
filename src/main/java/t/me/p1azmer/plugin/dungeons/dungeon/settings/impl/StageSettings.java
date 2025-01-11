@@ -25,7 +25,7 @@ public class StageSettings extends AbstractSettings {
         super(dungeon);
         this.stageMap = stageMap;
 
-        this.placeholderMap = new PlaceholderMap();
+        this.placeholders = new PlaceholderMap();
     }
 
     @NotNull

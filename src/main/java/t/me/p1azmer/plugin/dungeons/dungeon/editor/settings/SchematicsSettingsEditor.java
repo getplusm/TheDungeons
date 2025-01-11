@@ -24,12 +24,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SchematicsSettingsEditor extends EditorMenu<DungeonPlugin, SchematicSettings> {
 
     public SchematicsSettingsEditor(@NotNull SchematicSettings settings) {
-        super(settings.dungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 9);
-        Dungeon dungeon = settings.dungeon();
+        super(settings.getDungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 9);
+        Dungeon dungeon = settings.getDungeon();
 
-        this.addReturn(8).setClick((viewer, event) -> {
-            dungeon.getEditor().openNextTick(viewer.getPlayer(), 1);
-        });
+        this.addReturn(8).setClick((viewer, event) -> dungeon.getEditor().openNextTick(viewer.getPlayer(), 1));
 
 
         this.addItem(new ItemStack(Material.PLAYER_HEAD), EditorLocales.SCHEMATICS_IGNORE_AIR, 3).setClick((viewer, event) -> {
@@ -39,7 +37,7 @@ public class SchematicsSettingsEditor extends EditorMenu<DungeonPlugin, Schemati
             ItemStack replacer = settings.isIgnoreAirBlocks() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
                     ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0=");
             item.setItemMeta(replacer.getItemMeta());
-            ItemReplacer.create(item).readLocale(EditorLocales.SCHEMATICS_IGNORE_AIR).writeMeta();
+            ItemReplacer.create(item).readLocale(EditorLocales.SCHEMATICS_IGNORE_AIR).replace(settings.replacePlaceholders()).writeMeta();
         });
         this.addItem(new ItemStack(Material.PLAYER_HEAD), EditorLocales.DUNGEON_SETTINGS_UNDERGROUND, 2).setClick((viewer, event) -> {
             this.object.setUnderground(!settings.isUnderground());
@@ -48,7 +46,7 @@ public class SchematicsSettingsEditor extends EditorMenu<DungeonPlugin, Schemati
             ItemStack replacer = settings.isUnderground() ? ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWMwMWY2Nzk2ZWI2M2QwZThhNzU5MjgxZDAzN2Y3YjM4NDMwOTBmOWE0NTZhNzRmNzg2ZDA0OTA2NWM5MTRjNyJ9fX0=") :
                     ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjI1NTRkZGE4MGVhNjRiMThiYzM3NWI4MWNlMWVkMTkwN2ZjODFhZWE2YjFjZjNjNGY3YWQzMTQ0Mzg5ZjY0YyJ9fX0=");
             item.setItemMeta(replacer.getItemMeta());
-            ItemReplacer.create(item).readLocale(EditorLocales.DUNGEON_SETTINGS_UNDERGROUND).writeMeta();
+            ItemReplacer.create(item).readLocale(EditorLocales.DUNGEON_SETTINGS_UNDERGROUND).replace(settings.replacePlaceholders()).writeMeta();
         });
         this.addItem(Material.FLOWER_BANNER_PATTERN, EditorLocales.SCHEMATICS_LIST, 5).setClick((viewer, event) -> {
             if (event.isShiftClick()) {
@@ -62,7 +60,7 @@ public class SchematicsSettingsEditor extends EditorMenu<DungeonPlugin, Schemati
                 this.handleInput(viewer, Lang.EDITOR_ENTER_SCHEMATIC, wrapper -> {
                     String schematicName = wrapper.getText().replace(".schem", "");
                     AtomicBoolean result = new AtomicBoolean(true);
-                    settings.dungeon().getModuleManager().getModule(SchematicModule.class).ifPresent(module -> {
+                    settings.getDungeon().getModuleManager().getModule(SchematicModule.class).ifPresent(module -> {
                         File schematicFile = module.getFileByName(schematicName);
                         if (!this.plugin.getSchematicHandler().containsChestBlock(dungeon, schematicFile)) {
                             EditorManager.error(viewer.getPlayer(), plugin().getMessage(Lang.EDITOR_DUNGEON_ERROR_SCHEMATIC_NOT_VALID).getLocalized());
@@ -89,14 +87,14 @@ public class SchematicsSettingsEditor extends EditorMenu<DungeonPlugin, Schemati
             if (menuItem.getOptions().getDisplayModifier() == null) {
                 menuItem.getOptions().setDisplayModifier(((viewer, item) -> {
                     ItemReplacer.replace(item, settings.replacePlaceholders());
-                    ItemReplacer.replace(item, settings.dungeon().replacePlaceholders());
+                    ItemReplacer.replace(item, settings.getDungeon().replacePlaceholders());
                 }));
             }
         });
     }
 
     private void save(@NotNull MenuViewer viewer) {
-        this.object.dungeon().save();
+        this.object.getDungeon().save();
         this.openNextTick(viewer.getPlayer(), viewer.getPage());
     }
 }

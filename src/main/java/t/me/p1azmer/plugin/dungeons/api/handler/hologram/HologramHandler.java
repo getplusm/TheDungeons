@@ -8,9 +8,9 @@ import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 
 public interface HologramHandler extends Loadable {
 
-  void create(@NotNull Dungeon dungeon, @NotNull ChestModule module);
+    void create(@NotNull Dungeon dungeon, @NotNull ChestModule module);
 
-  void delete(@NotNull Dungeon dungeon);
+    void delete(@NotNull Dungeon dungeon);
 
-  void update(@NotNull ChestBlock chestBlock);
+    void update(@NotNull ChestBlock chestBlock);
 }

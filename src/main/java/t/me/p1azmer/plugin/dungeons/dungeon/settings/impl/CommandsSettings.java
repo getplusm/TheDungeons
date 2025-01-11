@@ -12,49 +12,49 @@ import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Getter
 @Setter
 public class CommandsSettings extends AbstractSettings {
-    private final Map<DungeonStage, List<String>> commandsMap;
+    private final Map<DungeonStage, Set<String>> commandsMap;
 
     public CommandsSettings(
             @NotNull Dungeon dungeon,
-            @NotNull Map<DungeonStage, List<String>> commandsMap
+            @NotNull Map<DungeonStage, Set<String>> commandsMap
     ) {
         super(dungeon);
         this.commandsMap = commandsMap;
 
-        this.placeholderMap = new PlaceholderMap();
+        this.placeholders = new PlaceholderMap();
 
     }
 
     @NotNull
     public static CommandsSettings read(@NotNull Dungeon dungeon, @NotNull JYML cfg, @NotNull String path) {
-        Map<DungeonStage, List<String>> map = new HashMap<>();
+        Map<DungeonStage, Set<String>> map = new HashMap<>();
         for (String sId : cfg.getSection(path + ".Map")) {
             DungeonStage stage = StringUtil.getEnum(sId, DungeonStage.class).orElse(null);
             if (stage == null) continue;
-            List<String> commands = cfg.getStringList(path + ".Map." + sId);
+            Set<String> commands = cfg.getStringSet(path + ".Map." + sId);
             map.put(stage, commands);
         }
         return new CommandsSettings(dungeon, map);
     }
 
     public void write(@NotNull JYML cfg, @NotNull String path) {
-        for (Map.Entry<DungeonStage, List<String>> entry : this.getCommandsMap().entrySet()) {
+        for (Map.Entry<DungeonStage, Set<String>> entry : this.getCommandsMap().entrySet()) {
             cfg.set(path + ".Map." + entry.getKey().name(), entry.getValue());
         }
     }
 
     @NotNull
-    public List<String> getCommands(@NotNull DungeonStage stage) {
-        return this.getCommandsMap().getOrDefault(stage, Collections.emptyList());
+    public Set<String> getCommands(@NotNull DungeonStage stage) {
+        return this.getCommandsMap().getOrDefault(stage, Collections.emptySet());
     }
 
-    public void setCommands(@NotNull DungeonStage stage, @NotNull List<String> commands) {
+    public void setCommands(@NotNull DungeonStage stage, @NotNull Set<String> commands) {
         this.getCommandsMap().put(stage, commands);
     }
 }

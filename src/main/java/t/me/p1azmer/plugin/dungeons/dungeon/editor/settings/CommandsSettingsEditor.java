@@ -11,7 +11,7 @@ import t.me.p1azmer.engine.api.menu.impl.MenuOptions;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.editor.EditorManager;
 import t.me.p1azmer.engine.utils.Colorizer;
-import t.me.p1azmer.engine.utils.Colors;
+import t.me.p1azmer.engine.utils.Colors2;
 import t.me.p1azmer.engine.utils.ItemReplacer;
 import t.me.p1azmer.engine.utils.ItemUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
@@ -22,34 +22,27 @@ import t.me.p1azmer.plugin.dungeons.dungeon.stage.Placeholders;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class CommandsSettingsEditor extends EditorMenu<DungeonPlugin, CommandsSettings> implements AutoPaged<DungeonStage> {
 
     public CommandsSettingsEditor(@NotNull CommandsSettings settings) {
-        super(settings.dungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 36);
+        super(settings.getDungeon().plugin(), settings, Config.EDITOR_TITLE_DUNGEON.get(), 36);
 
-        this.addReturn(31).setClick((viewer, event) -> {
-            this.plugin.runTask(task -> settings.dungeon().getEditor().open(viewer.getPlayer(), 1));
-        });
+        this.addReturn(31).setClick((viewer, event) -> this.plugin.runTask(task -> settings.getDungeon().getEditor().open(viewer.getPlayer(), 1)));
         this.addNextPage(32);
         this.addPreviousPage(30);
 
         this.getItems().forEach(menuItem -> {
             if (menuItem.getOptions().getDisplayModifier() == null) {
-                menuItem.getOptions().setDisplayModifier(((viewer, item) -> {
-                    ItemReplacer.replace(item, settings.replacePlaceholders());
-                }));
+                menuItem.getOptions().setDisplayModifier(((viewer, item) -> ItemReplacer.replace(item, settings.replacePlaceholders())));
             }
         });
     }
 
     private void save(@NotNull MenuViewer viewer) {
-        this.object.dungeon().save();
+        this.object.getDungeon().save();
         this.plugin.runTask(task -> this.open(viewer.getPlayer(), viewer.getPage()));
     }
 
@@ -81,7 +74,7 @@ public class CommandsSettingsEditor extends EditorMenu<DungeonPlugin, CommandsSe
                 .replace(s -> s
                         .replace(Placeholders.EDITOR_STAGE_NAME, stage.name())
                         .replace(Placeholders.EDITOR_STAGE_DESCRIPTION, stage.getDescription(plugin()))
-                        .replace(Placeholders.EDITOR_STAGE_COMMANDS, Colors.LIGHT_PURPLE + String.join("\n", this.object.getCommands(stage)))
+                        .replace(Placeholders.EDITOR_STAGE_COMMANDS, Colors2.LIGHT_PURPLE + String.join("\n", this.object.getCommands(stage)))
                 )
                 .replace(this.object.replacePlaceholders())
                 .replace(Colorizer::apply)
@@ -100,7 +93,7 @@ public class CommandsSettingsEditor extends EditorMenu<DungeonPlugin, CommandsSe
                 EditorManager.prompt(player, plugin.getMessage(Lang.Editor_Enter_Text).getLocalized());
                 EditorManager.startEdit(player, wrapper -> {
                     String command = wrapper.getText();
-                    List<String> commands = this.object.getCommands(stage);
+                    Set<String> commands = this.object.getCommands(stage);
                     commands.add(command);
                     this.object.setCommands(stage, commands);
                     this.save(viewer);
@@ -113,7 +106,7 @@ public class CommandsSettingsEditor extends EditorMenu<DungeonPlugin, CommandsSe
             if (event.getClick().equals(ClickType.SHIFT_RIGHT)) {
                 if (this.object.getCommands(stage).isEmpty()) return;
 
-                this.object.setCommands(stage, Collections.emptyList());
+                this.object.setCommands(stage, Collections.emptySet());
                 this.save(viewer);
             }
         };

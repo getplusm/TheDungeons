@@ -14,22 +14,22 @@ import java.util.regex.Matcher;
 
 public class NearWaitTimePlaceholder extends AbstractPlaceholder<DungeonPlugin> {
 
-  public NearWaitTimePlaceholder(@NotNull PlaceholderExpansion<DungeonPlugin> expansion) {
-    super(expansion);
-  }
+    public NearWaitTimePlaceholder(@NotNull PlaceholderExpansion<DungeonPlugin> expansion) {
+        super(expansion);
+    }
 
-  @Override
-  public String parse(@NotNull Matcher matcher, @Nullable Player player) {
-    Dungeon dungeon = plugin.getDungeonManager().getNearestDungeon();
-    if (dungeon == null) return "";
+    @Override
+    public String parse(@NotNull Matcher matcher, @Nullable Player player) {
+        Dungeon dungeon = plugin.getDungeonManager().getNearestDungeon();
+        if (dungeon == null) return "";
 
-    if (dungeon.getStage().isWaitingPlayers())
-      return NumberUtil.format(dungeon.getStageSettings().getTime(DungeonStage.WAITING_PLAYERS) - dungeon.getNextStageTime());
-    return "";
-  }
+        if (dungeon.getStage().isWaitingPlayers())
+            return NumberUtil.format(dungeon.getStageSettings().getTime(DungeonStage.WAITING_PLAYERS) - dungeon.getNextStageTime());
+        return "";
+    }
 
-  @Override
-  public @NotNull String getRegex() {
-    return "nearest_wait_time";
-  }
+    @Override
+    public @NotNull String getRegex() {
+        return "nearest_wait_time";
+    }
 }
