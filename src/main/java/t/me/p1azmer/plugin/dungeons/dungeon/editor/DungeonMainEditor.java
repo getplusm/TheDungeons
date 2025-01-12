@@ -1,5 +1,7 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.editor;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -11,10 +13,7 @@ import t.me.p1azmer.engine.api.manager.EventListener;
 import t.me.p1azmer.engine.api.menu.impl.EditorMenu;
 import t.me.p1azmer.engine.api.menu.impl.MenuViewer;
 import t.me.p1azmer.engine.editor.EditorManager;
-import t.me.p1azmer.engine.utils.CollectionsUtil;
-import t.me.p1azmer.engine.utils.Colorizer;
-import t.me.p1azmer.engine.utils.ItemReplacer;
-import t.me.p1azmer.engine.utils.ItemUtil;
+import t.me.p1azmer.engine.utils.*;
 import t.me.p1azmer.engine.utils.collections.AutoRemovalCollection;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.config.Config;
@@ -28,23 +27,25 @@ import t.me.p1azmer.plugin.dungeons.lang.Lang;
 
 import java.util.concurrent.TimeUnit;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implements EventListener {
 
-    private StageSettingsEditor stageSettingsEditor;
-    private CommandsSettingsEditor commandsSettingsEditor;
-    private SchematicsSettingsEditor schematicsSettingsEditor;
-    private ModuleSettingsEditor moduleSettingsEditor;
-    private AnnounceSettingsEditor announceSettingsEditor;
-    private ChestSettingsEditor chestStateSettingsEditor;
-    private HologramSettingsEditor hologramSettingsEditor;
-    private DungeonRewardListEditor editorRewards;
-    private DungeonEffectListEditor effectEditor;
-    private DungeonRegionMainEditor regionMainEditor;
-    private MainSettingsEditor settingsEditor;
-    private PartySettingsEditor partySettingsEditor;
-    private GenerationSettingsEditor generationSettingsEditor;
+    StageSettingsEditor stageSettingsEditor;
+    CommandsSettingsEditor commandsSettingsEditor;
+    SchematicsSettingsEditor schematicsSettingsEditor;
+    ModuleSettingsEditor moduleSettingsEditor;
+    AnnounceSettingsEditor announceSettingsEditor;
+    ChestSettingsEditor chestStateSettingsEditor;
+    HologramSettingsEditor hologramSettingsEditor;
+    DungeonRewardListEditor editorRewards;
+    DungeonEffectListEditor effectEditor;
+    DungeonRegionMainEditor regionMainEditor;
+    MainSettingsEditor settingsEditor;
+    PartySettingsEditor partySettingsEditor;
+    GenerationSettingsEditor generationSettingsEditor;
+    AccessSettingsEditor accessSettingsEditor;
 
-    private final AutoRemovalCollection<Dungeon> rebootCache = AutoRemovalCollection.newHashSet(1, TimeUnit.MINUTES);
+    final AutoRemovalCollection<Dungeon> rebootCache = AutoRemovalCollection.newHashSet(1, TimeUnit.MINUTES);
 
     public DungeonMainEditor(@NotNull Dungeon dungeon) {
         super(dungeon.plugin(), dungeon, Config.EDITOR_TITLE_DUNGEON.get(), 54);
@@ -103,6 +104,15 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
                         EditorLocales.GENERATION_SETTINGS, 40)
                 .setClick((viewer, event) -> this.getGenerationSettingsEditor().openNextTick(viewer.getPlayer(), 1));
 
+        if (EngineUtils.hasPlugin("Fabled")) {
+            addItem(
+                    ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjlhMjhiYTNiYTc5YmUxOTU0NzEwZDRkYjJhM2ZkMjI3NzNmNjE5ZjE4ZmVjZjU5ODIzNTNmYjdhYzE4MzkzYSJ9fX0="),
+                    EditorLocales.ACCESS_SETTINGS, 41
+            ).setClick((menuViewer, inventoryClickEvent) -> {
+                getAccessSettingsEditor().openNextTick(menuViewer.getPlayer(), 1);
+            });
+        }
+
         this.addItem(ItemUtil.createCustomHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjliMjg4OTAyMDU4MzU2NWY4OGQ1MDUzNzg3MGM1OWFhZDgwMjU5NGZhYmQ4MzdlMWQxNGY1YTA2YWUzNDUwOSJ9fX0="),
                 EditorLocales.DUNGEON_WORLD, 4).setClick((viewer, event) -> {
             EditorManager.suggestValues(viewer.getPlayer(), CollectionsUtil.worldNames(), true);
@@ -138,6 +148,7 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
                     ItemReplacer.replace(item, dungeon.getHologramSettings().replacePlaceholders());
                     ItemReplacer.replace(item, dungeon.getRegion().replacePlaceholders());
                     ItemReplacer.replace(item, dungeon.getSettings().replacePlaceholders());
+                    ItemReplacer.replace(item, dungeon.getAccessSettings().replacePlaceholders());
                 }));
             }
         });
@@ -262,6 +273,14 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
             this.generationSettingsEditor = new GenerationSettingsEditor(this.object.getGenerationSettings());
         }
         return generationSettingsEditor;
+    }
+
+    @NotNull
+    public AccessSettingsEditor getAccessSettingsEditor() {
+        if (this.accessSettingsEditor == null) {
+            this.accessSettingsEditor = new AccessSettingsEditor(this.object.getAccessSettings());
+        }
+        return accessSettingsEditor;
     }
 
     private void save(@NotNull MenuViewer viewer) {

@@ -157,28 +157,24 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
 
     @Nullable
     public Dungeon getDungeonByLocation(@NotNull Location location, @NotNull Block block) {
-        return this.getDungeons()
-                .stream()
-                .filter(dungeon -> {
-                    ModuleManager moduleManager = dungeon.getModuleManager();
-                    ChestModule module = moduleManager.getModule(ChestModule.class).orElse(null);
-                    Block dungeonBlock = module != null ? module.getBlock(location).orElse(null) : null;
+        return this.getDungeons().stream().filter(dungeon -> {
+            ModuleManager moduleManager = dungeon.getModuleManager();
+            ChestModule module = moduleManager.getModule(ChestModule.class).orElse(null);
+            Block dungeonBlock = module != null ? module.getBlock(location).orElse(null) : null;
 
-                    Cuboid dungeonCuboid = dungeon.getDungeonCuboid().orElse(null);
-                    RegionHandler regionHandler = plugin.getRegionHandler();
-                    Region dungeonRegion = dungeon.getRegion();
+            Cuboid dungeonCuboid = dungeon.getDungeonCuboid().orElse(null);
+            RegionHandler regionHandler = plugin.getRegionHandler();
+            Region dungeonRegion = dungeon.getRegion();
 
-                    return (dungeonCuboid != null && dungeonCuboid.contains(location))
-                            || (dungeonBlock != null
-                            && (dungeonBlock.hasMetadata(dungeon.getId())
-                            || dungeonBlock.equals(block)
-                            || dungeonBlock.getLocation().equals(location)
-                            || dungeonBlock.getLocation().distance(location) <= 1D))
-                            || (regionHandler != null && dungeonRegion.isEnabled()
-                            && regionHandler.isDungeonRegion(location, dungeonRegion));
-                })
-                .findFirst()
-                .orElse(null);
+            return (dungeonCuboid != null && dungeonCuboid.contains(location))
+                    || (dungeonBlock != null
+                    && (dungeonBlock.hasMetadata(dungeon.getId())
+                    || dungeonBlock.equals(block)
+                    || dungeonBlock.getLocation().equals(location)
+                    || dungeonBlock.getLocation().distance(location) <= 1D))
+                    || (regionHandler != null && dungeonRegion.isEnabled()
+                    && regionHandler.isDungeonRegion(location, dungeonRegion));
+        }).findFirst().orElse(null);
     }
 
     @NotNull

@@ -23,11 +23,10 @@ public class PartyHandlerPaF implements PartyHandler {
 
     @Override
     public int getPartySize(@NotNull Player player) {
-        PartyManager manager = PartyManager.getInstance();
         PAFPlayerManager pafPlayerManager = PAFPlayerManager.getInstance();
 
         PAFPlayer pafPlayer = pafPlayerManager.getPlayer(player.getUniqueId());
-        PlayerParty party = manager.getParty(pafPlayer);
+        PlayerParty party = partyManager.getParty(pafPlayer);
 
         if (party == null) return 0;
         return party.getAllPlayers().size();
@@ -36,10 +35,8 @@ public class PartyHandlerPaF implements PartyHandler {
     @Override
     public boolean isInParty(@NotNull Player player) {
         PAFPlayerManager pafPlayerManager = PAFPlayerManager.getInstance();
-        PartyManager manager = PartyManager.getInstance();
-
         PAFPlayer pafPlayer = pafPlayerManager.getPlayer(player.getUniqueId());
-        PlayerParty party = manager.getParty(pafPlayer);
+        PlayerParty party = partyManager.getParty(pafPlayer);
 
         return party != null;
     }

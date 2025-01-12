@@ -91,7 +91,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
     public static final EditorLocale DUNGEON_PARTICLE = builder(PREFIX + "Dungeon.Change.Particles")
             .name("Particles")
             .text(RED + "Coming soon..")
-            //.click(LMB, "Navigate")
+            .click(LMB, "Navigate")
             .build();
     public static final EditorLocale DUNGEON_PARTY = builder(PREFIX + "Dungeon.Party")
             .name("Party")
@@ -368,6 +368,49 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .emptyLine()
             .click(LMB, "Change to your location")
             .click(SHIFT_RMB, "Clear")
+            .build();
+    // access settings
+    public static final EditorLocale ACCESS_SETTINGS = builder(PREFIX + "Dungeon.Settings.Access")
+            .name("Access Settings")
+            .current("Enabled", t.me.p1azmer.plugin.dungeons.dungeon.settings.Placeholders.DUNGEON_SETTINGS_ACCESS_ENABLED)
+            .current("ProSkillAPI Classes", t.me.p1azmer.plugin.dungeons.dungeon.settings.Placeholders.DUNGEON_SETTINGS_ACCESS_PSAPI_CLASSES)
+            .click(LMB, "Navigate")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_ACCESS_ENABLED = builder(PREFIX + "Dungeon.Settings.Access.Enabled")
+            .name("Enabled")
+            .text(
+                    "If the parameters are configured",
+                    "and the setting is enabled, then",
+                    "the plugin will check the data and",
+                    "do not allow players to enter the dungeon region",
+                    "without the necessary class"
+            )
+            .currentHeader()
+            .current("Enabled", t.me.p1azmer.plugin.dungeons.dungeon.settings.Placeholders.DUNGEON_SETTINGS_ACCESS_ENABLED)
+            .emptyLine()
+            .click(LMB, "Change")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_ACCESS_NOT_ACCESS_MESSAGE = builder(PREFIX + "Dungeon.Settings.Access.Not_Access_Message")
+            .name("Not Access Message")
+            .text("The message about the lack of access")
+            .emptyLine()
+            .currentHeader()
+            .text(t.me.p1azmer.plugin.dungeons.dungeon.settings.Placeholders.DUNGEON_SETTINGS_ACCESS_NOT_ACCESS_MESSAGE)
+            .emptyLine()
+            .click(LMB, "Change")
+            .build();
+    public static final EditorLocale DUNGEON_SETTINGS_ACCESS_PSAPI_CLASSES = builder(PREFIX + "Dungeon.Settings.Access.PSAPI.Class")
+            .name("ProSkillAPI (Fabled) Classes")
+            .text(
+                    "List of classes that are",
+                    "necessary to enter the dungeon"
+            )
+            .emptyLine()
+            .currentHeader()
+            .text(t.me.p1azmer.plugin.dungeons.dungeon.settings.Placeholders.DUNGEON_SETTINGS_ACCESS_PSAPI_CLASSES)
+            .emptyLine()
+            .text("(" + WHITE + LMB + GRAY + " to add)")
+            .text("(" + WHITE + RMB + GRAY + " to remove all)")
             .build();
     // effect
 

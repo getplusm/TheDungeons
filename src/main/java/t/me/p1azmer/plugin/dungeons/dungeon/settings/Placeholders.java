@@ -15,4 +15,8 @@ public class Placeholders extends t.me.p1azmer.plugin.dungeons.dungeon.Placehold
     public static final String DUNGEON_SETTINGS_GENERATION_TYPE = "%dungeon_generation_type%";
     public static final String DUNGEON_SETTINGS_GENERATION_LOCATION = "%dungeon_generation_location%";
     public static final String DUNGEON_SETTINGS_MOBS = "%dungeon_settings_mobs%";
+
+    public static final String DUNGEON_SETTINGS_ACCESS_ENABLED = "%dungeon_access_enabled%";
+    public static final String DUNGEON_SETTINGS_ACCESS_PSAPI_CLASSES = "%dungeon_access_psapi_classes%";
+    public static final String DUNGEON_SETTINGS_ACCESS_NOT_ACCESS_MESSAGE = "%dungeon_access_not_access_message%";
 }

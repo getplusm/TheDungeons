@@ -66,6 +66,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     PartySettings partySettings;
     StageSettings stageSettings;
     ChestSettings chestSettings;
+    AccessSettings accessSettings;
     RewardSettings rewardSettings;
     ModuleSettings moduleSettings;
     EffectSettings effectSettings;
@@ -117,6 +118,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     public boolean load() {
         this.selfTick = new AtomicInteger();
         this.setSettings(MainSettings.read(this, cfg, "Settings"));
+        setAccessSettings(AccessSettings.read(this, cfg, "Settings.Access"));
         this.setMobsSettings(MobsSettings.read(this, cfg, "Mobs"));
         this.setPartySettings(PartySettings.read(this, cfg, "Party"));
         this.setGenerationSettings(GenerationSettings.read(this, cfg, "Settings.Generation"));
@@ -207,6 +209,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         this.getRegion().write(cfg, "Settings.Region");
         this.getSettings().write(cfg, "");
         this.getMobsSettings().write(cfg, "Mobs");
+        getAccessSettings().write(cfg, "Settings.Access");
         this.getHologramSettings().write(cfg, "Hologram.Chest");
         this.getPartySettings().write(cfg, "Party");
         this.getModuleSettings().write(cfg, "Settings.Modules");
@@ -389,6 +392,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
                 PREPARE, Map.of(Objects.requireNonNull(announceManager.getAnnounce("prepare_default")), new int[]{26, 27, 28, 29, 30}),
                 CLOSED, Map.of(Objects.requireNonNull(announceManager.getAnnounce("closed_default")), new int[]{0})
         );
+        val accessSettings = new AccessSettings(this, false, new HashSet<>(), null);
         val mainSettings = new MainSettings(this, false, false,
                 false, 1);
         val hologramSettings = new HologramSettings(this, 2, Map.of(
@@ -451,6 +455,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         );
         this.setHologramSettings(hologramSettings);
         this.setSettings(mainSettings);
+        setAccessSettings(accessSettings);
         this.setSchematicSettings(schematicSettings);
         this.setModuleSettings(moduleSettings);
         this.setStageSettings(stageSettings);

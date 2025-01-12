@@ -99,6 +99,10 @@ public class Lang extends EngineLang {
             GRAY + "Enter " + GREEN + "[Display Name]");
     public static final LangKey EDITOR_ENTER_SCHEMATIC = LangKey.of("Editor.Enter.Schematic",
             GRAY + "Enter " + GREEN + "[Dungeon Schematic]");
+    public static final LangKey EDITOR_ACCESS_PSAPI_ENTER_CLASS = LangKey.of("Editor.Enter.Access.PSAPI.Class",
+            GRAY + "Enter " + GREEN + "[ProSkillAPI (Fabled) Class]");
+    public static final LangKey EDITOR_ACCESS_ENTER_NOT_ACCESS_MESSAGE = LangKey.of("Editor.Enter.Access.Not_Access_Message",
+            GRAY + "Enter " + GREEN + "[Not Access Message (Kyori miniMessage)]");
     public static final LangKey EDITOR_DUNGEON_ENTER_HOLOGRAM_TEXT = LangKey.of("Editor.Dungeon.Enter.Hologram.Text",
             GRAY + "Enter " + GREEN + "[Text]");
     public static final LangKey EDITOR_DUNGEON_ENTER_HOLOGRAM_OFFSET = LangKey.of("Editor.Crate.Enter.Hologram.Offset",
@@ -121,6 +125,8 @@ public class Lang extends EngineLang {
             RED + "A reward with this identifier already exists!");
     public static final LangKey EDITOR_DUNGEON_ERROR_MATERIAL_NOT_FOUND = LangKey.of("Editor.Dungeon.Error.Blocks.Material.Not_Found",
             RED + "Material not found, try again!");
+    public static final LangKey EDITOR_DUNGEON_ERROR_ACCESS_PSAPI_CLASS_NOT_FOUND = LangKey.of("Editor.Dungeon.Error.Access.PSAPI.Class.Not_Found",
+            RED + "Class not found, try again!");
     public static final LangKey EDITOR_REWARD_ENTER_COMMAND = LangKey.of("Editor.Reward.Enter.Command",
             GRAY + "Enter " + GREEN + "[Command]");
 

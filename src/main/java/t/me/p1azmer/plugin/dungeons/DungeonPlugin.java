@@ -9,6 +9,7 @@ import t.me.p1azmer.engine.api.command.GeneralCommand;
 import t.me.p1azmer.engine.command.list.ReloadSubCommand;
 import t.me.p1azmer.engine.utils.EngineUtils;
 import t.me.p1azmer.plugin.dungeons.announce.AnnounceManager;
+import t.me.p1azmer.plugin.dungeons.api.handler.access.AccessHandler;
 import t.me.p1azmer.plugin.dungeons.api.handler.hologram.HologramHandler;
 import t.me.p1azmer.plugin.dungeons.api.handler.party.PartyHandler;
 import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
@@ -27,10 +28,12 @@ import t.me.p1azmer.plugin.dungeons.dungeon.stage.StageLang;
 import t.me.p1azmer.plugin.dungeons.editor.EditorLocales;
 import t.me.p1azmer.plugin.dungeons.editor.EditorMainMenu;
 import t.me.p1azmer.plugin.dungeons.generator.LocationGenerator;
+import t.me.p1azmer.plugin.dungeons.integration.access.AccessHandlerPSAPI;
 import t.me.p1azmer.plugin.dungeons.integration.holograms.FancyHologramsHandler;
 import t.me.p1azmer.plugin.dungeons.integration.holograms.HologramDecentHandler;
 import t.me.p1azmer.plugin.dungeons.integration.holograms.HologramDisplaysHandler;
 import t.me.p1azmer.plugin.dungeons.integration.party.PartyHandlerPaF;
+import t.me.p1azmer.plugin.dungeons.integration.party.PartyHandlerParties;
 import t.me.p1azmer.plugin.dungeons.integration.region.*;
 import t.me.p1azmer.plugin.dungeons.integration.schematics.SchematicFAWEHandler;
 import t.me.p1azmer.plugin.dungeons.key.KeyManager;
@@ -60,6 +63,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     SchematicHandler schematicHandler;
     RegionHandler regionHandler;
     PartyHandler partyHandler;
+    AccessHandler accessHandler;
     DungeonPlaceholder placeholder;
 
     ThreadSync threadSync;
@@ -201,6 +205,16 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
             this.partyHandler = new PartyHandlerPaF();
             this.partyHandler.setup();
             this.warn("Using PartyAndFriends for party handler");
+        }
+        if (EngineUtils.hasPlugin("Parties")){
+            this.partyHandler = new PartyHandlerParties();
+            this.partyHandler.setup();
+            this.warn("Using Parties for party handler");
+        }
+        if (EngineUtils.hasPlugin("Fabled")){
+            this.accessHandler = new AccessHandlerPSAPI();
+            this.accessHandler.setup();
+            this.warn("Using Fabled (ProSkillAPI) for access handler");
         }
         if (EngineUtils.hasPlugin("WorldEdit") || EngineUtils.hasPlugin("FastAsyncWorldEdit")) {
             this.schematicHandler = new SchematicFAWEHandler(new SessionConsole(this));

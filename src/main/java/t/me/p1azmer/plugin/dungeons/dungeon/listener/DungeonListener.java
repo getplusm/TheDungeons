@@ -2,6 +2,7 @@ package t.me.p1azmer.plugin.dungeons.dungeon.listener;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -20,6 +21,7 @@ import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonChangeStageEvent;
 import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonSpawnEvent;
 import t.me.p1azmer.plugin.dungeons.api.events.DungeonDespawnEvent;
+import t.me.p1azmer.plugin.dungeons.api.handler.access.AccessHandler;
 import t.me.p1azmer.plugin.dungeons.api.handler.party.PartyHandler;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
@@ -27,6 +29,7 @@ import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
+import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.AccessSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.GenerationSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.MainSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.PartySettings;
@@ -79,6 +82,20 @@ public class DungeonListener extends AbstractListener<DungeonPlugin> {
         DungeonStage dungeonStage = dungeon.getStage();
         PartySettings partySettings = dungeon.getPartySettings();
         PartyHandler partyHandler = plugin.getPartyHandler();
+        AccessHandler accessHandler = plugin.getAccessHandler();
+
+        if (accessHandler != null) {
+            AccessSettings accessSettings = dungeon.getAccessSettings();
+            boolean cancelled = !accessHandler.allowedToEnterDungeon(dungeon, player);
+            if (cancelled) {
+                String notAccessMessage = accessSettings.getNotAccessMessage();
+                if (notAccessMessage != null) {
+                    player.sendMessage(MiniMessage.miniMessage().deserialize(notAccessMessage));
+                }
+                player.setVelocity(direction.setY(-0.4D).multiply(-0.45D));
+                return;
+            }
+        }
 
         if (dungeonStage.isClosed() || dungeonStage.isPrepare()) {
             player.setVelocity(direction.setY(-0.4D).multiply(-0.45D));

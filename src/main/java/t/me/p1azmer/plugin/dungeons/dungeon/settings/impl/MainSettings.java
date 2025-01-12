@@ -1,7 +1,9 @@
 package t.me.p1azmer.plugin.dungeons.dungeon.settings.impl;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.lang.LangManager;
@@ -12,23 +14,19 @@ import t.me.p1azmer.plugin.dungeons.dungeon.settings.Placeholders;
 
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class MainSettings extends AbstractSettings {
-    private boolean enabled, clickTimer, letPlayersWhenClose;
-    private int minimalOnline;
+    boolean enabled, clickTimer, letPlayersWhenClose;
+    int minimalOnline;
 
-    public MainSettings(
-            @NotNull Dungeon dungeon,
-            boolean enabled,
-            boolean clickTimer,
-            boolean letPlayersWhenClose,
-            int minimalOnline
-    ) {
+    public MainSettings(@NotNull Dungeon dungeon,
+                        boolean enabled, boolean clickTimer, boolean letPlayersWhenClose,
+                        int minimalOnline) {
         super(dungeon);
         this.enabled = enabled;
         this.clickTimer = clickTimer;
         this.minimalOnline = minimalOnline;
         this.letPlayersWhenClose = letPlayersWhenClose;
-
 
         this.placeholders = new PlaceholderMap()
                 .add(Placeholders.DUNGEON_SETTINGS_ENABLED, () -> LangManager.getBoolean(this.isEnabled()))

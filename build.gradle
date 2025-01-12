@@ -5,7 +5,7 @@ plugins {
 
 group = 'com.github.getplusm'
 description = 'TheDungeons'
-version = '4.0.0'
+version = '4.0.1'
 
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
@@ -42,8 +42,14 @@ repositories {
     // PaF
     maven { url = 'https://simonsator.de/repo/' }
 
+    // Parties
+    maven { url 'https://repo.alessiodp.com/releases/' }
+
     // towny
     maven { url = 'https://repo.glaremasters.me/repository/towny/' }
+
+    // ProSkillAPI
+    maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots' }
 
 }
 
@@ -57,6 +63,10 @@ dependencies {
     // party
     compileOnly 'de.simonsator:spigot-party-api-for-party-and-friends:1.0.7-RELEASE'
     compileOnly 'de.simonsator:Party-and-Friends-MySQL-Edition-Spigot-API:1.5.4-RELEASE'
+    compileOnly 'com.alessiodp.parties:parties-api:3.2.16'
+
+    // access
+    compileOnly 'studio.magemonkey:fabled:1.0.4-R0.17-SNAPSHOT'
 
     // regions
     compileOnly 'com.palmergames.bukkit.towny:towny:0.100.0.0'
