@@ -84,7 +84,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
             return;
         }
         this.threadSync = new ThreadSync(this);
-        this.locationGenerator = new LocationGenerator(regionHandler, getFoliaScheduler());
+        this.locationGenerator = new LocationGenerator(regionHandler);
 
         this.keyManager = new KeyManager(this);
         this.keyManager.setup();
