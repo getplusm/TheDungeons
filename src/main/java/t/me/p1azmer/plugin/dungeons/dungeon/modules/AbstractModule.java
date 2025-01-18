@@ -17,10 +17,10 @@ import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.GenerationSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.ModuleSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
-import t.me.p1azmer.plugin.dungeons.utils.debug.ErrorManager;
 
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -68,8 +68,12 @@ public abstract class AbstractModule implements Placeholder {
     }
 
     public void shutdown() {
-        this.tryDeactivate(ActionType.FORCE);
-        this.onShutdown();
+        try {
+            this.tryDeactivate(ActionType.FORCE);
+            this.onShutdown();
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while shutdown '" + getId() + "' module");
+        }
     }
 
     protected abstract Predicate<Boolean> onLoad();
@@ -86,19 +90,24 @@ public abstract class AbstractModule implements Placeholder {
     public boolean tryActive(@NotNull AbstractModule.ActionType actionType) {
         if (!this.getSettings().isEnabled(this.getId())) return false;
 
-        return switch (actionType) {
-            case FORCE -> {
-                this.actionType = actionType;
-                this.activated = true;
-                yield this.onActivate(true);
-            }
-            case NATURAL -> {
-                boolean active = this.activated = this.canEnable.test(true) && this.onActivate(false);
-                this.actionType = actionType;
-                yield active;
-            }
-            case SHUTDOWN -> false;
-        };
+        try {
+            return switch (actionType) {
+                case FORCE -> {
+                    this.actionType = actionType;
+                    this.activated = true;
+                    yield this.onActivate(true);
+                }
+                case NATURAL -> {
+                    boolean active = this.activated = this.canEnable.test(true) && this.onActivate(false);
+                    this.actionType = actionType;
+                    yield active;
+                }
+                case SHUTDOWN -> false;
+            };
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while activate '" + getId() + "' module");
+            return false;
+        }
     }
 
     public boolean tryDeactivate(@NotNull AbstractModule.ActionType actionType) {
@@ -110,33 +119,42 @@ public abstract class AbstractModule implements Placeholder {
 
         if (generationType.isStatic() && moduleWhitelist.contains(this.getId())) return false;
 
-        return switch (actionType) {
-            case FORCE -> {
-                this.activated = false;
-                this.onDeactivate(true);
-                yield true;
-            }
-            case NATURAL -> {
-                this.activated = !this.onDeactivate(false);
-                yield !activated;
-            }
-            case SHUTDOWN -> true;
-        };
+        try {
+            return switch (actionType) {
+                case FORCE -> {
+                    this.activated = false;
+                    this.onDeactivate(true);
+                    yield true;
+                }
+                case NATURAL -> {
+                    this.activated = !this.onDeactivate(false);
+                    yield !activated;
+                }
+                case SHUTDOWN -> true;
+            };
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while deactivate '" + getId() + "' module");
+            return false;
+        }
     }
 
     public void update() {
         if (isActivated() && !isUpdatable()) return;
         boolean canActivate = this.getActionType().isForce() || canEnable.test(true);
 
-        if (canActivate && !isActivated()) {
-            boolean result = this.tryActive(this.getActionType());
-            if (!result && isImportantly()) this.getDungeon().cancel(false);
-        } else {
-            DungeonStage stage = this.getDungeon().getStage();
-            boolean cancelled = stage.isDeleting() || stage.isCancelled();
-            boolean deactivate = !canActivate && isActivated() && cancelled;
+        try {
+            if (canActivate && !isActivated()) {
+                boolean result = this.tryActive(this.getActionType());
+                if (!result && isImportantly()) this.getDungeon().cancel(false);
+            } else {
+                DungeonStage stage = this.getDungeon().getStage();
+                boolean cancelled = stage.isDeleting() || stage.isCancelled();
+                boolean deactivate = !canActivate && isActivated() && cancelled;
 
-            if (deactivate) tryDeactivate(this.getActionType());
+                if (deactivate) tryDeactivate(this.getActionType());
+            }
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while update '" + getId() + "' module");
         }
     }
 
@@ -152,7 +170,6 @@ public abstract class AbstractModule implements Placeholder {
 
     protected void error(@NotNull String message) {
         this.plugin().error("[" + this.getName() + " Module of '" + this.getDungeon().getId() + "']: " + message);
-        ErrorManager.addError(message);
     }
 
     protected void warn(@NotNull String message) {

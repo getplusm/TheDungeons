@@ -43,8 +43,8 @@ import t.me.p1azmer.plugin.dungeons.mob.style.MobStyleType;
 import t.me.p1azmer.plugin.dungeons.placeholders.DungeonPlaceholder;
 import t.me.p1azmer.plugin.dungeons.scheduler.ThreadSync;
 import t.me.p1azmer.plugin.dungeons.utils.SessionConsole;
-import t.me.p1azmer.plugin.dungeons.utils.debug.ErrorManager;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Getter
@@ -77,9 +77,14 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     @Override
     public void enable() {
         log = getLogger();
-
+        if (schematicHandler == null){
+            log.severe("FAWE or WorldEdit not found! Please install them to use this plugin!");
+            getPluginManager().disablePlugin(this);
+            onDisable();
+            return;
+        }
         this.threadSync = new ThreadSync(this);
-        this.locationGenerator = new LocationGenerator(regionHandler);
+        this.locationGenerator = new LocationGenerator(regionHandler, getFoliaScheduler());
 
         this.keyManager = new KeyManager(this);
         this.keyManager.setup();
@@ -136,7 +141,6 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
             this.placeholder.shutdown();
             this.placeholder = null;
         }
-        ErrorManager.clear();
     }
 
     @Override
@@ -158,7 +162,11 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
 
     @Override
     public void registerHooks() {
-        initialIntegrations();
+        try {
+            initialIntegrations();
+        } catch (RuntimeException exception) {
+            getLogger().log(Level.SEVERE, "Got an exception while registering integrations: ", exception);
+        }
     }
 
     private void initialIntegrations() {
@@ -206,12 +214,12 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
             this.partyHandler.setup();
             this.warn("Using PartyAndFriends for party handler");
         }
-        if (EngineUtils.hasPlugin("Parties")){
+        if (EngineUtils.hasPlugin("Parties")) {
             this.partyHandler = new PartyHandlerParties();
             this.partyHandler.setup();
             this.warn("Using Parties for party handler");
         }
-        if (EngineUtils.hasPlugin("Fabled")){
+        if (EngineUtils.hasPlugin("Fabled")) {
             this.accessHandler = new AccessHandlerPSAPI();
             this.accessHandler.setup();
             this.warn("Using Fabled (ProSkillAPI) for access handler");

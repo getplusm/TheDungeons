@@ -5,7 +5,7 @@ plugins {
 
 group = 'com.github.getplusm'
 description = 'TheDungeons'
-version = '4.0.1'
+version = '4.0.2'
 
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
@@ -95,7 +95,7 @@ dependencies {
     compileOnly 'net.luckperms:api:5.4'
 
     // Engine
-    compileOnly 'com.github.getplusm:PLAZMER-ENGINE:2.4.9'
+    compileOnly 'com.github.getplusm:PLAZMER-ENGINE:2.4.10'
 
     // Libs
     compileOnly 'com.github.caseyscarborough:pastebin-api-java:0.1.3'

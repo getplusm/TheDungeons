@@ -56,7 +56,11 @@ public class PastebinUtil {
                                 .collect(Collectors.joining("\n"))
                 ))).collect(Collectors.joining("\n-------\n")),
                 " ",
-                "Last errors: " + ErrorManager.getErrors()
+                "Access handler:" + (plugin.getAccessHandler() == null ? "No access handler" : plugin.getAccessHandler().getClass().getSimpleName()),
+                "Hologram handler:" + (plugin.getHologramHandler() == null ? "No hologram handler" : plugin.getHologramHandler().getClass().getSimpleName()),
+                "Schematic handler:" + (plugin.getSchematicHandler() == null ? "No schematic handler" : plugin.getSchematicHandler().getClass().getSimpleName()),
+                "Region handler: " + (plugin.getRegionHandler() == null ? "No region handler" : plugin.getRegionHandler().getClass().getSimpleName()),
+                "Party handler: " + (plugin.getPartyHandler() == null ? "No party handler" : plugin.getPartyHandler().getClass().getSimpleName())
         ));
 
         return client.paste(PasteRequest.content(content)

@@ -8,7 +8,6 @@ import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
-import t.me.p1azmer.plugin.dungeons.scheduler.ThreadSync;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,11 +18,10 @@ import java.util.logging.Level;
 public class DungeonTickTask {
     ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     DungeonManager manager;
-    ThreadSync threadSync;
 
     public DungeonTickTask(@NotNull DungeonManager manager) {
         this.manager = manager;
-        this.threadSync = new ThreadSync(manager.plugin());
+
         scheduler.scheduleAtFixedRate(this::handleTickDungeons, 0, 1, TimeUnit.SECONDS);
     }
 
@@ -39,7 +37,7 @@ public class DungeonTickTask {
             try {
                 dungeon.tick();
             } catch (RuntimeException exception) {
-                DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while ticking a dungeon", exception);
+                DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while ticking a '" + dungeon.getId() + "' dungeon", exception);
             }
         }
     }

@@ -15,31 +15,27 @@ public class Config {
             "Sets whether players need to hold the key in their main hand to open the dungeon."
     );
     public static final JOption<String> EDITOR_TITLE_ANNOUNCE = JOption.create(
-                    "Editor.Title.Announce",
-                    "Announce Editor",
-                    "Title of the announce editor menu"
-            )
-            .mapReader(Colorizer::apply);
+            "Editor.Title.Announce",
+            "Announce Editor",
+            "Title of the announce editor menu"
+    ).onRead(Colorizer::apply);
 
     public static final JOption<String> EDITOR_TITLE_DUNGEON = JOption.create(
-                    "Editor.Title.Dungeon",
-                    "Dungeon Settings",
-                    "Title of the dungeon editor menu"
-            )
-            .mapReader(Colorizer::apply);
+            "Editor.Title.Dungeon",
+            "Dungeon Settings",
+            "Title of the dungeon editor menu"
+    ).onRead(Colorizer::apply);
     public static final JOption<String> EDITOR_TITLE_MOB = JOption.create(
-                    "Editor.Title.Mob",
-                    "Mobs Settings",
-                    "Title of the mobs editor menu"
-            )
-            .mapReader(Colorizer::apply);
+            "Editor.Title.Mob",
+            "Mobs Settings",
+            "Title of the mobs editor menu"
+    ).onRead(Colorizer::apply);
 
     public static final JOption<String> EDITOR_TITLE_KEY = JOption.create(
-                    "Editor.Title.Key",
-                    "Key Settings",
-                    "Title of the key editor menu"
-            )
-            .mapReader(Colorizer::apply);
+            "Editor.Title.Key",
+            "Key Settings",
+            "Title of the key editor menu"
+    ).onRead(Colorizer::apply);
     public static final JOption<Boolean> OTHER_DEBUG = JOption.create(
             "Settings.Debug.Other",
             false,

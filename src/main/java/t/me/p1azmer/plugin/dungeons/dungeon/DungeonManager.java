@@ -85,44 +85,57 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
 
     @Override
     protected void onShutdown() {
-        this.dungeonMap.values().forEach(dungeon -> {
-            dungeon.clear();
-            ModuleManager moduleManager = dungeon.getModuleManager();
-            moduleManager.shutdown();
-            dungeon.setModuleManager(null);
-        });
-        this.dungeonMap.clear();
-        if (this.dungeonTickTask != null) {
-            this.dungeonTickTask.shutdown();
-            this.dungeonTickTask = null;
+        try {
+            this.dungeonMap.values().forEach(dungeon -> {
+                dungeon.clear();
+                ModuleManager moduleManager = dungeon.getModuleManager();
+                moduleManager.shutdown();
+                dungeon.setModuleManager(null);
+            });
+            this.dungeonMap.clear();
+            if (this.dungeonTickTask != null) {
+                this.dungeonTickTask.shutdown();
+                this.dungeonTickTask = null;
+            }
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while shutting down the dungeon manager");
         }
     }
 
     public boolean create(@NotNull String id) {
-        id = StringUtil.lowerCaseUnderscore(id);
-        if (this.getDungeonById(id) != null) {
+        try {
+            id = StringUtil.lowerCaseUnderscore(id);
+            if (this.getDungeonById(id) != null) {
+                return false;
+            }
+
+            JYML cfg = new JYML(this.plugin.getDataFolder() + Config.DIR_DUNGEONS, id + ".yml");
+            Dungeon dungeon = new Dungeon(this, cfg, locationGenerator, threadSync);
+            dungeon.setName("&a&l" + StringUtil.capitalizeUnderscored(dungeon.getId()) + " Dungeon");
+            dungeon.setWorld(plugin.getServer().getWorlds()
+                    .stream()
+                    .filter(f -> f.getEnvironment().equals(World.Environment.NORMAL))
+                    .findFirst()
+                    .orElseThrow());
+            dungeon.save();
+            dungeon.load();
+
+            this.getDungeonMap().put(dungeon.getId(), dungeon);
+            return true;
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while creating a new dungeon", exception);
             return false;
         }
-
-        JYML cfg = new JYML(this.plugin.getDataFolder() + Config.DIR_DUNGEONS, id + ".yml");
-        Dungeon dungeon = new Dungeon(this, cfg, locationGenerator, threadSync);
-        dungeon.setName("&a&l" + StringUtil.capitalizeUnderscored(dungeon.getId()) + " Dungeon");
-        dungeon.setWorld(plugin.getServer().getWorlds()
-                .stream()
-                .filter(f -> f.getEnvironment().equals(World.Environment.NORMAL))
-                .findFirst()
-                .orElseThrow());
-        dungeon.save();
-        dungeon.load();
-
-        this.getDungeonMap().put(dungeon.getId(), dungeon);
-        return true;
     }
 
     public void delete(@NotNull Dungeon dungeon) {
-        if (dungeon.getFile().delete()) {
-            dungeon.clear();
-            this.getDungeonMap().remove(dungeon.getId());
+        try {
+            if (dungeon.getFile().delete()) {
+                dungeon.clear();
+                this.getDungeonMap().remove(dungeon.getId());
+            }
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while deleting a dungeon", exception);
         }
     }
 
@@ -157,24 +170,29 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
 
     @Nullable
     public Dungeon getDungeonByLocation(@NotNull Location location, @NotNull Block block) {
-        return this.getDungeons().stream().filter(dungeon -> {
-            ModuleManager moduleManager = dungeon.getModuleManager();
-            ChestModule module = moduleManager.getModule(ChestModule.class).orElse(null);
-            Block dungeonBlock = module != null ? module.getBlock(location).orElse(null) : null;
+        try {
+            return this.getDungeons().stream().filter(dungeon -> {
+                ModuleManager moduleManager = dungeon.getModuleManager();
+                ChestModule module = moduleManager.getModule(ChestModule.class).orElse(null);
+                Block dungeonBlock = module != null ? module.getBlock(location).orElse(null) : null;
 
-            Cuboid dungeonCuboid = dungeon.getDungeonCuboid().orElse(null);
-            RegionHandler regionHandler = plugin.getRegionHandler();
-            Region dungeonRegion = dungeon.getRegion();
+                Cuboid dungeonCuboid = dungeon.getDungeonCuboid().orElse(null);
+                RegionHandler regionHandler = plugin.getRegionHandler();
+                Region dungeonRegion = dungeon.getRegion();
 
-            return (dungeonCuboid != null && dungeonCuboid.contains(location))
-                    || (dungeonBlock != null
-                    && (dungeonBlock.hasMetadata(dungeon.getId())
-                    || dungeonBlock.equals(block)
-                    || dungeonBlock.getLocation().equals(location)
-                    || dungeonBlock.getLocation().distance(location) <= 1D))
-                    || (regionHandler != null && dungeonRegion.isEnabled()
-                    && regionHandler.isDungeonRegion(location, dungeonRegion));
-        }).findFirst().orElse(null);
+                return (dungeonCuboid != null && dungeonCuboid.contains(location))
+                        || (dungeonBlock != null
+                        && (dungeonBlock.hasMetadata(dungeon.getId())
+                        || dungeonBlock.equals(block)
+                        || dungeonBlock.getLocation().equals(location)
+                        || dungeonBlock.getLocation().distance(location) <= 1D))
+                        || (regionHandler != null && dungeonRegion.isEnabled()
+                        && regionHandler.isDungeonRegion(location, dungeonRegion));
+            }).findFirst().orElse(null);
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while trying find a dungeon by location", exception);
+            return null;
+        }
     }
 
     @NotNull
@@ -201,7 +219,8 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
         SpawnModule spawnModule = moduleManager.getModule(SpawnModule.class).orElse(null);
         return CompletableFuture.supplyAsync(() -> {
             if (spawnModule == null) {
-                plugin.error("Error spawning dungeon '" + dungeon.getId() + "' via command, because the dungeon spawning module is disabled or not loaded!");
+                plugin.error("It is impossible to spawn the '" + dungeon.getId() +
+                        "' dungeon, as its `SpawnModule` has not been found. Try to find the errors above");
                 return false;
             }
 

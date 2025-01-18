@@ -20,6 +20,7 @@ public class GeneratorConfig {
                 }
                 return map;
             },
+            (cfg, path, map) -> map.forEach((world, rangeInfo) -> rangeInfo.write(cfg, path + "." + world)),
             Map.of(
                     "world",
                     new RangeInfo(
@@ -40,5 +41,5 @@ public class GeneratorConfig {
             "Note:",
             "The Use_As_Blacklist setting is designed for your convenience.",
             "You can choose whether to use the list as a whitelist or as a blacklist"
-    ).setWriter((cfg, path, map) -> map.forEach((world, rangeInfo) -> rangeInfo.write(cfg, path + "." + world)));
+    );
 }

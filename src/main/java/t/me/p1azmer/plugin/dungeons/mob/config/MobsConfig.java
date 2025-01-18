@@ -13,17 +13,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static t.me.p1azmer.engine.utils.Colors.LIGHT_YELLOW;
-
+import static t.me.p1azmer.engine.utils.Colors2.LIGHT_YELLOW;
 
 public class MobsConfig {
     public static final JOption<String> NAME_FORMAT = JOption.create(
-                    "Mobs.DisplayName_Format",
-                    LIGHT_YELLOW + Placeholders.MOB_NAME,
-                    "Sets entity display name format for internal AMA mobs.",
-                    "Placeholders: " + Placeholders.MOB_NAME
-            )
-            .mapReader(Colorizer::apply);
+            "Mobs.DisplayName_Format",
+            LIGHT_YELLOW + Placeholders.MOB_NAME,
+            "Sets entity display name format for internal AMA mobs.",
+            "Placeholders: " + Placeholders.MOB_NAME
+    ).onRead(Colorizer::apply);
 
     public static final JOption<Boolean> KILL_REWARD_ENABLED = JOption.create(
             "Mobs.Kill_Rewards.Enabled",
@@ -31,25 +29,33 @@ public class MobsConfig {
             "Enables/Disables the Mob Kill Rewards feature."
     );
 
-    public static final JOption<Map<String, MobKillReward>> KILL_REWARD_VALUES = JOption.forMap(
-                    "Mobs.Kill_Rewards.Table",
-                    (cfg, path, key) -> MobKillReward.read(cfg, path + "." + key, key),
-                    () -> {
-                        Map<String, MobKillReward> map = new HashMap<>();
-                        Map<String, Pair<ItemStack, Double>> items = new HashMap<>();
-                        ItemStack defaultItem = new ItemStack(Material.GOLD_NUGGET);
-                        ItemReplacer.create(defaultItem)
-                                .setDisplayName("&6Default item")
-                                .replace(Colorizer::apply)
-                                .writeMeta();
-                        items.put("default", Pair.of(defaultItem, 50D));
+    public static final JOption<Map<String, MobKillReward>> KILL_REWARD_VALUES = JOption.create(
+            "Mobs.Kill_Rewards.Table",
+            (cfg, path, def) -> {
+                Map<String, MobKillReward> map = new HashMap<>();
+                for (String key : cfg.getSection(path)) {
+                    MobKillReward reward = MobKillReward.read(cfg, path + "." + key, key);
 
-                        map.put(Placeholders.DEFAULT, new MobKillReward(Placeholders.DEFAULT, new ArrayList<>(), items));
-                        map.put("default_skeleton", new MobKillReward("default_skeleton", new ArrayList<>(), items));
-                        return map;
-                    },
-                    "Here you can create custom rewards for mob kills on the dungeon.",
-                    "For commands, use '" + Placeholders.PLAYER_NAME + "' placehodler for a player name."
-            )
-            .setWriter((cfg, path, map) -> map.forEach((id, reward) -> reward.write(cfg, path + "." + id)));
+                    map.put(key, reward);
+                }
+                return map;
+            },
+            (cfg, path, map) -> map.forEach((id, reward) -> reward.write(cfg, path + "." + id)),
+            () -> {
+                Map<String, MobKillReward> map = new HashMap<>();
+                Map<String, Pair<ItemStack, Double>> items = new HashMap<>();
+                ItemStack defaultItem = new ItemStack(Material.GOLD_NUGGET);
+                ItemReplacer.create(defaultItem)
+                        .setDisplayName("&6Default item")
+                        .replace(Colorizer::apply)
+                        .writeMeta();
+                items.put("default", Pair.of(defaultItem, 50D));
+
+                map.put(Placeholders.DEFAULT, new MobKillReward(Placeholders.DEFAULT, new ArrayList<>(), items));
+                map.put("default_skeleton", new MobKillReward("default_skeleton", new ArrayList<>(), items));
+                return map;
+            },
+            "Here you can create custom rewards for mob kills on the dungeon.",
+            "For commands, use '" + Placeholders.PLAYER_NAME + "' placehodler for a player name."
+    );
 }

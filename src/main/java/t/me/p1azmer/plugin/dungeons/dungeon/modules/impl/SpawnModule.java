@@ -24,8 +24,8 @@ import java.util.logging.Level;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SpawnModule extends AbstractModule {
-    boolean spawned;
     final LocationGenerator locationGenerator;
+    boolean spawned;
 
     public SpawnModule(@NotNull Dungeon dungeon, @NotNull String id, @NotNull LocationGenerator locationGenerator) {
         super(dungeon, id, false, true);
