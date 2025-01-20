@@ -77,7 +77,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     @Override
     public void enable() {
         log = getLogger();
-        if (schematicHandler == null){
+        if (schematicHandler == null) {
             log.severe("FAWE or WorldEdit not found! Please install them to use this plugin!");
             getPluginManager().disablePlugin(this);
             onDisable();

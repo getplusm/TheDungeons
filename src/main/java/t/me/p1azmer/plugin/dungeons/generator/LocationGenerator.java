@@ -18,6 +18,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LocationGenerator {
@@ -89,88 +90,88 @@ public class LocationGenerator {
             throw new RuntimeException("No range info for world " + world.getName());
         }
 
-        boolean generated = false;
-        int attempts = 0;
-        while (!generated && attempts < 10) {
-            attempts++;
-            boolean onlyGeneratedChunks = rangeInfo.isOnlyGeneratedChunks();
+        try {
+            boolean generated = false;
+            int attempts = 0;
+            while (!generated && attempts < 10) {
+                attempts++;
+                boolean onlyGeneratedChunks = rangeInfo.isOnlyGeneratedChunks();
 
-            int originX = rangeInfo.getStartX();
-            int originY = underground ? world.getMinHeight() : world.getMaxHeight();
-            int originZ = rangeInfo.getStartZ();
+                int originX = rangeInfo.getStartX();
+                int originY = underground ? world.getMinHeight() : world.getMaxHeight();
+                int originZ = rangeInfo.getStartZ();
 
-            int minOffset = -rangeInfo.getDistanceMin();
-            int maxOffset = rangeInfo.getDistanceMax();
+                int minOffset = -rangeInfo.getDistanceMin();
+                int maxOffset = rangeInfo.getDistanceMax();
 
-            // #####################################################
-            // ############   [X and Z Randomization]   ############
-            int direction = Rnd.get(0, 2);
-            int randomX;
+                // #####################################################
+                // ############   [X and Z Randomization]   ############
+                int direction = Rnd.get(0, 2);
+                int randomX;
 
-            // decide if positive or negative
-            if (direction == 0) {
-                randomX = Rnd.get(originX + minOffset, originX + maxOffset + 1);
-            } else {
-                randomX = Rnd.get(originX - maxOffset, originX - minOffset + 1);
-            }
+                // decide if positive or negative
+                if (direction == 0) {
+                    randomX = Rnd.get(originX + minOffset, originX + maxOffset + 1);
+                } else {
+                    randomX = Rnd.get(originX - maxOffset, originX - minOffset + 1);
+                }
 
-            direction = Rnd.get(0, 2);
-            int randomZ;
+                direction = Rnd.get(0, 2);
+                int randomZ;
 
-            if (direction == 0) {
-                randomZ = Rnd.get(originZ + minOffset, originZ + maxOffset + 1);
-            } else {
-                randomZ = Rnd.get(originZ - maxOffset, originZ - minOffset + 1);
-            }
+                if (direction == 0) {
+                    randomZ = Rnd.get(originZ + minOffset, originZ + maxOffset + 1);
+                } else {
+                    randomZ = Rnd.get(originZ - maxOffset, originZ - minOffset + 1);
+                }
 
-            // ############   [X and Z Randomization]   ############
-            // #####################################################
+                // ############   [X and Z Randomization]   ############
+                // #####################################################
 
-            // X and Z are randomized, now just an example for handling Y
+                // X and Z are randomized, now just an example for handling Y
 
-            int modifiedY = originY;
-            if (underground)
-                modifiedY += Rnd.get(Version.isAbove(Version.V1_18_R2) ? 30 : 10);
+                int modifiedY = originY;
+                if (underground)
+                    modifiedY += Rnd.get(Version.isAbove(Version.V1_18_R2) ? 30 : 10);
 
-            Location result = new Location(world, randomX, modifiedY, randomZ);
+                Location result = new Location(world, randomX, modifiedY, randomZ);
 
-            if (!underground) result = world.getHighestBlockAt(result).getLocation();
+                if (!underground) result = world.getHighestBlockAt(result).getLocation();
 
-            Block block = result.getBlock();
-            Biome biome = block.getBiome();
+                Block block = result.getBlock();
+                Biome biome = block.getBiome();
 
-            String returnError = "Spawn returned result false, because: ";
-            if (regionHandler != null) {
-                if (!regionHandler.isValidLocation(result)) {
+                if (regionHandler != null) {
+                    if (!regionHandler.isValidLocation(result)) {
+                        continue;
+                    }
+                }
+                if (!rangeInfo.getBiomes().isEmpty()) {
+                    if (rangeInfo.isBiomesAsBlack()) {
+                        if (rangeInfo.getBiomes().contains(biome)) {
+                            continue;
+                        }
+                    } else if (!rangeInfo.getBiomes().contains(biome)) {
+                        continue;
+                    }
+                }
+                if (!result.getChunk().isLoaded()) {
+                    if (onlyGeneratedChunks) {
+                        continue;
+                    }
+                }
+                if (rangeInfo.isMaterialsAsBlack()) {
+                    if (rangeInfo.getMaterials().contains(block.getType())) {
+                        continue;
+                    }
+                } else if (!rangeInfo.getMaterials().contains(block.getType())) {
                     continue;
                 }
-            }
-            if (rangeInfo.isBiomesAsBlack()) {
-                if (rangeInfo.getBiomes().contains(biome)) {
-                    DungeonPlugin.getLog().severe(returnError + "Biomes contains biome " + biome.translationKey());
-                    continue;
-                }
-            } else if (!rangeInfo.getBiomes().contains(biome)) {
-                DungeonPlugin.getLog().severe(returnError + "Biomes not contains biome " + biome.translationKey());
-                continue;
-            }
-            if (!result.getChunk().isLoaded()) {
-                if (onlyGeneratedChunks) {
-                    DungeonPlugin.getLog().severe(returnError + "Chunk not loaded");
-                    continue;
-                }
-            }
-            if (rangeInfo.isMaterialsAsBlack()) {
-                if (rangeInfo.getMaterials().contains(block.getType())) {
-                    DungeonPlugin.getLog().severe(returnError + "Materials contains block " + block.getType().name());
-                    continue;
-                }
-            } else if (!rangeInfo.getMaterials().contains(block.getType())) {
-                DungeonPlugin.getLog().severe(returnError + "Materials not contains block " + block.getType().name());
-                continue;
-            }
 
-            generated = cache.add(result);
+                generated = cache.add(result);
+            }
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "An error occurred while generating a location", exception);
         }
     }
 }

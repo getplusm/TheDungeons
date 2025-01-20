@@ -1,7 +1,6 @@
 package t.me.p1azmer.plugin.dungeons.generator.config;
 
 import org.bukkit.Material;
-import org.bukkit.block.Biome;
 import t.me.p1azmer.engine.api.config.JOption;
 import t.me.p1azmer.plugin.dungeons.generator.RangeInfo;
 
@@ -30,7 +29,7 @@ public class GeneratorConfig {
                             -5000,
                             5000,
                             Set.of(Material.WATER, Material.LAVA),
-                            Set.of(Biome.WARM_OCEAN),
+                            Set.of(),
                             true,
                             true,
                             true

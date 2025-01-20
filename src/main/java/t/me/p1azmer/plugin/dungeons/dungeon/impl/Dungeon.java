@@ -49,6 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage.*;
@@ -116,90 +117,95 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
 
     @Override
     public boolean load() {
-        this.selfTick = new AtomicInteger();
-        this.setSettings(MainSettings.read(this, cfg, "Settings"));
-        setAccessSettings(AccessSettings.read(this, cfg, "Settings.Access"));
-        this.setMobsSettings(MobsSettings.read(this, cfg, "Mobs"));
-        this.setPartySettings(PartySettings.read(this, cfg, "Party"));
-        this.setGenerationSettings(GenerationSettings.read(this, cfg, "Settings.Generation"));
-        this.setModuleSettings(ModuleSettings.read(this, cfg, "Settings.Modules"));
-        this.setStageSettings(StageSettings.read(this, cfg, "Settings.Stages"));
-        this.setChestSettings(ChestSettings.read(this, cfg, "Settings.Chest"));
-        this.setEffectSettings(EffectSettings.read(this, cfg, "Effects"));
-        this.setAnnounceSettings(AnnounceSettings.read(this, cfg, "Settings.Announces"));
-        this.setSchematicSettings(SchematicSettings.read(this, cfg, "Settings.Schematics"));
-        this.setCommandsSettings(CommandsSettings.read(this, cfg, "Settings.Commands"));
-        this.setRewardSettings(RewardSettings.read(this, cfg, "Settings.Reward"));
+        try {
+            this.selfTick = new AtomicInteger();
+            this.setSettings(MainSettings.read(this, cfg, "Settings"));
+            setAccessSettings(AccessSettings.read(this, cfg, "Settings.Access"));
+            this.setMobsSettings(MobsSettings.read(this, cfg, "Mobs"));
+            this.setPartySettings(PartySettings.read(this, cfg, "Party"));
+            this.setGenerationSettings(GenerationSettings.read(this, cfg, "Settings.Generation"));
+            this.setModuleSettings(ModuleSettings.read(this, cfg, "Settings.Modules"));
+            this.setStageSettings(StageSettings.read(this, cfg, "Settings.Stages"));
+            this.setChestSettings(ChestSettings.read(this, cfg, "Settings.Chest"));
+            this.setEffectSettings(EffectSettings.read(this, cfg, "Effects"));
+            this.setAnnounceSettings(AnnounceSettings.read(this, cfg, "Settings.Announces"));
+            this.setSchematicSettings(SchematicSettings.read(this, cfg, "Settings.Schematics"));
+            this.setCommandsSettings(CommandsSettings.read(this, cfg, "Settings.Commands"));
+            this.setRewardSettings(RewardSettings.read(this, cfg, "Settings.Reward"));
 
-        String worldName = this.cfg.getString("World", "world");
-        this.world = plugin.getServer().getWorld(worldName);
-        if (this.world == null) {
-            plugin.error("World '" + worldName + "' not found in server!");
-            return false;
-        }
-
-        RangeInfo rangeInfo = GeneratorConfig.LOCATION_SEARCH_RANGES.get().get(this.getWorld().getName());
-        if (rangeInfo == null) {
-            plugin.error("Unable to load the dungeon '" + this.getId() + "' because you have not created a location generator with the world '" + this.getWorld().getName() + "'. Go to /plugins/TheDungeons/config.yml and setup the generator!");
-            return false;
-        }
-
-        this.setKeyIds(cfg.getStringSet("Key.Ids"));
-        this.setName(cfg.getString("Name", getId()));
-
-        for (String rewId : cfg.getSection("Rewards.List")) {
-            String path = "Rewards.List." + rewId;
-
-            double rewChance = cfg.getDouble(path + ".Chance");
-
-            String itemRaw = cfg.getString(path + ".Item");
-            if (itemRaw == null || itemRaw.isEmpty()) {
-                cfg.setItemEncoded(path + ".Item", new ItemStack(Material.DIAMOND));
-            }
-            ItemStack item = cfg.getItemEncoded(path + ".Item");
-            if (item == null)
-                item = new ItemStack(Material.DIAMOND);
-
-            if (cfg.contains(path + ".Max_Amount")) {
-                int maxAmount = cfg.getInt(path + ".Max_Amount", 3);
-                int minAmount = cfg.getInt(path + ".Min_Amount", 1);
-                UniInt amount = UniInt.of(minAmount, maxAmount);
-                cfg.remove(path + ".Min_Amount");
-                cfg.remove(path + ".Max_Amount");
-                amount.write(cfg, ".Amount");
-                cfg.saveChanges();
-            }
-            UniInt amount = UniInt.read(cfg, path + ".Amount");
-            List<String> commands = cfg.getStringList(path + ".Commands");
-
-            Reward reward = new Reward(this, rewId, rewChance, amount, item, commands);
-            this.rewardsMap.put(rewId, reward);
-        }
-
-        this.setRegion(Region.read(this, cfg, "Settings.Region"));
-        this.setHologramSettings(HologramSettings.read(this, cfg, "Hologram.Chest"));
-
-        if (this.getRegion().isEnabled() && plugin.getRegionHandler() == null) {
-            this.plugin().error("Warning! Dungeon '" + getId() + "' wants to use the region system, but the Region handler is not installed!");
-        }
-        this.moduleManager = new ModuleManager(this, locationGenerator);
-
-        GenerationSettings generationSettings = this.getGenerationSettings();
-        GenerationType generationType = generationSettings.getGenerationType();
-        if (generationType.isStatic()) {
-            if (Config.OTHER_DEBUG.get()) {
-                this.plugin().sendDebug("Prepare static generation settings for " + this.getId() + " dungeon");
-            }
-            Location spawnLocation = generationSettings
-                    .getSpawnLocation()
-                    .orElse(null);
-            if (spawnLocation == null) {
-                this.plugin().error("It is impossible to load the dungeon '" + this.getId() + "', since the spawn location is not set, and the generation type is " + generationType.name());
+            String worldName = this.cfg.getString("World", "world");
+            this.world = plugin.getServer().getWorld(worldName);
+            if (this.world == null) {
+                plugin.error("World '" + worldName + "' not found in server!");
                 return false;
             }
-            this.setLocation(spawnLocation);
+
+            RangeInfo rangeInfo = GeneratorConfig.LOCATION_SEARCH_RANGES.get().get(this.getWorld().getName());
+            if (rangeInfo == null) {
+                plugin.error("Unable to load the dungeon '" + this.getId() + "' because you have not created a location generator with the world '" + this.getWorld().getName() + "'. Go to /plugins/TheDungeons/config.yml and setup the generator!");
+                return false;
+            }
+
+            this.setKeyIds(cfg.getStringSet("Key.Ids"));
+            this.setName(cfg.getString("Name", getId()));
+
+            for (String rewId : cfg.getSection("Rewards.List")) {
+                String path = "Rewards.List." + rewId;
+
+                double rewChance = cfg.getDouble(path + ".Chance");
+
+                String itemRaw = cfg.getString(path + ".Item");
+                if (itemRaw == null || itemRaw.isEmpty()) {
+                    cfg.setItemEncoded(path + ".Item", new ItemStack(Material.DIAMOND));
+                }
+                ItemStack item = cfg.getItemEncoded(path + ".Item");
+                if (item == null)
+                    item = new ItemStack(Material.DIAMOND);
+
+                if (cfg.contains(path + ".Max_Amount")) {
+                    int maxAmount = cfg.getInt(path + ".Max_Amount", 3);
+                    int minAmount = cfg.getInt(path + ".Min_Amount", 1);
+                    UniInt amount = UniInt.of(minAmount, maxAmount);
+                    cfg.remove(path + ".Min_Amount");
+                    cfg.remove(path + ".Max_Amount");
+                    amount.write(cfg, ".Amount");
+                    cfg.saveChanges();
+                }
+                UniInt amount = UniInt.read(cfg, path + ".Amount");
+                List<String> commands = cfg.getStringList(path + ".Commands");
+
+                Reward reward = new Reward(this, rewId, rewChance, amount, item, commands);
+                this.rewardsMap.put(rewId, reward);
+            }
+
+            this.setRegion(Region.read(this, cfg, "Settings.Region"));
+            this.setHologramSettings(HologramSettings.read(this, cfg, "Hologram.Chest"));
+
+            if (this.getRegion().isEnabled() && plugin.getRegionHandler() == null) {
+                this.plugin().error("Warning! Dungeon '" + getId() + "' wants to use the region system, but the Region handler is not installed!");
+            }
+            this.moduleManager = new ModuleManager(this, locationGenerator);
+
+            GenerationSettings generationSettings = this.getGenerationSettings();
+            GenerationType generationType = generationSettings.getGenerationType();
+            if (generationType.isStatic()) {
+                if (Config.OTHER_DEBUG.get()) {
+                    this.plugin().sendDebug("Prepare static generation settings for " + this.getId() + " dungeon");
+                }
+                Location spawnLocation = generationSettings
+                        .getSpawnLocation()
+                        .orElse(null);
+                if (spawnLocation == null) {
+                    this.plugin().error("It is impossible to load the dungeon '" + this.getId() + "', since the spawn location is not set, and the generation type is " + generationType.name());
+                    return false;
+                }
+                this.setLocation(spawnLocation);
+            }
+            return true;
+        }catch (RuntimeException exception){
+            DungeonPlugin.getLog().log(Level.SEVERE, "Dungeon '" + this.getId() + "' could not be loaded", exception);
+            return false;
         }
-        return true;
     }
 
     @Override

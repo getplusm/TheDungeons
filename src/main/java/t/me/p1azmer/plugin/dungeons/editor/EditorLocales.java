@@ -280,7 +280,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .text(Placeholders.SCHEMATICS_LIST)
             .emptyLine()
             .click(LMB, "Add Schematic")
-            .click(SHIFT_RMB, "Clear " + RED + "(No Undo)")
+            .click(SHIFT_LMB, "Clear " + RED + "(No Undo)")
             .build();
     public static final EditorLocale SCHEMATICS_IGNORE_AIR = builder(PREFIX + "Dungeon.Modules.Schematics.Ignore_Air")
             .name("Ignore Air Blocks")

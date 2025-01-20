@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.api.manager.AbstractManager;
+import t.me.p1azmer.engine.utils.FileUtil;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Keys;
@@ -58,25 +59,30 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
         RegionHandler regionHandler = plugin.getRegionHandler();
 
         Executors.newSingleThreadScheduledExecutor().execute(() -> {
-            this.plugin.getConfig().initializeOptions(GeneratorConfig.class);
-            this.plugin.getConfigManager().extractResources(Config.DIR_DUNGEONS);
+            try {
+                JYML.loadOrExtract(plugin, "generator.yml");
+                JYML.loadOrExtract(plugin, Config.DIR_DUNGEONS);
+                this.plugin.extractResources(Config.DIR_DUNGEONS);
 
-            for (JYML cfg : JYML.loadAll(plugin.getDataFolder() + Config.DIR_DUNGEONS, true)) {
-                Dungeon dungeon = new Dungeon(this, cfg, locationGenerator, threadSync);
-                if (dungeon.load()) {
-                    this.dungeonMap.put(dungeon.getId(), dungeon);
-                    if (regionHandler != null && regionHandler.getClass().equals(RegionHandlerWG.class)) {
-                        SchematicSettings schematicSettings = dungeon.getSchematicSettings();
-                        Region dungeonRegion = dungeon.getRegion();
+                for (JYML cfg : JYML.loadAll(plugin.getDataFolder() + Config.DIR_DUNGEONS, true)) {
+                    Dungeon dungeon = new Dungeon(this, cfg, locationGenerator, threadSync);
+                    if (dungeon.load()) {
+                        this.dungeonMap.put(dungeon.getId(), dungeon);
+                        if (regionHandler != null && regionHandler.getClass().equals(RegionHandlerWG.class)) {
+                            SchematicSettings schematicSettings = dungeon.getSchematicSettings();
+                            Region dungeonRegion = dungeon.getRegion();
 
-                        if (schematicSettings.isUnderground() && dungeonRegion.isEnabled() && !dungeonRegion.getFlags().contains("build")) {
-                            plugin.error("Please note that the dungeon '" + dungeon.getId() + "' is set to be underground, but its region does not have building rights!");
+                            if (schematicSettings.isUnderground() && dungeonRegion.isEnabled() && !dungeonRegion.getFlags().contains("build")) {
+                                plugin.error("Please note that the dungeon '" + dungeon.getId() + "' is set to be underground, but its region does not have building rights!");
+                            }
                         }
-                    }
-                    dungeon.getModuleManager().setup();
-                } else this.plugin.error("Dungeon not loaded: '" + cfg.getFile().getName() + "'.");
+                        dungeon.getModuleManager().setup();
+                    } else this.plugin.error("Dungeon not loaded: '" + cfg.getFile().getName() + "'.");
+                }
+                this.plugin.info("Loaded " + this.getDungeonMap().size() + " dungeons.");
+            } catch (RuntimeException exception) {
+                DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while loading the dungeons", exception);
             }
-            this.plugin.info("Loaded " + this.getDungeonMap().size() + " dungeons.");
         });
 
         this.addListener(new DungeonListener(this));
@@ -98,7 +104,7 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
                 this.dungeonTickTask = null;
             }
         } catch (RuntimeException exception) {
-            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while shutting down the dungeon manager");
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while shutting down the dungeon manager", exception);
         }
     }
 

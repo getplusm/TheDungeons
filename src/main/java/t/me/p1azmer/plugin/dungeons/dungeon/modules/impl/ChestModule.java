@@ -88,7 +88,7 @@ public class ChestModule extends AbstractModule {
         );
 
         if (this.blocks.isEmpty()) {
-            this.warn(material.name() + " > No chest blocks found: " + cuboid.getBlocks().size() + " > " + cuboid.getBlocks().parallelStream().filter(f -> f.getType().isAir()).count());
+            this.warn("An error occurred while trying to find the chest in the schematics. The '" + material.name() + "' not found material");
             return false;
         }
 

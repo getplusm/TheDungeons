@@ -72,7 +72,7 @@ public abstract class AbstractModule implements Placeholder {
             this.tryDeactivate(ActionType.FORCE);
             this.onShutdown();
         } catch (RuntimeException exception) {
-            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while shutdown '" + getId() + "' module");
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while shutdown '" + getId() + "' module", exception);
         }
     }
 
@@ -105,7 +105,7 @@ public abstract class AbstractModule implements Placeholder {
                 case SHUTDOWN -> false;
             };
         } catch (RuntimeException exception) {
-            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while activate '" + getId() + "' module");
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while activate '" + getId() + "' module", exception);
             return false;
         }
     }
@@ -133,7 +133,7 @@ public abstract class AbstractModule implements Placeholder {
                 case SHUTDOWN -> true;
             };
         } catch (RuntimeException exception) {
-            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while deactivate '" + getId() + "' module");
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while deactivate '" + getId() + "' module", exception);
             return false;
         }
     }
@@ -154,7 +154,7 @@ public abstract class AbstractModule implements Placeholder {
                 if (deactivate) tryDeactivate(this.getActionType());
             }
         } catch (RuntimeException exception) {
-            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while update '" + getId() + "' module");
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while update '" + getId() + "' module", exception);
         }
     }
 

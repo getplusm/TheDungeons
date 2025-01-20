@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -30,18 +31,21 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
 
     @Override
     protected void onLoad() {
-        this.plugin.info("Loading modules for " + this.getDungeon().getId() + "..");
-//        this.register(ModuleId.BOSSBAR, id -> new BossBarModule(this.getDungeon(), id));
-        this.register(ModuleId.SPAWN, id -> new SpawnModule(this.getDungeon(), id, locationGenerator));
-        if (plugin.getSchematicHandler() != null)
-            this.register(ModuleId.SCHEMATIC, id -> new SchematicModule(this.getDungeon(), id));
-        this.register(ModuleId.CHEST, id -> new ChestModule(this.getDungeon(), id));
-        if (plugin.getHologramHandler() != null)
-            this.register(ModuleId.HOLOGRAM, id -> new HologramModule(this.getDungeon(), id));
-        this.register(ModuleId.ANNOUNCE, id -> new AnnounceModule(this.getDungeon(), id));
-        this.register(ModuleId.COMMAND, id -> new CommandModule(this.getDungeon(), id));
-        this.register(ModuleId.MOBS, id -> new MobModule(this.getDungeon(), id));
-        this.plugin.info("Loaded " + this.getModules().size() + " modules for " + this.getDungeon().getId() + " dungeon.");
+        try {
+            plugin.info("Loading modules for " + this.getDungeon().getId() + "..");
+            register(ModuleId.SPAWN, id -> new SpawnModule(this.getDungeon(), id, locationGenerator));
+            register(ModuleId.SCHEMATIC, id -> new SchematicModule(this.getDungeon(), id));
+            register(ModuleId.CHEST, id -> new ChestModule(this.getDungeon(), id));
+            if (plugin.getHologramHandler() != null) {
+                this.register(ModuleId.HOLOGRAM, id -> new HologramModule(this.getDungeon(), id));
+            }
+            register(ModuleId.ANNOUNCE, id -> new AnnounceModule(this.getDungeon(), id));
+            register(ModuleId.COMMAND, id -> new CommandModule(this.getDungeon(), id));
+            register(ModuleId.MOBS, id -> new MobModule(this.getDungeon(), id));
+            plugin.info("Loaded " + this.getModules().size() + " modules for " + this.getDungeon().getId() + " dungeon.");
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got exception while loading modules for " + this.getDungeon().getId(), exception);
+        }
     }
 
     @Override

@@ -225,8 +225,8 @@ public class SchematicFAWEHandler implements SchematicHandler {
         ClipboardHolder holder;
         try {
             holder = task.call();
-        } catch (Exception e) {
-            DungeonPlugin.getLog().log(Level.SEVERE, "Got exception while trying to get amount of chest blocks", e);
+        } catch (Exception exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got exception while trying to get amount of chest blocks", exception);
             return 0;
         }
         Clipboard clipboard = holder.getClipboard();

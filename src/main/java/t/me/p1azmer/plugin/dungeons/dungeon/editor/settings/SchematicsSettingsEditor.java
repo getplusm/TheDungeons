@@ -49,14 +49,12 @@ public class SchematicsSettingsEditor extends EditorMenu<DungeonPlugin, Schemati
             ItemReplacer.create(item).readLocale(EditorLocales.DUNGEON_SETTINGS_UNDERGROUND).replace(settings.replacePlaceholders()).writeMeta();
         });
         this.addItem(Material.FLOWER_BANNER_PATTERN, EditorLocales.SCHEMATICS_LIST, 5).setClick((viewer, event) -> {
-            if (event.isShiftClick()) {
-                if (event.isRightClick()) {
+            if (event.isLeftClick()) {
+                if (event.isShiftClick()) {
                     settings.setSchematics(new ArrayList<>());
                     this.save(viewer);
                     return;
                 }
-            }
-            if (event.isLeftClick()) {
                 this.handleInput(viewer, Lang.EDITOR_ENTER_SCHEMATIC, wrapper -> {
                     String schematicName = wrapper.getText().replace(".schem", "");
                     AtomicBoolean result = new AtomicBoolean(true);

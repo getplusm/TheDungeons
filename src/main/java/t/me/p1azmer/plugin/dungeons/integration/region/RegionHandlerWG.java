@@ -59,7 +59,7 @@ public class RegionHandlerWG implements RegionHandler {
             for (String flag : region.getFlags()) {
                 String command = "region flag -w " + world.getName() + " " + regionName + " " + flag;
                 threadSync.sync(() -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command)).exceptionally(throwable -> {
-                    DungeonPlugin.getLog().log(Level.SEVERE, "Failed to set flag for region " + regionName);
+                    DungeonPlugin.getLog().log(Level.SEVERE, "Failed to set flag for region "+ regionName, throwable);
                     return null;
                 });
             }
