@@ -26,10 +26,7 @@ public class HologramDisplaysHandler implements HologramHandler {
     private HolographicDisplaysAPI hologramAPI;
     private final Map<String, Set<Pair<ChestBlock, Hologram>>> holoMap = new ConcurrentHashMap<>();
 
-    private final DungeonPlugin plugin;
-
     public HologramDisplaysHandler(@NotNull DungeonPlugin plugin) {
-        this.plugin = plugin;
         this.hologramAPI = HolographicDisplaysAPI.get(plugin);
     }
 
@@ -85,12 +82,16 @@ public class HologramDisplaysHandler implements HologramHandler {
 
     @Override
     public void update(@NotNull ChestBlock chestBlock) {
-        Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(chestBlock.getDungeon().getId(), set -> new HashSet<>());
-        holograms.stream().filter(f -> f.getFirst().equals(chestBlock)).map(Pair::getSecond).toList().forEach(hologram -> {
-            List<String> messages = new ArrayList<>(chestBlock.getDungeon().getHologramSettings().getMessages(chestBlock.getState()));
-            messages.replaceAll(chestBlock.replacePlaceholders());
-            updateHologramLines(chestBlock, hologram, messages);
-        });
+        try {
+            Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(chestBlock.getDungeon().getId(), set -> new HashSet<>());
+            holograms.stream().filter(f -> f.getFirst().equals(chestBlock)).map(Pair::getSecond).toList().forEach(hologram -> {
+                List<String> messages = new ArrayList<>(chestBlock.getDungeon().getHologramSettings().getMessages(chestBlock.getState()));
+                messages.replaceAll(chestBlock.replacePlaceholders());
+                updateHologramLines(chestBlock, hologram, messages);
+            });
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Failed to update hologram for " + chestBlock.getDungeon().getId() + " dungeon", exception);
+        }
     }
 
     private void updateHologramLines(@NotNull ChestBlock chestBlock, @NotNull Hologram hologram, @NotNull List<String> message) {

@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.api.manager.AbstractManager;
-import t.me.p1azmer.engine.utils.FileUtil;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Keys;
@@ -33,9 +32,7 @@ import t.me.p1azmer.plugin.dungeons.task.DungeonTickTask;
 import t.me.p1azmer.plugin.dungeons.utils.Cuboid;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -46,6 +43,7 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
     ThreadSync threadSync;
     @NonFinal
     DungeonTickTask dungeonTickTask;
+    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public DungeonManager(@NotNull DungeonPlugin plugin,
                           @NotNull LocationGenerator locationGenerator, @NotNull ThreadSync threadSync) {
@@ -58,11 +56,10 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
     protected void onLoad() {
         RegionHandler regionHandler = plugin.getRegionHandler();
 
-        Executors.newSingleThreadScheduledExecutor().execute(() -> {
+        scheduler.execute(() -> {
             try {
-                JYML.loadOrExtract(plugin, "generator.yml");
-                JYML.loadOrExtract(plugin, Config.DIR_DUNGEONS);
-                this.plugin.extractResources(Config.DIR_DUNGEONS);
+                this.plugin.getConfig().initializeOptions(GeneratorConfig.class);
+                this.plugin.getConfigManager().extractResources(Config.DIR_DUNGEONS);
 
                 for (JYML cfg : JYML.loadAll(plugin.getDataFolder() + Config.DIR_DUNGEONS, true)) {
                     Dungeon dungeon = new Dungeon(this, cfg, locationGenerator, threadSync);
@@ -103,8 +100,21 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
                 this.dungeonTickTask.shutdown();
                 this.dungeonTickTask = null;
             }
+            shutdownScheduler();
         } catch (RuntimeException exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while shutting down the dungeon manager", exception);
+        }
+    }
+
+    private void shutdownScheduler(){
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 

@@ -92,14 +92,18 @@ public class FancyHologramsHandler implements HologramHandler {
 
     @Override
     public void update(@NotNull ChestBlock chestBlock) {
-        Dungeon dungeon = chestBlock.getDungeon();
-        Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(dungeon.getId(), set -> new HashSet<>());
-        HologramSettings hologramSettings = dungeon.getHologramSettings();
-        holograms.stream().filter(f -> f.getFirst().equals(chestBlock)).map(Pair::getSecond).forEach(hologram -> {
-            List<String> messages = new ArrayList<>(hologramSettings.getMessages(chestBlock.getState()));
-            messages.replaceAll(chestBlock.replacePlaceholders());
-            //updateHologramLines(chestBlock, hologram, messages);
-        });
+        try {
+            Dungeon dungeon = chestBlock.getDungeon();
+            Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(dungeon.getId(), set -> new HashSet<>());
+            HologramSettings hologramSettings = dungeon.getHologramSettings();
+            holograms.stream().filter(f -> f.getFirst().equals(chestBlock)).map(Pair::getSecond).forEach(hologram -> {
+                List<String> messages = new ArrayList<>(hologramSettings.getMessages(chestBlock.getState()));
+                messages.replaceAll(chestBlock.replacePlaceholders());
+                updateHologramLines(chestBlock, hologram, messages);
+            });
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Failed to update hologram for " + chestBlock.getDungeon().getId() + " dungeon", exception);
+        }
     }
 
     private void updateHologramLines(@NotNull ChestBlock chestBlock, @NotNull Hologram hologram, @NotNull List<String> message) {

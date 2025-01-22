@@ -3,6 +3,8 @@ package t.me.p1azmer.plugin.dungeons.integration.holograms;
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import eu.decentsoftware.holograms.api.holograms.HologramLine;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
@@ -21,9 +23,10 @@ import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class HologramDecentHandler implements HologramHandler {
 
-    private final Map<String, Set<Pair<ChestBlock, Hologram>>> holoMap = new HashMap<>();
+    Map<String, Set<Pair<ChestBlock, Hologram>>> holoMap = new HashMap<>();
 
     @Override
     public void setup() {
@@ -78,18 +81,21 @@ public class HologramDecentHandler implements HologramHandler {
 
     @Override
     public void update(@NotNull ChestBlock chestBlock) {
-        Dungeon dungeon = chestBlock.getDungeon();
-        Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(dungeon.getId(), set -> new HashSet<>());
-        HologramSettings hologramSettings = dungeon.getHologramSettings();
-        holograms
-                .stream()
-                .filter(f -> f.getFirst().equals(chestBlock))
-                .map(Pair::getSecond)
-                .forEach(hologram -> {
-                    List<String> messages = new ArrayList<>(hologramSettings.getMessages(chestBlock.getState()));
-                    messages.replaceAll(chestBlock.replacePlaceholders());
-                    updateHologramLines(chestBlock, hologram, messages);
-                });
+        try {
+            Dungeon dungeon = chestBlock.getDungeon();
+            Set<Pair<ChestBlock, Hologram>> holograms = this.holoMap.computeIfAbsent(dungeon.getId(), set -> new HashSet<>());
+            HologramSettings hologramSettings = dungeon.getHologramSettings();
+            holograms.stream()
+                    .filter(f -> f.getFirst().equals(chestBlock))
+                    .map(Pair::getSecond)
+                    .forEach(hologram -> {
+                        List<String> messages = new ArrayList<>(hologramSettings.getMessages(chestBlock.getState()));
+                        messages.replaceAll(chestBlock.replacePlaceholders());
+                        updateHologramLines(chestBlock, hologram, messages);
+                    });
+        } catch (RuntimeException exception) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Failed to update hologram for " + chestBlock.getDungeon().getId() + " dungeon", exception);
+        }
     }
 
     private void updateHologramLines(@NotNull ChestBlock chestBlock, @NotNull Hologram hologram, @NotNull List<String> message) {

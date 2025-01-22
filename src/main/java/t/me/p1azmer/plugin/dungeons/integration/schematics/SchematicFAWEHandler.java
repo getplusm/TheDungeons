@@ -97,24 +97,24 @@ public class SchematicFAWEHandler implements SchematicHandler {
             throw new RuntimeException("Dungeon '" + dungeon.getId() + "' cannot spawn but schematic '" + schematicFile.getName() + "' not loaded!", e.getCause());
         }
 
-        session.setClipboard(holder);
         BlockVector3 toVector = BlockVector3.at(location.getX(), location.getY(), location.getZ());
         com.sk89q.worldedit.world.World weWorld = BukkitAdapter.adapt(world);
 
         try (EditSession editSession = this.worldEdit.newEditSession(weWorld)) {
             editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
 
-            Operation operation = session.getClipboard()
-                    .createPaste(editSession)
+            Operation operation = holder.createPaste(editSession)
                     .to(toVector)
                     .ignoreAirBlocks(dungeon.getSchematicSettings().isIgnoreAirBlocks())
                     .copyEntities(true)
                     .build();
             Operations.complete(operation);
-            Clipboard clipboard = session.getClipboard().getClipboard();
+            Clipboard clipboard = holder.getClipboard();
+            if (clipboard == null) return false;
+
             Region region = clipboard.getRegion();
 
-            BlockVector3 minimumPoint = clipboard.getRegion().getMinimumPoint();
+            BlockVector3 minimumPoint = region.getMinimumPoint();
             BlockVector3 maximumPoint = region.getMaximumPoint();
 
             BlockVector3 clipboardOffset = minimumPoint.subtract(clipboard.getOrigin());

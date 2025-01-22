@@ -3,6 +3,7 @@ package t.me.p1azmer.plugin.dungeons.dungeon.modules.impl;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import lombok.val;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -79,12 +80,11 @@ public class ChestModule extends AbstractModule {
         }
 
         FixedMetadataValue metadataValue = new FixedMetadataValue(plugin(), this.getDungeon().getId());
-        this.blocks.addAll(
-                cuboid.getBlocks()
-                        .stream()
-                        .filter(f -> f.getType().equals(material))
-                        .peek(block -> block.setMetadata(Keys.DUNGEON_CHEST_BLOCK.getKey(), metadataValue))
-                        .collect(Collectors.toSet())
+        this.blocks.addAll(cuboid.getBlocks()
+                .stream()
+                .filter(f -> f.getType().equals(material))
+                .peek(block -> block.setMetadata(Keys.DUNGEON_CHEST_BLOCK.getKey(), metadataValue))
+                .collect(Collectors.toSet())
         );
 
         if (this.blocks.isEmpty()) {
@@ -92,19 +92,13 @@ public class ChestModule extends AbstractModule {
             return false;
         }
 
-        Map<Reward, Double> rewards = this.getDungeon()
-                .getRewards()
-                .stream()
-                .collect(Collectors.toConcurrentMap(reward -> reward, Reward::getChance));
-
-
+        val rewards = getDungeon().getRewards().stream().collect(Collectors.toConcurrentMap(reward -> reward, Reward::getChance));
         for (Block block : this.blocks) this.setupMenu(block, rewards);
 
         RegionHandler regionHandler = plugin().getRegionHandler();
         if (regionHandler != null) {
             regionHandler.create(getDungeon());
         }
-
         return true;
     }
 
