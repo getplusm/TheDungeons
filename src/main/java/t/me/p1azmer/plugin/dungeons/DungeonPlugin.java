@@ -225,7 +225,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
             this.warn("Using Fabled (ProSkillAPI) for access handler");
         }
         if (EngineUtils.hasPlugin("WorldEdit") || EngineUtils.hasPlugin("FastAsyncWorldEdit")) {
-            this.schematicHandler = new SchematicFAWEHandler(new SessionConsole(this));
+            this.schematicHandler = new SchematicFAWEHandler(new SessionConsole(this), new ThreadSync(this));
             this.schematicHandler.setup();
             this.warn("Using " + (EngineUtils.hasPlugin("WorldEdit") ? "WorldEdit" : "FAWE") + " for schematic handler!");
         }

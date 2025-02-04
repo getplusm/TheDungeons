@@ -3,7 +3,6 @@ package t.me.p1azmer.plugin.dungeons.api.mob;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -69,7 +68,10 @@ public class MobList {
     }
 
     public void removeAll(@NotNull MobFaction faction) {
-        getAll(faction).forEach(Entity::remove);
+        getAll(faction).forEach(livingEntity -> {
+            livingEntity.remove();
+            livingEntity.damage(livingEntity.getHealth() * 2);
+        });
         getAll(faction).clear();
     }
 

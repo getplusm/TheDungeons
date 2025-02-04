@@ -31,6 +31,7 @@ import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.handler.schematic.SchematicHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.Placeholders;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
+import t.me.p1azmer.plugin.dungeons.scheduler.ThreadSync;
 import t.me.p1azmer.plugin.dungeons.utils.SessionConsole;
 
 import java.io.BufferedInputStream;
@@ -51,6 +52,7 @@ public class SchematicFAWEHandler implements SchematicHandler {
     WorldEdit worldEdit = WorldEdit.getInstance();
 
     SessionConsole sessionConsole;
+    ThreadSync threadSync;
 
     @Override
     public void setup() {
@@ -101,14 +103,20 @@ public class SchematicFAWEHandler implements SchematicHandler {
         com.sk89q.worldedit.world.World weWorld = BukkitAdapter.adapt(world);
 
         try (EditSession editSession = this.worldEdit.newEditSession(weWorld)) {
-            editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
+            threadSync.sync(() -> {
+                try {
+                    editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
 
-            Operation operation = holder.createPaste(editSession)
-                    .to(toVector)
-                    .ignoreAirBlocks(dungeon.getSchematicSettings().isIgnoreAirBlocks())
-                    .copyEntities(true)
-                    .build();
-            Operations.complete(operation);
+                    Operation operation = holder.createPaste(editSession)
+                            .to(toVector)
+                            .ignoreAirBlocks(dungeon.getSchematicSettings().isIgnoreAirBlocks())
+                            .copyEntities(true)
+                            .build();
+                    Operations.complete(operation);
+                } catch (WorldEditException exception) {
+                    DungeonPlugin.getLog().log(Level.SEVERE, "Got exception when paste the schematic at '" + dungeon.getId() + "' dungeon!", exception);
+                }
+            });
             Clipboard clipboard = holder.getClipboard();
             if (clipboard == null) return false;
 
@@ -128,8 +136,9 @@ public class SchematicFAWEHandler implements SchematicHandler {
 
             this.extracted(dungeon, location, editSession);
             return true;
-        } catch (WorldEditException e) {
-            throw new RuntimeException("Reach limit of block change when paste the schematic at '" + dungeon.getId() + "' dungeon!");
+        } catch (RuntimeException e) {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got exception when paste the schematic at '" + dungeon.getId() + "' dungeon!", e);
+            return false;
         }
     }
 
@@ -158,9 +167,11 @@ public class SchematicFAWEHandler implements SchematicHandler {
             sessionConsole.setWorldOverride(editSession.getWorld());
             EditSessionBuilder sessionBuilder = WorldEdit.getInstance().newEditSessionBuilder();
 
-            try (EditSession newEditSession = sessionBuilder.blockBag(blockBag).actor(actor).world(editSession.getWorld()).build()) {
-                editSession.undo(newEditSession);
-            }
+            threadSync.sync(() -> {
+                try (EditSession newEditSession = sessionBuilder.blockBag(blockBag).actor(actor).world(editSession.getWorld()).build()) {
+                    editSession.undo(newEditSession);
+                }
+            });
 
             this.worldEdit.flushBlockBag(actor, editSession);
             this.placedMap.remove(dungeon, location);
