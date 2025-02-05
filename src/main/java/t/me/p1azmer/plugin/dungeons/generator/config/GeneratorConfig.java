@@ -26,7 +26,7 @@ public class GeneratorConfig {
                             "world",
                             0,
                             0,
-                            -5000,
+                            5000,
                             5000,
                             Set.of(Material.WATER, Material.LAVA),
                             Set.of(),
@@ -35,10 +35,10 @@ public class GeneratorConfig {
                             true
                     )
             ),
-            "List of per-world range values to search location in.",
-            "Put your ACTUAL worlds here, especially if your dungeon uses a different world than the default 'world'.",
+            "List of per-world range values for searching locations in.",
+            "Put your actual worlds here, especially if your dungeon uses a world other than the default world.",
             "Note:",
-            "The Use_As_Blacklist setting is designed for your convenience.",
-            "You can choose whether to use the list as a whitelist or as a blacklist"
+            "The Use_As_Blacklist setting was designed for your convenience.",
+            "You can choose to use the list either as a whitelist or a blacklist."
     );
 }

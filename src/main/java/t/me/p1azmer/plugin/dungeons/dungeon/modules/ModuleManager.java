@@ -10,9 +10,7 @@ import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.*;
 import t.me.p1azmer.plugin.dungeons.generator.LocationGenerator;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -21,7 +19,9 @@ import java.util.stream.Collectors;
 public class ModuleManager extends AbstractManager<DungeonPlugin> {
     Dungeon dungeon;
     LocationGenerator locationGenerator;
+
     LinkedHashMap<String, AbstractModule> modules = new LinkedHashMap<>();
+    Map<Class<?>, AbstractModule> cachedModuleRequest = new HashMap<>();
 
     public ModuleManager(@NotNull Dungeon dungeon, @NotNull LocationGenerator locationGenerator) {
         super(dungeon.plugin());
@@ -52,6 +52,7 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
     protected void onShutdown() {
         this.getModules().forEach(AbstractModule::shutdown);
         this.modules.clear();
+        cachedModuleRequest.clear();
     }
 
     private <T extends AbstractModule> void register(@NotNull String id, @NotNull Function<String, T> supplier) {
@@ -76,14 +77,15 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
         return dungeon;
     }
 
-    @NotNull
     public <T extends AbstractModule> Optional<T> getModule(@NotNull Class<T> clazz) {
-        for (AbstractModule module : this.getModules()) {
-            if (clazz.isAssignableFrom(module.getClass())) {
-                return Optional.of(clazz.cast(module));
+        return Optional.ofNullable((T) cachedModuleRequest.computeIfAbsent(clazz, k -> {
+            for (AbstractModule module : this.getModules()) {
+                if (clazz.isAssignableFrom(module.getClass())) {
+                    return clazz.cast(module);
+                }
             }
-        }
-        return Optional.empty();
+            return null;
+        }));
     }
 
     @Nullable
@@ -96,23 +98,7 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
         return this.modules.values();
     }
 
-    @NotNull
-    public Collection<AbstractModule> getActive() {
-        return this.modules
-                .values()
-                .stream()
-                .filter(AbstractModule::isActivated)
-                .collect(Collectors.toList());
-    }
-
-    public long getImportantActiveCount() {
-        return this.getActive()
-                .stream()
-                .filter(AbstractModule::isImportantly)
-                .count();
-    }
-
-    public boolean allImportantActive() {
-        return this.getImportantActiveCount() == this.getActive().size();
+    public @NotNull Collection<AbstractModule> getActiveModules() {
+        return getModules().stream().filter(AbstractModule::isActivated).collect(Collectors.toList());
     }
 }

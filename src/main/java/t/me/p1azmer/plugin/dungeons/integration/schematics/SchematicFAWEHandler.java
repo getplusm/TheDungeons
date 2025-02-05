@@ -72,13 +72,13 @@ public class SchematicFAWEHandler implements SchematicHandler {
             DungeonPlugin.getLog().severe("Dungeon '" + dungeon.getId() + "' has no location!");
             return false;
         }
-        if (!undo(dungeon)) {
-            DungeonPlugin.getLog().severe("Dungeon '" + dungeon.getId() + "' cannot undo");
-            return false;
-        }
         World world = location.getWorld();
         if (world == null) {
             throw new IllegalArgumentException("World at location '" + Placeholders.forLocation(location).apply("%location_x%, %location_y%, %location_z%, %location_world%") + "' is null");
+        }
+        if (!undo(dungeon)) {
+            DungeonPlugin.getLog().severe("Dungeon '" + dungeon.getId() + "' cannot undo");
+            return false;
         }
         ClipboardFormat clipboardFormat = ClipboardFormats.findByFile(schematicFile);
         if (clipboardFormat == null) {
@@ -95,9 +95,9 @@ public class SchematicFAWEHandler implements SchematicHandler {
             throw new RuntimeException("Dungeon '" + dungeon.getId() + "' cannot spawn but schematic '" + schematicFile.getName() + "' not loaded!", e.getCause());
         }
         BlockVector3 toVector = BlockVector3.at(location.getX(), location.getY(), location.getZ());
-        com.sk89q.worldedit.world.World weWorld = BukkitAdapter.adapt(world);
-        try (EditSession editSession = worldEdit.newEditSession(weWorld)) {
-            editSession.setReorderMode(EditSession.ReorderMode.MULTI_STAGE);
+        com.sk89q.worldedit.world.World worldEditWorld = BukkitAdapter.adapt(world);
+        try (EditSession editSession = worldEdit.newEditSession(worldEditWorld)) {
+            editSession.setReorderMode(EditSession.ReorderMode.FAST);
             Operation operation = holder.createPaste(editSession)
                     .to(toVector)
                     .ignoreAirBlocks(dungeon.getSchematicSettings().isIgnoreAirBlocks())
@@ -114,9 +114,9 @@ public class SchematicFAWEHandler implements SchematicHandler {
             BlockVector3 clipboardOffset = minimumPoint.subtract(clipboard.getOrigin());
             Vector3 realTo = toVector.toVector3().add(holder.getTransform().apply(clipboardOffset.toVector3()));
             Vector3 max = realTo.add(holder.getTransform().apply(maximumPoint.subtract(region.getMinimumPoint()).toVector3()));
-            RegionSelector selector = new CuboidRegionSelector(weWorld, realTo.toBlockPoint(), max.toBlockPoint());
+            RegionSelector selector = new CuboidRegionSelector(worldEditWorld, realTo.toBlockPoint(), max.toBlockPoint());
 
-            session.setRegionSelector(weWorld, selector);
+            session.setRegionSelector(worldEditWorld, selector);
             selector.learnChanges();
             selector.explainRegionAdjust(sessionConsole, session);
 

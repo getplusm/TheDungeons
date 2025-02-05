@@ -153,11 +153,6 @@ public class ChestModule extends AbstractModule {
     }
 
     @NotNull
-    public Map<Block, ChestBlock> getChestMap() {
-        return this.chestMap;
-    }
-
-    @NotNull
     public Collection<ChestBlock> getChests() {
         return this.getChestMap().values();
     }
@@ -171,14 +166,11 @@ public class ChestModule extends AbstractModule {
     }
 
     public Optional<ChestBlock> getChestByBlock(@NotNull Block block) {
-        return Optional.ofNullable(this.getChestMap().get(block));
+        return Optional.ofNullable(getChestMap().get(block));
     }
 
     public Optional<Block> getBlock(@NotNull Location location) {
-        return this.blocks
-                .stream()
-                .filter(f -> f.getLocation().equals(location))
-                .findFirst();
+        return this.blocks.stream().filter(f -> f.getLocation().equals(location)).findFirst();
     }
 
     public void setupMenu(@NotNull Block block, @NotNull Map<Reward, Double> rewards) {

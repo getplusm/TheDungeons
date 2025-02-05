@@ -9,22 +9,24 @@ import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.Version;
-import t.me.p1azmer.engine.utils.random.Rnd;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.generator.config.GeneratorConfig;
 
-import java.util.concurrent.BlockingQueue;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LocationGenerator {
+    static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
+
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    BlockingQueue<Location> undergroundLocations = new LinkedBlockingQueue<>();
-    BlockingQueue<Location> highLocations = new LinkedBlockingQueue<>();
+    List<Location> undergroundLocations = new ArrayList<>();
+    List<Location> highLocations = new ArrayList<>();
     RegionHandler regionHandler;
 
     public LocationGenerator(@NotNull RegionHandler regionHandler) {
@@ -47,8 +49,8 @@ public class LocationGenerator {
         if (undergroundLocations.isEmpty()) {
             throw new RuntimeException("Underground locations queue is empty");
         }
-        Location location = undergroundLocations.poll();
-        if (undergroundLocations.isEmpty()) {
+        Location location = getWithRemoveLastLocationFromList(undergroundLocations);
+        if (undergroundLocations.size() <= 1) {
             generateTripleUndergroundLocations(world);
         }
         return location;
@@ -58,8 +60,8 @@ public class LocationGenerator {
         if (highLocations.isEmpty()) {
             throw new RuntimeException("Highest locations queue is empty");
         }
-        Location location = highLocations.poll();
-        if (highLocations.isEmpty()) {
+        Location location = getWithRemoveLastLocationFromList(highLocations);
+        if (highLocations.size() <= 1) {
             generateTripleHighLocations(world);
         }
         return location;
@@ -79,17 +81,18 @@ public class LocationGenerator {
         }
     }
 
-    private static void findRandomLocation(boolean underground, @NotNull BlockingQueue<Location> cache,
+    private static void findRandomLocation(boolean underground, @NotNull List<Location> locations,
                                            @NotNull World world, @Nullable RegionHandler regionHandler) {
         RangeInfo rangeInfo = GeneratorConfig.LOCATION_SEARCH_RANGES.get().get(world.getName());
         if (rangeInfo == null) {
             throw new RuntimeException("No range info for world " + world.getName());
         }
 
-        try {
-            boolean generated = false;
-            int attempts = 0;
-            while (!generated && attempts < 10) {
+        boolean generated = false;
+        int attempts = 0;
+        while (!generated && attempts < 10) {
+            try {
+                long ms = System.currentTimeMillis();
                 attempts++;
                 boolean onlyGeneratedChunks = rangeInfo.isOnlyGeneratedChunks();
 
@@ -100,35 +103,27 @@ public class LocationGenerator {
                 int minOffset = -rangeInfo.getDistanceMin();
                 int maxOffset = rangeInfo.getDistanceMax();
 
-                // #####################################################
-                // ############   [X and Z Randomization]   ############
-                int direction = Rnd.get(0, 2);
+                int direction = RANDOM.nextInt(0, 2);
                 int randomX;
 
-                // decide if positive or negative
                 if (direction == 0) {
-                    randomX = Rnd.get(originX + minOffset, originX + maxOffset + 1);
+                    randomX = RANDOM.nextInt(originX + minOffset, originX + maxOffset + 1);
                 } else {
-                    randomX = Rnd.get(originX - maxOffset, originX - minOffset + 1);
+                    randomX = RANDOM.nextInt(originX - maxOffset, originX - minOffset + 1);
                 }
 
-                direction = Rnd.get(0, 2);
+                direction = RANDOM.nextInt(0, 2);
                 int randomZ;
 
                 if (direction == 0) {
-                    randomZ = Rnd.get(originZ + minOffset, originZ + maxOffset + 1);
+                    randomZ = RANDOM.nextInt(originZ + minOffset, originZ + maxOffset + 1);
                 } else {
-                    randomZ = Rnd.get(originZ - maxOffset, originZ - minOffset + 1);
+                    randomZ = RANDOM.nextInt(originZ - maxOffset, originZ - minOffset + 1);
                 }
-
-                // ############   [X and Z Randomization]   ############
-                // #####################################################
-
-                // X and Z are randomized, now just an example for handling Y
 
                 int modifiedY = originY;
                 if (underground)
-                    modifiedY += Rnd.get(Version.isAbove(Version.V1_18_R2) ? 30 : 10);
+                    modifiedY += RANDOM.nextInt(Version.isAbove(Version.V1_18_R2) ? 30 : 10);
 
                 Location result = new Location(world, randomX, modifiedY, randomZ);
 
@@ -164,10 +159,15 @@ public class LocationGenerator {
                     continue;
                 }
 
-                generated = cache.add(result);
+                generated = locations.add(result);
+                DungeonPlugin.getLog().info("Generated new location " + result + " took " + (System.currentTimeMillis()-ms) + "ms");
+            } catch (RuntimeException exception) {
+                DungeonPlugin.getLog().log(Level.SEVERE, "An error occurred while generating a location", exception);
             }
-        } catch (RuntimeException exception) {
-            DungeonPlugin.getLog().log(Level.SEVERE, "An error occurred while generating a location", exception);
         }
+    }
+
+    private static @NotNull Location getWithRemoveLastLocationFromList(@NotNull List<Location> list) {
+        return list.removeLast();
     }
 }

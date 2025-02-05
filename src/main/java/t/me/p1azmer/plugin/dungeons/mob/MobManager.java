@@ -2,6 +2,7 @@ package t.me.p1azmer.plugin.dungeons.mob;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
@@ -13,20 +14,17 @@ import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.Version;
 import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.api.manager.AbstractManager;
-import t.me.p1azmer.engine.utils.LocationUtil;
 import t.me.p1azmer.engine.utils.PDCUtil;
 import t.me.p1azmer.engine.utils.StringUtil;
-import t.me.p1azmer.engine.utils.random.Rnd;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Keys;
 import t.me.p1azmer.plugin.dungeons.api.mob.MobFaction;
 import t.me.p1azmer.plugin.dungeons.api.mob.MobList;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleManager;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 import t.me.p1azmer.plugin.dungeons.mob.config.MobConfig;
 import t.me.p1azmer.plugin.dungeons.mob.config.MobsConfig;
 import t.me.p1azmer.plugin.dungeons.mob.kill.MobKillReward;
+import t.me.p1azmer.plugin.dungeons.scheduler.ThreadSync;
 
 import java.util.*;
 
@@ -34,9 +32,11 @@ import java.util.*;
 public class MobManager extends AbstractManager<DungeonPlugin> {
     Map<String, MobConfig> mobConfigMap;
     MobList mobList;
+    final ThreadSync threadSync;
 
-    public MobManager(@NotNull DungeonPlugin plugin) {
+    public MobManager(@NotNull DungeonPlugin plugin, @NotNull ThreadSync threadSync) {
         super(plugin);
+        this.threadSync = threadSync;
     }
 
     @Override
@@ -133,27 +133,14 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         return this.mobConfigMap.get(id.toLowerCase());
     }
 
-    public void spawnMob(@NotNull Dungeon dungeon, @NotNull MobFaction faction, @NotNull String mobId, @NotNull MobList mobList) {
+    public void summonLivingEntity(@NotNull Dungeon dungeon, @NotNull String mobId, @NotNull MobList mobList, @NotNull Location location) {
         MobConfig customMob = this.getMobConfigById(mobId);
         if (customMob == null) {
             return;
         }
-        Location location = dungeon.getLocation().orElse(null);
-        ModuleManager moduleManager = dungeon.getModuleManager();
-
-        ChestModule module = moduleManager.getModule(ChestModule.class).orElse(null);
-        if (module != null) {
-            if (module.getBlocks().isEmpty()) {
-                return;
-            }
-            location = Rnd.get(module.getBlocks()).getLocation();
-            location = LocationUtil.getPointOnCircle(location, Rnd.get(-5, 5), Rnd.get(-5, 5), Rnd.get(-5, 5));
-            location = LocationUtil.getFirstGroundBlock(location);
-        }
-        if (location == null) return;
 
         EntityType type = customMob.getEntityType();
-        LivingEntity entity = this.spawnMob(type, location);
+        LivingEntity entity = this.summonLivingEntity(type, location);
         if (entity == null) {
             return;
         }
@@ -163,7 +150,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
             MobConfig rider = this.getMobConfigById(riderId);
             if (rider != null) {
                 EntityType riderType = rider.getEntityType();
-                LivingEntity riderEntity = this.spawnMob(riderType, location);
+                LivingEntity riderEntity = this.summonLivingEntity(riderType, location);
                 if (riderEntity != null) {
                     entity.addPassenger(riderEntity);
 
@@ -185,16 +172,20 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         mobList.getEnemies().add(entity);
     }
 
-    public LivingEntity spawnMob(@NotNull EntityType type, @NotNull Location location) {
+    public @Nullable LivingEntity summonLivingEntity(@NotNull EntityType type, @NotNull Location location) {
         World world = location.getWorld();
         if (world == null) return null;
 
-        Entity entity = location.getWorld().spawnEntity(location, type);
+        Entity entity;
+        if (!Bukkit.isPrimaryThread()) {
+            entity = threadSync.syncApply(() -> location.getWorld().spawnEntity(location, type)).join();
+        } else {
+            entity = location.getWorld().spawnEntity(location, type);
+        }
+
         if (!(entity instanceof LivingEntity bukkitEntity)) {
             return null;
         }
-
-        bukkitEntity.teleport(location);
         return bukkitEntity;
     }
 

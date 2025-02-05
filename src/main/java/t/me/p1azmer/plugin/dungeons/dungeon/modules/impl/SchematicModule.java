@@ -103,9 +103,6 @@ public class SchematicModule extends AbstractModule {
         cachedSchematicFile = Rnd.get(getSchematicFiles());
         return getDungeon().getThreadSync().syncApply(() -> {
             return generated = handler.paste(getDungeon(), cachedSchematicFile);
-        }).orTimeout(5, TimeUnit.SECONDS).exceptionally(throwable -> {
-            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while trying paste schematic", throwable);
-            return false;
         }).join();
     }
 

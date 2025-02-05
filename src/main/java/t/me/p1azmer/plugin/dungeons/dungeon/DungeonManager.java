@@ -1,5 +1,7 @@
 package t.me.p1azmer.plugin.dungeons.dungeon;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
@@ -34,15 +36,16 @@ import t.me.p1azmer.plugin.dungeons.utils.Cuboid;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DungeonManager extends AbstractManager<DungeonPlugin> {
     Map<String, Dungeon> dungeonMap = new ConcurrentHashMap<>();
+    LoadingCache<Location, Dungeon> cachedDungeonsByLocation;
     LocationGenerator locationGenerator;
     ThreadSync threadSync;
     @NonFinal
     DungeonTickTask dungeonTickTask;
+
     ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public DungeonManager(@NotNull DungeonPlugin plugin,
@@ -50,6 +53,8 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
         super(plugin);
         this.locationGenerator = locationGenerator;
         this.threadSync = threadSync;
+
+        this.cachedDungeonsByLocation = Caffeine.newBuilder().build(location -> tryFindDungeonByLocation(location, location.getBlock()));
     }
 
     @Override
@@ -185,13 +190,16 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
 
     @Nullable
     public Dungeon getDungeonByBlock(@NotNull Block block) {
-        return this.getDungeonByLocation(block.getLocation(), block);
+        return getDungeonByLocation(block.getLocation());
     }
 
-    @Nullable
-    public Dungeon getDungeonByLocation(@NotNull Location location, @NotNull Block block) {
+    public @Nullable Dungeon getDungeonByLocation(@NotNull Location location) {
+        return cachedDungeonsByLocation.get(location);
+    }
+
+    private @Nullable Dungeon tryFindDungeonByLocation(@NotNull Location location, @NotNull Block block) {
         try {
-            return this.getDungeons().stream().filter(dungeon -> {
+            for (Dungeon dungeon : getDungeons()) {
                 ModuleManager moduleManager = dungeon.getModuleManager();
                 ChestModule module = moduleManager.getModule(ChestModule.class).orElse(null);
                 Block dungeonBlock = module != null ? module.getBlock(location).orElse(null) : null;
@@ -200,31 +208,22 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
                 RegionHandler regionHandler = plugin.getRegionHandler();
                 Region dungeonRegion = dungeon.getRegion();
 
-                return (dungeonCuboid != null && dungeonCuboid.contains(location))
+                if ((dungeonCuboid != null && dungeonCuboid.contains(location))
                         || (dungeonBlock != null
                         && (dungeonBlock.hasMetadata(dungeon.getId())
                         || dungeonBlock.equals(block)
                         || dungeonBlock.getLocation().equals(location)
                         || dungeonBlock.getLocation().distance(location) <= 1D))
                         || (regionHandler != null && dungeonRegion.isEnabled()
-                        && regionHandler.isDungeonRegion(location, dungeonRegion));
-            }).findFirst().orElse(null);
+                        && regionHandler.isDungeonRegion(location, dungeonRegion))) {
+                    return dungeon;
+                }
+            }
+            return null;
         } catch (RuntimeException exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while trying find a dungeon by location", exception);
             return null;
         }
-    }
-
-    @NotNull
-    public List<Dungeon> getActiveDungeons() {
-        return this.getDungeons()
-                .stream()
-                .filter(dungeon -> {
-                    Optional<SpawnModule> spawnModule = dungeon.getModuleManager().getModule(SpawnModule.class);
-                    DungeonStage dungeonStage = dungeon.getStage();
-                    return spawnModule.isPresent() && spawnModule.get().isSpawned() && !dungeonStage.isCancelled() || !dungeonStage.isRebooted() || !dungeonStage.isFreeze();
-                })
-                .collect(Collectors.toList());
     }
 
     @Nullable
@@ -232,6 +231,12 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
         return this.getDungeonMap().values().stream()
                 .filter(f -> !f.getStage().isFreeze() && !f.getStage().isCancelled() && !f.getStage().isClosed())
                 .min(Comparator.comparingInt(Dungeon::getNextStageTime)).orElse(null);
+    }
+
+    public void removeDungeonFromCache(@NotNull Dungeon dungeon) {
+        new HashMap<>(cachedDungeonsByLocation.asMap()).forEach((location, d) -> {
+            if (d.equals(dungeon)) cachedDungeonsByLocation.invalidate(location);
+        });
     }
 
     public CompletableFuture<Boolean> spawnDungeon(@NotNull Dungeon dungeon, @NotNull Location location) {

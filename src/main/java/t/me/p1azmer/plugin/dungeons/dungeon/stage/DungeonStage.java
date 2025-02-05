@@ -102,7 +102,7 @@ public enum DungeonStage {
                             "Location=" + locationText + " | " +
                             "Cuboid=" + hasCuboid + " | " +
                             "Modules=" + moduleManager.getModules().size() + " | " +
-                            "Active Modules=" + moduleManager.getActive().size()
+                            "Active Modules=" + moduleManager.getActiveModules().size()
             );
         }
 

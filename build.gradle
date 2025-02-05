@@ -5,7 +5,7 @@ plugins {
 
 group = 'com.github.getplusm'
 description = 'TheDungeons'
-version = '4.0.6'
+version = '4.0.7'
 
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
@@ -98,6 +98,7 @@ dependencies {
     compileOnly 'com.github.getplusm:PLAZMER-ENGINE:2.4.10'
 
     // Libs
+    compileOnly 'com.github.ben-manes.caffeine:caffeine:3.1.6'
     compileOnly 'com.github.caseyscarborough:pastebin-api-java:0.1.3'
     compileOnly 'com.cjcrafter:foliascheduler:0.6.3'
     compileOnly 'org.projectlombok:lombok:1.18.30'

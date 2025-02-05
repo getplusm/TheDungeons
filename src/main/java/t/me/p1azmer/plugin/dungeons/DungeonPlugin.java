@@ -89,7 +89,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
         this.keyManager = new KeyManager(this);
         this.keyManager.setup();
 
-        this.mobManager = new MobManager(this);
+        this.mobManager = new MobManager(this, threadSync);
         this.mobManager.setup();
 
         this.announceManager = new AnnounceManager(this);

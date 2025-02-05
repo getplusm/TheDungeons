@@ -6,6 +6,8 @@ author: "plazmer"
 description: "Dungeons - Automatic generation in any world"
 folia-supported: true
 depend: [ PLAZMER-ENGINE ]
+libraries:
+  - 'com.github.ben-manes.caffeine:caffeine:3.1.6'
 softdepend:
   - ProtectionBlocks
   - HolographicDisplays
