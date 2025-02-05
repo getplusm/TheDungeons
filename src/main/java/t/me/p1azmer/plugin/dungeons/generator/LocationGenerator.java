@@ -36,7 +36,7 @@ public class LocationGenerator {
     private void generateStartupLocations() {
         GeneratorConfig.LOCATION_SEARCH_RANGES.get().values().forEach(range -> {
             World world = range.getWorld().orElseThrow(() -> {
-                return new RuntimeException("World " + range.getWorldRaw() + " in range info not found");
+                return new IllegalArgumentException("World " + range.getWorldRaw() + " in range info not found");
             });
             generateTripleUndergroundLocations(world);
             generateTripleHighLocations(world);
@@ -68,18 +68,14 @@ public class LocationGenerator {
     private void generateTripleUndergroundLocations(@NotNull World world) {
         DungeonPlugin.getLog().info("Starting generation of underground locations for world `" + world.getName() + "`");
         for (int i = 0; i < 3; i++) {
-            scheduler.execute(() -> {
-                findRandomLocation(true, undergroundLocations, world, regionHandler);
-            });
+            scheduler.execute(() -> findRandomLocation(true, undergroundLocations, world, regionHandler));
         }
     }
 
     private void generateTripleHighLocations(@NotNull World world) {
         DungeonPlugin.getLog().info("Starting generation of highest locations for world `" + world.getName() + "`");
         for (int i = 0; i < 3; i++) {
-            scheduler.execute(() -> {
-                findRandomLocation(false, highLocations, world, regionHandler);
-            });
+            scheduler.execute(() -> findRandomLocation(false, highLocations, world, regionHandler));
         }
     }
 

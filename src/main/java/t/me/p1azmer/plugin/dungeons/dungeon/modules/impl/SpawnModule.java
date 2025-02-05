@@ -9,7 +9,7 @@ import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonSpawnEvent;
-import t.me.p1azmer.plugin.dungeons.api.events.DungeonDespawnEvent;
+import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonDespawnEvent;
 import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
@@ -99,11 +99,9 @@ public class SpawnModule extends AbstractModule {
         if (!generationType.isDynamic() && spawnLocation.isPresent()) return false;
         if (schematicModule.isPresent() && !schematicModule.get().tryDeactivate(ActionType.FORCE)) return false;
 
-        boolean cancelled = getDungeon().getThreadSync().syncApply(() -> {
-            DungeonDespawnEvent event = new DungeonDespawnEvent(this.getDungeon());
-            Bukkit.getPluginManager().callEvent(event);
-            return event.isCancelled();
-        }).join();
+        AsyncDungeonDespawnEvent event = new AsyncDungeonDespawnEvent(this.getDungeon());
+        Bukkit.getPluginManager().callEvent(event);
+        boolean cancelled = event.isCancelled();
 
         if (cancelled) {
             this.debug("Unable to deactivate the '" + this.getId() + "' module due to an Event");

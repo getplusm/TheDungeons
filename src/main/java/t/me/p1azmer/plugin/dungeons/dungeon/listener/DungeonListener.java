@@ -20,7 +20,7 @@ import t.me.p1azmer.engine.utils.collections.AutoRemovalCollection;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonChangeStageEvent;
 import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonSpawnEvent;
-import t.me.p1azmer.plugin.dungeons.api.events.DungeonDespawnEvent;
+import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonDespawnEvent;
 import t.me.p1azmer.plugin.dungeons.api.handler.access.AccessHandler;
 import t.me.p1azmer.plugin.dungeons.api.handler.party.PartyHandler;
 import t.me.p1azmer.plugin.dungeons.config.Config;
@@ -144,7 +144,7 @@ public class DungeonListener extends AbstractListener<DungeonPlugin> {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onDespawn(DungeonDespawnEvent event) {
+    public void onDespawn(AsyncDungeonDespawnEvent event) {
         Dungeon dungeon = event.getDungeon();
         dungeon.setLocation(null);
         dungeon.setCuboid(null);

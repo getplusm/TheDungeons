@@ -55,13 +55,12 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
     @Override
     protected void onLoad() {
         RegionHandler regionHandler = plugin.getRegionHandler();
+        this.plugin.getConfig().initializeOptions(GeneratorConfig.class);
+        this.plugin.getConfigManager().extractResources(Config.DIR_DUNGEONS);
 
         scheduler.execute(() -> {
-            try {
-                this.plugin.getConfig().initializeOptions(GeneratorConfig.class);
-                this.plugin.getConfigManager().extractResources(Config.DIR_DUNGEONS);
-
-                for (JYML cfg : JYML.loadAll(plugin.getDataFolder() + Config.DIR_DUNGEONS, true)) {
+            for (JYML cfg : JYML.loadAll(plugin.getDataFolder() + Config.DIR_DUNGEONS, true)) {
+                try {
                     Dungeon dungeon = new Dungeon(this, cfg, locationGenerator, threadSync);
                     if (dungeon.load()) {
                         this.dungeonMap.put(dungeon.getId(), dungeon);
@@ -75,13 +74,12 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
                         }
                         dungeon.getModuleManager().setup();
                     } else this.plugin.error("Dungeon not loaded: '" + cfg.getFile().getName() + "'.");
+                } catch (RuntimeException exception) {
+                    DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while loading dungeon '" + cfg.getFile().getName() + "'", exception);
                 }
-                this.plugin.info("Loaded " + this.getDungeonMap().size() + " dungeons.");
-            } catch (RuntimeException exception) {
-                DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while loading the dungeons", exception);
             }
+            this.plugin.info("Loaded " + this.getDungeonMap().size() + " dungeons.");
         });
-
         this.addListener(new DungeonListener(this));
         this.dungeonTickTask = new DungeonTickTask(this);
     }
@@ -89,11 +87,17 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
     @Override
     protected void onShutdown() {
         try {
-            this.dungeonMap.values().forEach(dungeon -> {
-                dungeon.clear();
-                ModuleManager moduleManager = dungeon.getModuleManager();
-                moduleManager.shutdown();
-                dungeon.setModuleManager(null);
+            scheduler.execute(() -> {
+                try {
+                    this.dungeonMap.values().forEach(dungeon -> {
+                        dungeon.clear();
+                        ModuleManager moduleManager = dungeon.getModuleManager();
+                        moduleManager.shutdown();
+                        dungeon.setModuleManager(null);
+                    });
+                } catch (RuntimeException exception) {
+                    DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while trying clear dungeons", exception);
+                }
             });
             this.dungeonMap.clear();
             if (this.dungeonTickTask != null) {
@@ -106,7 +110,7 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
         }
     }
 
-    private void shutdownScheduler(){
+    private void shutdownScheduler() {
         scheduler.shutdown();
         try {
             if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -246,7 +250,7 @@ public class DungeonManager extends AbstractManager<DungeonPlugin> {
             DungeonStage.call(dungeon, DungeonStage.OPENING, "Dungeon Manager via command");
             dungeonTickTask.tryActivateDungeonModules(dungeon);
             return true;
-        }).exceptionally(throwable -> {
+        }, scheduler).exceptionally(throwable -> {
             DungeonPlugin.getLog().log(Level.SEVERE, "Error spawning dungeon '" + dungeon.getId() + "' via command", throwable);
             return false;
         });

@@ -4,11 +4,11 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
 
-public class DungeonDespawnEvent extends DungeonEvent {
+public class AsyncDungeonDespawnEvent extends DungeonEvent {
     private static final HandlerList handlerList = new HandlerList();
 
-    public DungeonDespawnEvent(@NotNull Dungeon dungeon) {
-        super(dungeon, false);
+    public AsyncDungeonDespawnEvent(@NotNull Dungeon dungeon) {
+        super(dungeon, true);
     }
 
     @NotNull

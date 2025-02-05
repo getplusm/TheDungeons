@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.jetbrains.annotations.NotNull;
+import t.me.p1azmer.engine.Version;
 import t.me.p1azmer.engine.api.config.JYML;
 import t.me.p1azmer.engine.utils.StringUtil;
 import t.me.p1azmer.plugin.dungeons.DungeonAPI;
@@ -46,8 +47,7 @@ public class RangeInfo {
         AtomicInteger nullMaterial = new AtomicInteger();
 
         Set<String> materialList = cfg.getStringSet(path + ".Material.List");
-        Set<Material> materials = materialList
-                .stream()
+        Set<Material> materials = materialList.stream()
                 .map(sId -> StringUtil.getEnum(sId, Material.class).orElse(null))
                 .filter(material -> {
                     if (material == null) {
@@ -55,8 +55,7 @@ public class RangeInfo {
                         return false;
                     }
                     return true;
-                })
-                .collect(Collectors.toSet());
+                }).collect(Collectors.toSet());
         Set<String> biomeList = cfg.getStringSet(path + ".Biome.List");
         Set<Biome> biomes = biomeList.stream().map(Biome::valueOf).collect(Collectors.toSet());
 
@@ -78,7 +77,11 @@ public class RangeInfo {
         cfg.set(path + ".Only_Generated_Chunks", this.isOnlyGeneratedChunks());
 
         cfg.set(path + ".Material.List", this.getMaterials().stream().map(Enum::name).collect(Collectors.toList()));
-        cfg.set(path + ".Biome.List", this.getBiomes().stream().map(Biome::translationKey).collect(Collectors.toList()));
+        if (Version.isBehind(Version.V1_19_R1)){
+            cfg.set(path + ".Biome.List", this.getBiomes().stream().map(Biome::name).collect(Collectors.toList()));
+        }else {
+            cfg.set(path + ".Biome.List", this.getBiomes().stream().map(Biome::translationKey).collect(Collectors.toList()));
+        }
     }
 
     @NotNull

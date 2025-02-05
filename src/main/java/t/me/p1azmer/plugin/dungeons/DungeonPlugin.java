@@ -227,7 +227,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
         if (EngineUtils.hasPlugin("WorldEdit") || EngineUtils.hasPlugin("FastAsyncWorldEdit")) {
             this.schematicHandler = new SchematicFAWEHandler(new SessionConsole(this), new ThreadSync(this));
             this.schematicHandler.setup();
-            this.warn("Using " + (EngineUtils.hasPlugin("WorldEdit") ? "WorldEdit" : "FAWE") + " for schematic handler!");
+            this.warn("Using FAWE/WorldEdit for schematic handler!");
         }
         if (EngineUtils.hasPlaceholderAPI()) {
             this.placeholder = new DungeonPlaceholder(this);

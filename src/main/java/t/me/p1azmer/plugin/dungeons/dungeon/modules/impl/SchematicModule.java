@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -42,12 +43,12 @@ public class SchematicModule extends AbstractModule {
 
     @Override
     protected Predicate<Boolean> onLoad() {
-        this.generated = false;
-        this.schematicFiles = new ArrayList<>();
-        this.schematics = this.getDungeon().getSchematicSettings().getSchematics();
-        this.setSchematicFiles(schematics.stream().map(this::getFileByName).collect(Collectors.toList()));
+        generated = false;
+        schematicFiles = new ArrayList<>();
+        schematics = getDungeon().getSchematicSettings().getSchematics();
+        setSchematicFiles(schematics.stream().map(this::getFileByName).collect(Collectors.toList()));
 
-        for (File schematicFile : new ArrayList<>(this.getSchematicFiles())) {
+        for (File schematicFile : new ArrayList<>(getSchematicFiles())) {
             if (schematicFile != null && !schematicFile.exists()) {
                 try {
                     String filePath = Config.DIR_SCHEMATICS + schematicFile.getName();
@@ -64,14 +65,14 @@ public class SchematicModule extends AbstractModule {
         }
 
         return aBoolean -> {
-            Optional<SpawnModule> spawnModule = this.getManager().getModule(SpawnModule.class);
+            Optional<SpawnModule> spawnModule = getManager().getModule(SpawnModule.class);
             DungeonStage dungeonStage = getDungeon().getStage();
-            GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
+            GenerationSettings generationSettings = getDungeon().getGenerationSettings();
             GenerationType generationType = generationSettings.getGenerationType();
             Optional<Location> spawnLocation = generationSettings.getSpawnLocation();
 
             boolean allowedWithGeneration = !generationType.isDynamic() && spawnLocation.isPresent();
-            boolean hasSchematic = handler != null && !this.getSchematicFiles().isEmpty() && !this.schematics.isEmpty();
+            boolean hasSchematic = handler != null && !getSchematicFiles().isEmpty() && !schematics.isEmpty();
             boolean stageAllowed = dungeonStage.isCheck() || dungeonStage.isPrepare();
             boolean spawnModuleIsReady = spawnModule.isPresent() && spawnModule.get().isSpawned();
 
@@ -83,40 +84,47 @@ public class SchematicModule extends AbstractModule {
 
     @Override
     protected void onShutdown() {
-        this.generated = false;
-        handler.undo(this.getDungeon());
-        this.cachedSchematicFile = null;
+        generated = false;
+        getDungeon().getThreadSync().sync(() -> handler.undo(getDungeon())).exceptionally(throwable -> {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while trying undo schematic", throwable);
+            return null;
+        });
+        cachedSchematicFile = null;
     }
 
     @Override
     public boolean onActivate(boolean force) {
-        Location location = this.getDungeon().getLocation().orElse(null);
+        Location location = getDungeon().getLocation().orElse(null);
         if (location == null) {
-            this.error("Cannot found Dungeon Location!");
+            error("Cannot found Dungeon Location!");
             return false;
         }
 
-        this.cachedSchematicFile = Rnd.get(this.getSchematicFiles());
-        boolean pasted = handler.paste(this.getDungeon(), this.cachedSchematicFile);
-        return this.generated = pasted;
+        cachedSchematicFile = Rnd.get(getSchematicFiles());
+        return getDungeon().getThreadSync().syncApply(() -> {
+            return generated = handler.paste(getDungeon(), cachedSchematicFile);
+        }).orTimeout(5, TimeUnit.SECONDS).exceptionally(throwable -> {
+            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while trying paste schematic", throwable);
+            return false;
+        }).join();
     }
 
     @Override
     public boolean onDeactivate(boolean force) {
-        GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
+        GenerationSettings generationSettings = getDungeon().getGenerationSettings();
         GenerationType generationType = generationSettings.getGenerationType();
         Optional<Location> spawnLocation = generationSettings.getSpawnLocation();
-        Optional<ChestModule> module = this.getManager().getModule(ChestModule.class);
+        Optional<ChestModule> module = getManager().getModule(ChestModule.class);
 
         if (!generationType.isDynamic() && spawnLocation.isPresent()) return false;
         if (module.isPresent() && !module.get().tryDeactivate(ActionType.FORCE)) return false;
 
-        if (!this.generated) return true;
+        if (!generated) return true;
 
-        this.generated = false;
-        this.cachedSchematicFile = null;
+        generated = false;
+        cachedSchematicFile = null;
 
-        handler.undo(this.getDungeon());
+        getDungeon().getThreadSync().sync(() -> handler.undo(getDungeon()));
         return true;
     }
 
