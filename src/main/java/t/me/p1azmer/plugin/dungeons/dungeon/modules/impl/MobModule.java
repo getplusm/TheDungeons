@@ -73,7 +73,7 @@ public class MobModule extends AbstractModule {
                     Location spawnLocation = findSafeLocation(location, getDungeon().getRegion().getRadius());
                     if (spawnLocation == null) continue;
 
-                    mobManager.summonLivingEntity(getDungeon(), mobId, this.mobList, spawnLocation);
+                    mobManager.spawnCustomMob(getDungeon(), mobId, this.mobList, spawnLocation);
                 }
             } catch (RuntimeException exception) {
                 DungeonPlugin.getLog().log(Level.SEVERE, "Got exception while spawning '" + mobId + "' mob", exception);

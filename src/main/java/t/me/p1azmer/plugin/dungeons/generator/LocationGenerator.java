@@ -47,7 +47,8 @@ public class LocationGenerator {
 
     public @NotNull Location getRandomUndergroundLocation(@NotNull World world) {
         if (undergroundLocations.isEmpty()) {
-            throw new RuntimeException("Underground locations queue is empty");
+            generateTripleUndergroundLocations(world);
+            throw new RuntimeException("Underground locations queue is empty! Generated new..");
         }
         Location location = getWithRemoveLastLocationFromList(undergroundLocations);
         if (undergroundLocations.size() <= 1) {
@@ -58,7 +59,8 @@ public class LocationGenerator {
 
     public @NotNull Location getRandomHighLocation(@NotNull World world) {
         if (highLocations.isEmpty()) {
-            throw new RuntimeException("Highest locations queue is empty");
+            generateTripleHighLocations(world);
+            throw new RuntimeException("Highest locations queue is empty! Generated new..");
         }
         Location location = getWithRemoveLastLocationFromList(highLocations);
         if (highLocations.size() <= 1) {
@@ -160,7 +162,7 @@ public class LocationGenerator {
                 }
 
                 generated = locations.add(result);
-                DungeonPlugin.getLog().info("Generated new location " + result + " took " + (System.currentTimeMillis()-ms) + "ms");
+                DungeonPlugin.getLog().info("Generated new location " + result + " took " + (System.currentTimeMillis() - ms) + "ms");
             } catch (RuntimeException exception) {
                 DungeonPlugin.getLog().log(Level.SEVERE, "An error occurred while generating a location", exception);
             }
@@ -168,6 +170,6 @@ public class LocationGenerator {
     }
 
     private static @NotNull Location getWithRemoveLastLocationFromList(@NotNull List<Location> list) {
-        return list.removeLast();
+        return list.remove(list.size() - 1);
     }
 }

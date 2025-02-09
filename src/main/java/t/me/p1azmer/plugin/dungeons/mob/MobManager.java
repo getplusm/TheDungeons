@@ -133,7 +133,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         return this.mobConfigMap.get(id.toLowerCase());
     }
 
-    public void summonLivingEntity(@NotNull Dungeon dungeon, @NotNull String mobId, @NotNull MobList mobList, @NotNull Location location) {
+    public void spawnCustomMob(@NotNull Dungeon dungeon, @NotNull String mobId, @NotNull MobList mobList, @NotNull Location location) {
         MobConfig customMob = this.getMobConfigById(mobId);
         if (customMob == null) {
             return;
@@ -172,7 +172,7 @@ public class MobManager extends AbstractManager<DungeonPlugin> {
         mobList.getEnemies().add(entity);
     }
 
-    public @Nullable LivingEntity summonLivingEntity(@NotNull EntityType type, @NotNull Location location) {
+    private @Nullable LivingEntity summonLivingEntity(@NotNull EntityType type, @NotNull Location location) {
         World world = location.getWorld();
         if (world == null) return null;
 
