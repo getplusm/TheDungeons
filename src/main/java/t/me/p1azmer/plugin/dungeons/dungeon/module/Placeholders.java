@@ -1,4 +1,4 @@
-package t.me.p1azmer.plugin.dungeons.dungeon.modules;
+package t.me.p1azmer.plugin.dungeons.dungeon.module;
 
 public class Placeholders extends t.me.p1azmer.plugin.dungeons.dungeon.Placeholders {
     public static final String MODULE_ID = "%module_id%";

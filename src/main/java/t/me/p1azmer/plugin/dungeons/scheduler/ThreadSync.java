@@ -24,7 +24,6 @@ public class ThreadSync {
         });
     }
 
-
     public @NotNull <T> CompletableFuture<T> syncApply(@NotNull Supplier<T> supplier) {
         if (isMainThread()) {
             return CompletableFuture.completedFuture(supplier.get()).orTimeout(1, TimeUnit.SECONDS);

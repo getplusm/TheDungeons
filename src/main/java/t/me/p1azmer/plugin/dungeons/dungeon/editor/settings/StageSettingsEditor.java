@@ -45,7 +45,7 @@ public class StageSettingsEditor extends EditorMenu<DungeonPlugin, StageSettings
 
     private void save(@NotNull MenuViewer viewer) {
         this.object.getDungeon().save();
-        CompletableFuture.runAsync(() -> DungeonStage.call(this.object.getDungeon(), DungeonStage.CANCELLED, "stage editor need reboot"));
+        CompletableFuture.runAsync(() -> DungeonStage.handleDungeonChangeStage(this.object.getDungeon(), DungeonStage.CANCELLED, "stage editor need reboot"));
         this.plugin.runTask(task -> this.open(viewer.getPlayer(), viewer.getPage()));
     }
 

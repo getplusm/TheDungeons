@@ -58,7 +58,7 @@ public class RegionHandlerGD implements RegionHandler {
 
             ClaimManager claimManager = this.griefDefender.getClaimManager(world.getUID());
             if (claimManager == null) {
-                CompletableFuture.runAsync(() -> DungeonStage.call(dungeon, DungeonStage.CANCELLED, "GriefDefender not found the claim manager at this world"));
+                CompletableFuture.runAsync(() -> DungeonStage.handleDungeonChangeStage(dungeon, DungeonStage.CANCELLED, "GriefDefender not found the claim manager at this world"));
                 return;
             }
             Location first = location.clone().add(-regionRadius, regionRadius, regionRadius);
@@ -96,19 +96,26 @@ public class RegionHandlerGD implements RegionHandler {
     public boolean isValidLocation(@NotNull Location location) {
         World world = location.getWorld();
         if (world == null) return false;
-        ClaimManager claimManager = this.griefDefender.getClaimManager(location.getWorld().getUID());
+
+        ClaimManager claimManager = this.griefDefender.getClaimManager(world.getUID());
         if (claimManager == null) return false;
-        return claimManager.getClaimAt(location.getBlockX(), location.getBlockY(), location.getBlockZ()) == null;
+
+        Claim claim = claimManager.getClaimAt(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+
+        return claim.isWilderness();
     }
 
     @Override
     public boolean isDungeonRegion(@NotNull Location location, @NotNull Region region) {
         World world = location.getWorld();
         if (world == null) return false;
+
         ClaimManager claimManager = this.griefDefender.getClaimManager(location.getWorld().getUID());
         if (claimManager == null) return false;
+
         Claim claim = claimManager.getClaimAt(location.getBlockX(), location.getBlockY(), location.getBlockZ());
         if (claim == null) return false;
+
         return claim.isAdminClaim();
     }
 }

@@ -1,4 +1,4 @@
-package t.me.p1azmer.plugin.dungeons.dungeon.modules;
+package t.me.p1azmer.plugin.dungeons.dungeon.module;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.api.manager.AbstractManager;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.*;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.modules.*;
 import t.me.p1azmer.plugin.dungeons.generator.LocationGenerator;
 
 import java.util.*;
@@ -43,7 +43,7 @@ public class ModuleManager extends AbstractManager<DungeonPlugin> {
             register(ModuleId.COMMAND, id -> new CommandModule(this.getDungeon(), id));
             register(ModuleId.MOBS, id -> new MobModule(this.getDungeon(), id));
             plugin.info("Loaded " + this.getModules().size() + " modules for " + this.getDungeon().getId() + " dungeon.");
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Got exception while loading modules for " + this.getDungeon().getId(), exception);
         }
     }

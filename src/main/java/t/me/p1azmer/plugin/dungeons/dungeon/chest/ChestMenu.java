@@ -20,7 +20,6 @@ import t.me.p1azmer.engine.utils.placeholder.PlaceholderMap;
 import t.me.p1azmer.engine.utils.random.Rnd;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.reward.Reward;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.ChestSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.RewardSettings;
@@ -59,9 +58,7 @@ public class ChestMenu extends AbstractListener<DungeonPlugin> implements IClean
 
     public void initRewards(@NotNull Map<Reward, Double> rewards, @NotNull ChestSettings settings, @NotNull RewardSettings rewardSettings) {
         if (rewards.isEmpty()) {
-            this.getDungeon().getModuleManager()
-                    .getModule(ChestModule.class)
-                    .ifPresent(module -> module.debug("Your reward maps are empty!"));
+            DungeonPlugin.getLog().severe("Rewards for dungeon '" + dungeon.getId() + "' not found!");
             return;
         }
         for (int i = 0; i < rewardSettings.getLimit().roll(); i++) {

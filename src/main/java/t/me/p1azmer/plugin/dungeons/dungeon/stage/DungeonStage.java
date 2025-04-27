@@ -16,10 +16,7 @@ import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonChangeStageEvent;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleManager;
-import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.StageSettings;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.ModuleManager;
 
 @Getter
 @RequiredArgsConstructor
@@ -84,9 +81,7 @@ public enum DungeonStage {
     }
 
     public void tick(@NotNull Dungeon dungeon) {
-        AtomicInteger timer = dungeon.getSelfTick();
         DungeonPlugin plugin = dungeon.plugin();
-        StageSettings stageSettings = dungeon.getStageSettings();
 
         if (Config.TICK_DEBUG.get()) {
             ModuleManager moduleManager = dungeon.getModuleManager();
@@ -98,22 +93,21 @@ public enum DungeonStage {
             plugin.sendDebug(
                     "Dungeon '" + dungeon.getId() + "' | " +
                             "Stage=" + this.name() + " | " +
-                            "Time=" + timer.get() + "/" + stageSettings.getTime(this) + " | " +
                             "Location=" + locationText + " | " +
+                            "Next stage in=" + dungeon.getTimer().getTimeToNextStageInSeconds() + " sec | " +
                             "Cuboid=" + hasCuboid + " | " +
                             "Modules=" + moduleManager.getModules().size() + " | " +
                             "Active Modules=" + moduleManager.getActiveModules().size()
             );
         }
 
-        if (timer.get() == stageSettings.getTime(this)) {
-            call(dungeon, Lists.next(dungeon.getStage(), stage -> stage != dungeon.getStage()), "self class");
-        } else {
-            timer.incrementAndGet();
+        if (dungeon.getTimer().getTimeToNextStageInSeconds() <= 0) {
+            DungeonStage nextStage = Lists.next(dungeon.getStage(), stage -> stage != this);
+            handleDungeonChangeStage(dungeon, nextStage, "self class");
         }
     }
 
-    public static void call(@NotNull Dungeon dungeon, @NotNull DungeonStage stage, @NotNull String from) {
+    public static void handleDungeonChangeStage(@NotNull Dungeon dungeon, @NotNull DungeonStage stage, @NotNull String from) {
         AsyncDungeonChangeStageEvent calledEvent = new AsyncDungeonChangeStageEvent(dungeon, stage, from);
         Bukkit.getPluginManager().callEvent(calledEvent);
         if (calledEvent.isCancelled()) {

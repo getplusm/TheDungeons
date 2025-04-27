@@ -14,8 +14,8 @@ import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.api.handler.hologram.HologramHandler;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.ChestBlock;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleId;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.ChestModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.ModuleId;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.modules.ChestModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.HologramSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.MainSettings;
 
@@ -58,7 +58,7 @@ public class HologramDecentHandler implements HologramHandler {
                 hologram.showAll();
                 holograms.add(Pair.of(chestBlock, hologram));
             }
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Failed to create hologram for " + module.getId() + " module", exception);
         }
         module.debug("Installed " + holograms.size() + " holograms for " + ModuleId.HOLOGRAM + " Module");
@@ -93,7 +93,7 @@ public class HologramDecentHandler implements HologramHandler {
                         messages.replaceAll(chestBlock.replacePlaceholders());
                         updateHologramLines(chestBlock, hologram, messages);
                     });
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Failed to update hologram for " + chestBlock.getDungeon().getId() + " dungeon", exception);
         }
     }

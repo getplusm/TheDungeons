@@ -1,5 +1,6 @@
 package t.me.p1azmer.plugin.dungeons.api.mob;
 
+import com.google.common.collect.Maps;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
@@ -8,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import t.me.p1azmer.engine.utils.random.Rnd;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MobList {
 
-    Map<MobFaction, Set<LivingEntity>> map = new HashMap<>();
+    Map<MobFaction, Set<LivingEntity>> map = Maps.newConcurrentMap();
 
     public boolean hasAliveEnemies() {
         return !this.getEnemies().isEmpty();
@@ -68,11 +68,11 @@ public class MobList {
     }
 
     public void removeAll(@NotNull MobFaction faction) {
-        getAll(faction).forEach(livingEntity -> {
+        getAll(faction).removeIf(livingEntity -> {
             livingEntity.remove();
             livingEntity.damage(livingEntity.getHealth() * 2);
+            return livingEntity.isDead();
         });
-        getAll(faction).clear();
     }
 
     @Nullable
@@ -93,11 +93,11 @@ public class MobList {
 
     @NotNull
     public Set<LivingEntity> getAll() {
-        return this.getMap().entrySet().stream().flatMap(e -> e.getValue().stream()).collect(Collectors.toSet());
+        return map.entrySet().stream().flatMap(e -> e.getValue().stream()).collect(Collectors.toSet());
     }
 
     @NotNull
     public Set<LivingEntity> getAll(@NotNull MobFaction faction) {
-        return this.getMap().computeIfAbsent(faction, k -> new HashSet<>());
+        return map.computeIfAbsent(faction, k -> new HashSet<>());
     }
 }

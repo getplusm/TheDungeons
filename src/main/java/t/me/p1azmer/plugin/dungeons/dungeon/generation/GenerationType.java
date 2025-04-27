@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.engine.utils.ItemUtil;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleId;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.ModuleId;
 
 import java.util.ArrayList;
 import java.util.List;

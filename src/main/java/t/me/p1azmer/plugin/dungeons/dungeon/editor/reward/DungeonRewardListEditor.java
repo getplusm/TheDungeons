@@ -44,12 +44,12 @@ public class DungeonRewardListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
             if (!cursor.getType().isAir()) {
                 String id = StringUtil.lowerCaseUnderscore(ItemUtil.getItemName(cursor));
                 int count = 0;
-                while (dungeon.getReward(count == 0 ? id : id + count).orElse(null) != null) {
+                while (dungeon.getRewards().getReward(count == 0 ? id : id + count).orElse(null) != null) {
                     count++;
                 }
                 Reward reward = new Reward(dungeon, count == 0 ? id : id + count);
                 reward.setItem(cursor);
-                dungeon.addReward(reward);
+                dungeon.getRewards().addReward(reward);
                 event.getView().setCursor(null);
                 this.save(viewer);
                 return;
@@ -57,12 +57,12 @@ public class DungeonRewardListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
 
             this.handleInput(viewer, Lang.EDITOR_REWARD_ENTER_ID, wrapper -> {
                 String id = StringUtil.lowerCaseUnderscore(wrapper.getTextRaw());
-                if (dungeon.getReward(id).isPresent()) {
+                if (dungeon.getRewards().getReward(id).isPresent()) {
                     EditorManager.error(viewer.getPlayer(), plugin.getMessage(Lang.EDITOR_REWARD_ERROR_CREATE_EXIST).getLocalized());
                     return false;
                 }
                 Reward reward = new Reward(dungeon, id);
-                dungeon.addReward(reward);
+                dungeon.getRewards().addReward(reward);
                 return true;
             });
         });
@@ -77,7 +77,7 @@ public class DungeonRewardListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
             } else if (type == t.me.p1azmer.engine.api.menu.click.ClickType.NUMBER_3) {
                 comparator = Comparator.comparing(r -> ItemUtil.getItemName(r.getItem()));
             } else return;
-            dungeon.setRewards(dungeon.getRewards().stream().sorted(comparator).toList());
+            dungeon.getRewards().setRewards(dungeon.getRewardCollection().stream().sorted(comparator).toList());
             this.save(viewer);
         });
 
@@ -113,7 +113,7 @@ public class DungeonRewardListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
     @Override
     @NotNull
     public List<Reward> getObjects(@NotNull Player player) {
-        return new ArrayList<>(this.object.getRewards());
+        return new ArrayList<>(this.object.getRewardCollection());
     }
 
     @Override
@@ -134,14 +134,14 @@ public class DungeonRewardListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
         return (viewer, event) -> {
             Player player = viewer.getPlayer();
             if (event.getClick() == ClickType.DROP) {
-                this.object.removeReward(reward);
+                this.object.getRewards().removeReward(reward);
                 this.save(viewer);
                 return;
             }
 
             if (event.isShiftClick()) {
                 // Reward position move.
-                List<Reward> all = new ArrayList<>(this.object.getRewards());
+                List<Reward> all = new ArrayList<>(this.object.getRewardCollection());
                 int index = all.indexOf(reward);
                 int allSize = all.size();
 
@@ -156,7 +156,7 @@ public class DungeonRewardListEditor extends EditorMenu<DungeonPlugin, Dungeon> 
                     all.remove(index);
                     all.add(index - 1, reward);
                 }
-                this.object.setRewards(all);
+                this.object.getRewards().setRewards(all);
                 this.save(viewer);
                 return;
             }

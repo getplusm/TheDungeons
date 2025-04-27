@@ -1,4 +1,4 @@
-package t.me.p1azmer.plugin.dungeons.dungeon.modules.impl;
+package t.me.p1azmer.plugin.dungeons.dungeon.module.modules;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -7,7 +7,7 @@ import t.me.p1azmer.engine.api.lang.LangMessage;
 import t.me.p1azmer.plugin.dungeons.announce.impl.Announce;
 import t.me.p1azmer.plugin.dungeons.dungeon.Placeholders;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.AnnounceSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 
@@ -40,8 +40,7 @@ public class AnnounceModule extends AbstractModule {
         Location location = this.getDungeon().getLocation().orElse(null);
         AnnounceSettings announceSettings = this.getDungeon().getAnnounceSettings();
         DungeonStage dungeonStage = this.getDungeon().getStage();
-        int time = this.getDungeon().getSelfTick().get();
-        Set<Announce> announces = announceSettings.getAnnounces(dungeonStage, time);
+        Set<Announce> announces = announceSettings.getAnnounces(dungeonStage, getDungeon().getTimer().getTimeToNextStageInSeconds());
 
         for (Announce announce : announces) {
             LangMessage langMessage = announce.getMessageWithoutPrefix()

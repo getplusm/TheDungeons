@@ -1,4 +1,4 @@
-package t.me.p1azmer.plugin.dungeons.dungeon.modules.impl;
+package t.me.p1azmer.plugin.dungeons.dungeon.module.modules;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnmodifiableView;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 import t.me.p1azmer.plugin.dungeons.Keys;
 import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
@@ -16,7 +17,7 @@ import t.me.p1azmer.plugin.dungeons.dungeon.chest.ChestBlock;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.ChestMenu;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.type.ChestState;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.reward.Reward;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.ChestSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
@@ -92,12 +93,12 @@ public class ChestModule extends AbstractModule {
             return false;
         }
 
-        val rewards = getDungeon().getRewards().stream().collect(Collectors.toConcurrentMap(reward -> reward, Reward::getChance));
+        val rewards = getDungeon().getRewardCollection().stream().collect(Collectors.toConcurrentMap(reward -> reward, Reward::getChance));
         for (Block block : this.blocks) this.setupMenu(block, rewards);
 
         RegionHandler regionHandler = plugin().getRegionHandler();
         if (regionHandler != null) {
-            regionHandler.create(getDungeon());
+            regionHandler.createOrThrow(getDungeon());
         }
         return true;
     }
@@ -153,8 +154,13 @@ public class ChestModule extends AbstractModule {
     }
 
     @NotNull
-    public Collection<ChestBlock> getChests() {
+    public @UnmodifiableView Collection<ChestBlock> getChests() {
         return this.getChestMap().values();
+    }
+
+    @NotNull
+    public List<ChestBlock> getChestList() {
+        return new ArrayList<>(getChests());
     }
 
     @NotNull

@@ -105,7 +105,7 @@ public class Lang extends EngineLang {
             GRAY + "Enter " + GREEN + "[Not Access Message (Kyori miniMessage)]");
     public static final LangKey EDITOR_DUNGEON_ENTER_HOLOGRAM_TEXT = LangKey.of("Editor.Dungeon.Enter.Hologram.Text",
             GRAY + "Enter " + GREEN + "[Text]");
-    public static final LangKey EDITOR_DUNGEON_ENTER_HOLOGRAM_OFFSET = LangKey.of("Editor.Crate.Enter.Hologram.Offset",
+    public static final LangKey EDITOR_DUNGEON_ENTER_HOLOGRAM_OFFSET = LangKey.of("Editor.Dungeon.Enter.Hologram.Offset",
             GRAY + "Enter " + GREEN + "[Offset Value]");
 
     public static final LangKey EDITOR_DUNGEON_ENTER_ID = LangKey.of("Editor.Dungeon.Enter.Id",

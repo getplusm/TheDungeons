@@ -70,13 +70,13 @@ public class AnnounceSettings extends AbstractSettings {
     }
 
     @NotNull
-    public Set<Announce> getAnnounces(@NotNull DungeonStage dungeonStage, int time) {
+    public Set<Announce> getAnnounces(@NotNull DungeonStage dungeonStage, long timeToNextStage) {
         return announceMap.entrySet().stream()
                 .filter(entry -> {
                     DungeonStage stage = entry.getKey();
                     Map<Announce, int[]> announceMap = entry.getValue();
                     return dungeonStage.equals(stage) && announceMap.entrySet().stream().anyMatch(f -> {
-                        return Arrays.stream(f.getValue()).anyMatch(i -> i == time);
+                        return Arrays.stream(f.getValue()).anyMatch(i -> i == timeToNextStage);
                     });
                 })
                 .flatMap(founder -> founder.getValue().keySet().stream())

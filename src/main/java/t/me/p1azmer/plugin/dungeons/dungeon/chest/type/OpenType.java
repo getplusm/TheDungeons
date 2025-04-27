@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.ChestBlock;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.impl.MobModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.modules.MobModule;
 
 import java.util.Map;
 import java.util.function.BiConsumer;

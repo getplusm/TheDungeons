@@ -4,8 +4,8 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleManager;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.AbstractModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.ModuleManager;
 import t.me.p1azmer.plugin.dungeons.mob.MobManager;
 
 import java.util.Optional;

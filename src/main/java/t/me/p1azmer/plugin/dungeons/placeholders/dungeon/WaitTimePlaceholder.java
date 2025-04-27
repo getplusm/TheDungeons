@@ -25,7 +25,7 @@ public class WaitTimePlaceholder extends AbstractPlaceholder<DungeonPlugin> {
         Dungeon dungeon = plugin.getDungeonManager().getDungeonById(dungeonId);
         if (dungeon == null) return "";
         if (dungeon.getStage().isWaitingPlayers())
-            return NumberUtil.format(dungeon.getStageSettings().getTime(DungeonStage.WAITING_PLAYERS) - dungeon.getNextStageTime());
+            return NumberUtil.format(dungeon.getStageSettings().getTime(DungeonStage.WAITING_PLAYERS) - dungeon.getTimer().getTimeToNextStageInSeconds());
         return "";
     }
 

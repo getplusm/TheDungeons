@@ -1,4 +1,4 @@
-package t.me.p1azmer.plugin.dungeons.dungeon.modules;
+package t.me.p1azmer.plugin.dungeons.dungeon.module;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -49,7 +49,7 @@ public abstract class AbstractModule implements Placeholder {
         this.name = StringUtil.capitalizeUnderscored(id);
         this.updatable = updatable;
         this.importantly = importantly;
-        this.dungeonManager = dungeon.getManager();
+        this.dungeonManager = dungeon.getDungeonManager();
         this.manager = dungeon.getModuleManager();
         this.settings = dungeon.getModuleSettings();
         this.cfg = getDungeon().getConfig();
@@ -71,7 +71,7 @@ public abstract class AbstractModule implements Placeholder {
         try {
             this.tryDeactivate(ActionType.FORCE);
             this.onShutdown();
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while shutdown '" + getId() + "' module", exception);
         }
     }
@@ -104,20 +104,24 @@ public abstract class AbstractModule implements Placeholder {
                 }
                 case SHUTDOWN -> false;
             };
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while activate '" + getId() + "' module", exception);
             return false;
         }
     }
 
     public boolean tryDeactivate(@NotNull AbstractModule.ActionType actionType) {
-        if (!this.isActivated()) return true;
+        if (!this.isActivated()){
+            return true;
+        }
 
         GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
         GenerationType generationType = generationSettings.getGenerationType();
         List<String> moduleWhitelist = generationType.getModuleWhitelist();
 
-        if (generationType.isStatic() && moduleWhitelist.contains(this.getId())) return false;
+        if (generationType.isStatic() && moduleWhitelist.contains(this.getId())){
+            return false;
+        }
 
         try {
             return switch (actionType) {
@@ -127,12 +131,13 @@ public abstract class AbstractModule implements Placeholder {
                     yield true;
                 }
                 case NATURAL -> {
-                    this.activated = !this.onDeactivate(false);
+                    boolean b = this.onDeactivate(false);
+                    this.activated = !b;
                     yield !activated;
                 }
                 case SHUTDOWN -> true;
             };
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while deactivate '" + getId() + "' module", exception);
             return false;
         }
@@ -145,7 +150,7 @@ public abstract class AbstractModule implements Placeholder {
         try {
             if (canActivate && !isActivated()) {
                 boolean result = this.tryActive(this.getActionType());
-                if (!result && isImportantly()) this.getDungeon().cancel(false);
+                if (!result && isImportantly()) this.getDungeon().getTimer().cancel(false);
             } else {
                 DungeonStage stage = this.getDungeon().getStage();
                 boolean cancelled = stage.isDeleting() || stage.isCancelled();
@@ -153,7 +158,7 @@ public abstract class AbstractModule implements Placeholder {
 
                 if (deactivate) tryDeactivate(this.getActionType());
             }
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while update '" + getId() + "' module", exception);
         }
     }

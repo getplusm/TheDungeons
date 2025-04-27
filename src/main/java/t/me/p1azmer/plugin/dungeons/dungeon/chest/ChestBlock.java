@@ -96,7 +96,7 @@ public class ChestBlock implements ICleanable, Placeholder {
 
         Key key = keyManager.getKeys(player, dungeon).stream().findFirst().orElse(null);
 
-        boolean allowed = !isOpenFor(player) && !dungeon.getKeyIds().isEmpty();
+        boolean allowed = !isOpenFor(player) && !dungeon.getKeys().getKeyIds().isEmpty();
         if (allowed) {
             if (key == null) {
                 plugin.getMessage(Lang.DUNGEON_OPEN_ERROR_NO_KEY)

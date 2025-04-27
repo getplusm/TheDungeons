@@ -21,7 +21,7 @@ import t.me.p1azmer.plugin.dungeons.announce.editor.AnnounceMainEditor;
 
 @Getter
 @Setter
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE) // TODO rewrite dungeon atomic to instant for correct announce
 public class Announce extends AbstractConfigHolder<DungeonPlugin> implements Placeholder {
     static final ItemStack defaultIcon = ItemUtil.getSkinHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2I0MTk5NmZkMjBjYTIxZDc5YWRmYzBlMTIwNTdiMmYyY2VhZGY3YjNjZjViYjVmOGE5MmZlMzQ2MDE2MWFjZCJ9fX0=");
     ItemStack icon;

@@ -46,7 +46,7 @@ public class DeleteCommand extends AbstractCommand<DungeonPlugin> {
             DungeonManager dungeonManager = plugin.getDungeonManager();
             if (result.getArg(1).equalsIgnoreCase(Constants.MASK_ANY)) {
                 dungeonManager.getDungeons()
-                        .forEach(f -> f.cancel(false));
+                        .forEach(f -> f.getTimer().cancel(false));
                 plugin.getMessage(Lang.COMMAND_DEL_DONE)
                         .replace(Placeholders.DUNGEON_NAME, Constants.MASK_ANY)
                         .send(sender);
@@ -59,7 +59,7 @@ public class DeleteCommand extends AbstractCommand<DungeonPlugin> {
                         .send(sender);
                 return;
             }
-            dungeon.cancel(false);
+            dungeon.getTimer().cancel(false);
             plugin.getMessage(Lang.COMMAND_DEL_DONE)
                     .replace(dungeon.replacePlaceholders())
                     .send(sender);

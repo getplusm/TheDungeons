@@ -176,7 +176,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             .click(LMB, "Navigate")
             .build();
     public static final EditorLocale MODULE_OBJECT = builder(PREFIX + "Dungeon.Module.Object")
-            .name(LIGHT_PURPLE + t.me.p1azmer.plugin.dungeons.dungeon.modules.Placeholders.MODULE_ID)
+            .name(LIGHT_PURPLE + t.me.p1azmer.plugin.dungeons.dungeon.module.Placeholders.MODULE_ID)
             .text(
                     "Sets whether this module is enabled/disabled",
                     "",
@@ -186,7 +186,7 @@ public class EditorLocales extends t.me.p1azmer.engine.api.editor.EditorLocales 
             )
             .emptyLine()
             .currentHeader()
-            .current("Enabled", t.me.p1azmer.plugin.dungeons.dungeon.modules.Placeholders.EDITOR_MODULE_ENABLED + GRAY + " (" + WHITE + LMB + GRAY + ")")
+            .current("Enabled", t.me.p1azmer.plugin.dungeons.dungeon.module.Placeholders.EDITOR_MODULE_ENABLED + GRAY + " (" + WHITE + LMB + GRAY + ")")
             .build();
     // commands
     public static final EditorLocale COMMANDS_SETTINGS = builder(PREFIX + "Dungeon.Modules.Commands.Settings")

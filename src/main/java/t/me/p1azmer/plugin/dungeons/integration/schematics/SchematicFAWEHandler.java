@@ -120,7 +120,7 @@ public class SchematicFAWEHandler implements SchematicHandler {
             selector.learnChanges();
             selector.explainRegionAdjust(sessionConsole, session);
 
-            this.extracted(dungeon, location, editSession);
+            extracted(dungeon, location, editSession);
             return true;
         } catch (WorldEditException e) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Got exception when paste the schematic at '" + dungeon.getId() + "' dungeon!", e);
@@ -155,11 +155,10 @@ public class SchematicFAWEHandler implements SchematicHandler {
         try (EditSession newEditSession = sessionBuilder.blockBag(blockBag).actor(actor).world(editSession.getWorld()).build()) {
             editSession.undo(newEditSession);
 
-
             worldEdit.flushBlockBag(actor, editSession);
             placedMap.remove(dungeon, location);
             return true;
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Got exception when undo the schematic at '" + dungeon.getId() + "' dungeon!", exception);
             return false;
         }

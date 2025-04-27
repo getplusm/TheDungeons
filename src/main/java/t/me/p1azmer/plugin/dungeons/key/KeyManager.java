@@ -108,7 +108,7 @@ public class KeyManager extends AbstractManager<DungeonPlugin> {
 
     @NotNull
     public Set<Key> getKeys(@NotNull Dungeon dungeon) {
-        return dungeon.getKeyIds().stream().map(this::getKeyById).filter(Objects::nonNull).collect(Collectors.toSet());
+        return dungeon.getKeys().getKeyIds().stream().map(this::getKeyById).filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     @NotNull
@@ -121,8 +121,8 @@ public class KeyManager extends AbstractManager<DungeonPlugin> {
         for (ItemStack item : player.getInventory().getContents()) {
             if (item == null || item.getType().isAir()) continue;
 
-            Key crateKey2 = this.getKeyByItem(item);
-            if (crateKey2 != null && crateKey2.equals(keyId)) {
+            Key dungeonKey2 = this.getKeyByItem(item);
+            if (dungeonKey2 != null && dungeonKey2.equals(keyId)) {
                 return item;
             }
         }

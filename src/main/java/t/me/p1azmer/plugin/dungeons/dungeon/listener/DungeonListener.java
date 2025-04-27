@@ -28,7 +28,6 @@ import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.GenerationSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.MainSettings;
@@ -37,7 +36,6 @@ import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 import t.me.p1azmer.plugin.dungeons.lang.Lang;
 import t.me.p1azmer.plugin.dungeons.utils.Cuboid;
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -142,27 +140,20 @@ public class DungeonListener extends AbstractListener<DungeonPlugin> {
         GenerationType generationType = generationSettings.getGenerationType();
 
         if (stage.isDeleting() || stage.isCancelled()) {
-            Collection<AbstractModule> modules = dungeon.getModuleManager().getModules();
-            boolean anyModuleFailed = modules.stream()
-                    .filter(module -> !generationType.isDynamic() && generationSettings.getSpawnLocation().isPresent() && !module.isImportantly())
-                    .anyMatch(module -> !module.tryDeactivate(AbstractModule.ActionType.NATURAL));
-
-            if (anyModuleFailed) {
-                dungeon.cancel(false);
-                return;
-            }
+            dungeon.getTimer().cancel(false);
         }
 
         if (Config.OTHER_DEBUG.get()) {
             plugin.sendDebug("Call the dungeon '" + dungeon.getId() + "' from " + from + ". Change stage to " + stage.name() + " from " + dungeon.getStage().name());
         }
         dungeon.setStage(stage);
-        dungeon.setSelfTick(0);
+        dungeon.getTimer().updateInstant(stage);
     }
 
     private static void handleAccessDenied(@NotNull Player player, @Nullable String message) {
         Location eyeLocation = player.getEyeLocation();
         Vector direction = eyeLocation.getDirection();
+
         player.setVelocity(direction.setY(-0.4D).multiply(-0.45D));
         if (message != null && messageCache.add(player)) {
             player.sendMessage(MiniMessage.miniMessage().deserialize(message));

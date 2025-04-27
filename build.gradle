@@ -4,8 +4,7 @@ plugins {
 }
 
 group = 'com.github.getplusm'
-description = 'TheDungeons'
-version = '4.0.8'
+version = '4.0.9'
 
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
@@ -105,17 +104,17 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
-shadowJar {
-    archiveClassifier.set(null)
-    configurations = [project.configurations.runtimeClasspath, project.configurations.shadow]
-    archiveFileName.set(project.description + '-' + project.version + '.jar')
-}
-
 processResources {
-    def props = [version: version]
+    def props = [version: project.version]
     inputs.properties props
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {
         expand props
     }
+}
+
+shadowJar {
+    archiveClassifier.set(null)
+    configurations = [project.configurations.runtimeClasspath, project.configurations.shadow]
+    archiveFileName.set(rootProject.name + '-' + project.version + '.jar')
 }

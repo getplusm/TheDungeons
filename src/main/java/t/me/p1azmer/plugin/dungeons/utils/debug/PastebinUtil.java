@@ -50,7 +50,7 @@ public class PastebinUtil {
                                 .stream()
                                 .map(module -> "|> " + module.getName() + ": " + (dungeon.getModuleSettings().isEnabled(module) ? "Enabled" : "Disabled"))
                                 .collect(Collectors.joining("\n")),
-                        "Rewards:\n" + dungeon.getRewards()
+                        "Rewards:\n" + dungeon.getRewardCollection()
                                 .stream()
                                 .map(reward -> "|> " + reward.getId() + " (" + reward.getItem().getType().name() + "). Encode Status: " + (ItemNbt.compress(reward.getItem()) == null ? "Not Encoded" : "Encoded"))
                                 .collect(Collectors.joining("\n"))

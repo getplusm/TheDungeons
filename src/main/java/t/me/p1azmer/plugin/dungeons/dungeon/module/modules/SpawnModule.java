@@ -1,4 +1,4 @@
-package t.me.p1azmer.plugin.dungeons.dungeon.modules.impl;
+package t.me.p1azmer.plugin.dungeons.dungeon.module.modules;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -7,19 +7,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
-import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonSpawnEvent;
 import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonDespawnEvent;
+import t.me.p1azmer.plugin.dungeons.api.events.AsyncDungeonSpawnEvent;
 import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
 import t.me.p1azmer.plugin.dungeons.dungeon.impl.Dungeon;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.AbstractModule;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.GenerationSettings;
 import t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage;
 import t.me.p1azmer.plugin.dungeons.generator.LocationGenerator;
 
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.logging.Level;
 
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -37,12 +35,8 @@ public class SpawnModule extends AbstractModule {
         this.spawned = false;
         return aBoolean -> {
             DungeonStage stage = getDungeon().getStage();
-            GenerationSettings generationSettings = this.getDungeon().getGenerationSettings();
-            GenerationType generationType = generationSettings.getGenerationType();
-            Optional<Location> spawnLocation = generationSettings.getSpawnLocation();
-            boolean allowedWithGeneration = !generationType.isDynamic() && spawnLocation.isPresent();
 
-            return stage.isCheck() && !isSpawned() || allowedWithGeneration;
+            return stage.isCheck() && !isSpawned();
         };
     }
 
@@ -74,19 +68,15 @@ public class SpawnModule extends AbstractModule {
             return false;
         }
 
-        try {
-            World world = getDungeon().getWorld();
-            boolean underground = getDungeon().getSchematicSettings().isUnderground();
+        World world = getDungeon().getWorld();
+        boolean underground = getDungeon().getSchematicSettings().isUnderground();
 
-            Location location;
-            if (underground) location = locationGenerator.getRandomUndergroundLocation(world);
-            else location = locationGenerator.getRandomHighLocation(world);
+        Location location;
+        if (underground) location = locationGenerator.getRandomUndergroundLocation(world);
+        else location = locationGenerator.getRandomHighLocation(world);
 
-            return spawn(location);
-        } catch (RuntimeException exception) {
-            DungeonPlugin.getLog().log(Level.SEVERE, "Got an exception while trying to spawn the '" + getId() + "' module", exception);
-            return false;
-        }
+        if (location == null) return false;
+        return spawn(location);
     }
 
     @Override

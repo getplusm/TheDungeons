@@ -61,13 +61,13 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
                 EditorLocales.DUNGEON_KEYS, 5).setClick((viewer, event) -> {
             if (event.isLeftClick()) {
                 this.handleInput(viewer, Lang.EDITOR_DUNGEON_ENTER_KEY_ID, wrapper -> {
-                    dungeon.getKeyIds().add(wrapper.getTextRaw());
+                    dungeon.getKeys().getKeyIds().add(wrapper.getTextRaw());
                     dungeon.save();
                     return true;
                 });
                 EditorManager.suggestValues(viewer.getPlayer(), plugin.getKeyManager().getKeyIds(), false);
             } else if (event.isRightClick()) {
-                dungeon.getKeyIds().clear();
+                dungeon.getKeys().getKeyIds().clear();
                 this.save(viewer);
             }
         });
@@ -131,7 +131,7 @@ public class DungeonMainEditor extends EditorMenu<DungeonPlugin, Dungeon> implem
         this.addItem(Material.SOUL_TORCH, EditorLocales.DUNGEON_REBOOT, 45).setClick((viewer, event) -> {
             if (event.isShiftClick() && event.isRightClick()) {
                 if (this.rebootCache.add(dungeon)) {
-                    dungeon.reboot();
+                    dungeon.getTimer().reboot();
                     viewer.getPlayer().sendMessage(Colorizer.apply("&aReboot the '" + dungeon.getId() + "' dungeon!"));
                 } else {
                     viewer.getPlayer().sendMessage(Colorizer.apply("&cYou can't restart the dungeon so often! Please wait one minute for reboot!"));

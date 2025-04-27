@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import lombok.val;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -21,7 +22,6 @@ import t.me.p1azmer.engine.utils.placeholder.Placeholder;
 import t.me.p1azmer.engine.utils.placeholder.PlaceholderMap;
 import t.me.p1azmer.engine.utils.wrapper.UniInt;
 import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
-import t.me.p1azmer.plugin.dungeons.api.handler.region.RegionHandler;
 import t.me.p1azmer.plugin.dungeons.config.Config;
 import t.me.p1azmer.plugin.dungeons.dungeon.DungeonManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.Placeholders;
@@ -29,9 +29,12 @@ import t.me.p1azmer.plugin.dungeons.dungeon.chest.type.ChestState;
 import t.me.p1azmer.plugin.dungeons.dungeon.chest.type.OpenType;
 import t.me.p1azmer.plugin.dungeons.dungeon.editor.DungeonMainEditor;
 import t.me.p1azmer.plugin.dungeons.dungeon.generation.GenerationType;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.AbstractModule;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleId;
-import t.me.p1azmer.plugin.dungeons.dungeon.modules.ModuleManager;
+import t.me.p1azmer.plugin.dungeons.dungeon.models.Keys;
+import t.me.p1azmer.plugin.dungeons.dungeon.models.Rewards;
+import t.me.p1azmer.plugin.dungeons.dungeon.models.Timer;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.AbstractModule;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.ModuleId;
+import t.me.p1azmer.plugin.dungeons.dungeon.module.ModuleManager;
 import t.me.p1azmer.plugin.dungeons.dungeon.region.Region;
 import t.me.p1azmer.plugin.dungeons.dungeon.reward.Reward;
 import t.me.p1azmer.plugin.dungeons.dungeon.settings.impl.*;
@@ -44,11 +47,6 @@ import t.me.p1azmer.plugin.dungeons.scheduler.ThreadSync;
 import t.me.p1azmer.plugin.dungeons.utils.Cuboid;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -59,8 +57,16 @@ import static t.me.p1azmer.plugin.dungeons.dungeon.stage.DungeonStage.*;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICleanable, Placeholder {
 
+    final DungeonManager dungeonManager;
+    final PlaceholderMap placeholderMap;
+    final LocationGenerator locationGenerator;
+    final ThreadSync threadSync;
+
+    World world;
     String name;
     Region region;
+    Cuboid cuboid;
+    Location location;
 
     MainSettings settings;
     MobsSettings mobsSettings;
@@ -77,68 +83,58 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     SchematicSettings schematicSettings;
     GenerationSettings generationSettings;
 
-    Set<String> keyIds;
-    Map<String, Reward> rewardsMap;
-
-    World world;
-    Cuboid cuboid;
-    Location location;
-
-    ModuleManager moduleManager;
-    final DungeonManager manager;
-    final PlaceholderMap placeholderMap;
-    final LocationGenerator locationGenerator;
-    final ThreadSync threadSync;
-
-    // ----------------------------------- cache ----------------------------------------------
-    AtomicInteger selfTick;
-    DungeonMainEditor editor;
+    Keys keys;
+    Timer timer;
+    Rewards rewards;
     DungeonStage stage;
-    // ----------------------------------------------------------------------------------------
+    DungeonMainEditor editor;
+    ModuleManager moduleManager;
 
-    public Dungeon(@NotNull DungeonManager manager, @NotNull JYML cfg,
+    public Dungeon(@NotNull DungeonManager dungeonManager, @NotNull JYML cfg,
                    @NotNull LocationGenerator locationGenerator, @NotNull ThreadSync threadSync) {
-        super(manager.plugin(), cfg);
-        this.manager = manager;
+        super(dungeonManager.plugin(), cfg);
+
+        this.dungeonManager = dungeonManager;
         this.locationGenerator = locationGenerator;
         this.threadSync = threadSync;
 
+        setTimer(new Timer(this));
+        setStage(FREEZE);
+        setStageSettings(new StageSettings(this, new HashMap<>()));
+        getTimer().updateInstant(getStage());
+        setRewards(new Rewards());
+        setKeys(new Keys());
+        setModuleManager(new ModuleManager(this, locationGenerator));
         handleRegisterRegion();
         handleRegisterSettings();
 
-        this.setStage(FREEZE);
-        this.setModuleManager(new ModuleManager(this, locationGenerator));
-        this.setKeyIds(new HashSet<>());
-        this.setRewardsMap(new ConcurrentHashMap<>());
-
-        this.selfTick = new AtomicInteger();
         this.placeholderMap = generatePlaceholderMap();
     }
 
     @Override
     public boolean load() {
         try {
-            this.selfTick = new AtomicInteger();
-            this.setSettings(MainSettings.read(this, cfg, "Settings"));
+            setSettings(MainSettings.read(this, cfg, "Settings"));
             setAccessSettings(AccessSettings.read(this, cfg, "Settings.Access"));
-            this.setMobsSettings(MobsSettings.read(this, cfg, "Mobs"));
-            this.setPartySettings(PartySettings.read(this, cfg, "Party"));
-            this.setGenerationSettings(GenerationSettings.read(this, cfg, "Settings.Generation"));
-            this.setModuleSettings(ModuleSettings.read(this, cfg, "Settings.Modules"));
-            this.setStageSettings(StageSettings.read(this, cfg, "Settings.Stages"));
-            this.setChestSettings(ChestSettings.read(this, cfg, "Settings.Chest"));
-            this.setEffectSettings(EffectSettings.read(this, cfg, "Effects"));
-            this.setAnnounceSettings(AnnounceSettings.read(this, cfg, "Settings.Announces"));
-            this.setSchematicSettings(SchematicSettings.read(this, cfg, "Settings.Schematics"));
-            this.setCommandsSettings(CommandsSettings.read(this, cfg, "Settings.Commands"));
-            this.setRewardSettings(RewardSettings.read(this, cfg, "Settings.Reward"));
+            setMobsSettings(MobsSettings.read(this, cfg, "Mobs"));
+            setPartySettings(PartySettings.read(this, cfg, "Party"));
+            setGenerationSettings(GenerationSettings.read(this, cfg, "Settings.Generation"));
+            setModuleSettings(ModuleSettings.read(this, cfg, "Settings.Modules"));
+            setStageSettings(StageSettings.read(this, cfg, "Settings.Stages"));
+            setChestSettings(ChestSettings.read(this, cfg, "Settings.Chest"));
+            setEffectSettings(EffectSettings.read(this, cfg, "Effects"));
+            setAnnounceSettings(AnnounceSettings.read(this, cfg, "Settings.Announces"));
+            setSchematicSettings(SchematicSettings.read(this, cfg, "Settings.Schematics"));
+            setCommandsSettings(CommandsSettings.read(this, cfg, "Settings.Commands"));
+            setRewardSettings(RewardSettings.read(this, cfg, "Settings.Reward"));
+
+            setTimer(new Timer(this));
 
             String worldName = this.cfg.getString("World", "world");
-            this.world = plugin.getServer().getWorld(worldName);
-            if (this.world == null) {
-                plugin.error("World '" + worldName + "' not found in server!");
-                return false;
-            }
+            World world = Optional.ofNullable(Bukkit.getWorld(worldName)).orElseThrow(() -> {
+                return new IllegalStateException("World '" + worldName + "' not found!");
+            });
+            setWorld(world);
 
             RangeInfo rangeInfo = GeneratorConfig.LOCATION_SEARCH_RANGES.get().get(this.getWorld().getName());
             if (rangeInfo == null) {
@@ -146,7 +142,7 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
                 return false;
             }
 
-            this.setKeyIds(cfg.getStringSet("Key.Ids"));
+            getKeys().setKeyIds(cfg.getStringSet("Key.Ids"));
             this.setName(cfg.getString("Name", getId()));
 
             for (String rewId : cfg.getSection("Rewards.List")) {
@@ -175,14 +171,14 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
                 List<String> commands = cfg.getStringList(path + ".Commands");
 
                 Reward reward = new Reward(this, rewId, rewChance, amount, item, commands);
-                this.rewardsMap.put(rewId, reward);
+                getRewards().addReward(rewId, reward);
             }
 
             this.setRegion(Region.read(this, cfg, "Settings.Region"));
             this.setHologramSettings(HologramSettings.read(this, cfg, "Hologram.Chest"));
 
             if (this.getRegion().isEnabled() && plugin.getRegionHandler() == null) {
-                this.plugin().error("Warning! Dungeon '" + getId() + "' wants to use the region system, but the Region handler is not installed!");
+                this.plugin().error("Warning! The dungeon '" + getId() + "' wants to use the regional system, but the region handler is not installed!");
             }
             this.moduleManager = new ModuleManager(this, locationGenerator);
 
@@ -196,13 +192,13 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
                         .getSpawnLocation()
                         .orElse(null);
                 if (spawnLocation == null) {
-                    this.plugin().error("It is impossible to load the dungeon '" + this.getId() + "', since the spawn location is not set, and the generation type is " + generationType.name());
+                    this.plugin().error("It is impossible to load the dungeon " + this.getId() + ", since the spawn location has not been set, and the type of generation is " + generationType.name());
                     return false;
                 }
                 this.setLocation(spawnLocation);
             }
             return true;
-        }catch (RuntimeException exception){
+        } catch (Exception exception) {
             DungeonPlugin.getLog().log(Level.SEVERE, "Dungeon '" + this.getId() + "' could not be loaded", exception);
             return false;
         }
@@ -212,24 +208,24 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
     public void onSave() {
         cfg.set("Name", getName());
 
-        this.getRegion().write(cfg, "Settings.Region");
-        this.getSettings().write(cfg, "");
-        this.getMobsSettings().write(cfg, "Mobs");
+        getRegion().write(cfg, "Settings.Region");
+        getSettings().write(cfg, "Settings");
+        getMobsSettings().write(cfg, "Mobs");
         getAccessSettings().write(cfg, "Settings.Access");
-        this.getHologramSettings().write(cfg, "Hologram.Chest");
-        this.getPartySettings().write(cfg, "Party");
-        this.getModuleSettings().write(cfg, "Settings.Modules");
-        this.getStageSettings().write(cfg, "Settings.Stages");
-        this.getChestSettings().write(cfg, "Settings.Chest");
-        this.getEffectSettings().write(cfg, "Effects");
-        this.getAnnounceSettings().write(cfg, "Settings.Announces");
-        this.getSchematicSettings().write(cfg, "Settings.Schematics");
-        this.getCommandsSettings().write(cfg, "Settings.Commands");
-        this.getRewardSettings().write(cfg, "Settings.Reward");
-        this.getGenerationSettings().write(cfg, "Settings.Generation");
+        getHologramSettings().write(cfg, "Hologram.Chest");
+        getPartySettings().write(cfg, "Party");
+        getModuleSettings().write(cfg, "Settings.Modules");
+        getStageSettings().write(cfg, "Settings.Stages");
+        getChestSettings().write(cfg, "Settings.Chest");
+        getEffectSettings().write(cfg, "Effects");
+        getAnnounceSettings().write(cfg, "Settings.Announces");
+        getSchematicSettings().write(cfg, "Settings.Schematics");
+        getCommandsSettings().write(cfg, "Settings.Commands");
+        getRewardSettings().write(cfg, "Settings.Reward");
+        getGenerationSettings().write(cfg, "Settings.Generation");
 
         cfg.set("Rewards.List", null);
-        for (Map.Entry<String, Reward> e : this.getRewardsMap().entrySet()) {
+        for (Map.Entry<String, Reward> e : getRewards().getRewardsMap().entrySet()) {
             Reward reward = e.getValue();
             String path = "Rewards.List." + e.getKey() + ".";
             cfg.setItemEncoded(path + "Item", reward.getItem());
@@ -237,14 +233,14 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
             reward.getAmount().write(cfg, path + "Amount");
         }
 
-        cfg.set("World", this.getWorld().getName());
-        cfg.set("Key.Ids", this.getKeyIds());
+        cfg.set("World", getWorld().getName());
+        cfg.set("Key.Ids", getKeys().getKeyIds());
         cfg.saveChanges();
     }
 
     @Override
     public void clear() {
-        this.cancel(true);
+        getTimer().cancel(true);
         this.getModuleManager()
                 .getModules()
                 .forEach(AbstractModule::shutdown);
@@ -252,14 +248,6 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
             this.editor.clear();
             this.editor = null;
         }
-        if (this.rewardsMap != null) {
-            this.rewardsMap
-                    .values()
-                    .forEach(Reward::clear);
-            this.rewardsMap.clear();
-            this.rewardsMap = null;
-        }
-        this.selfTick.set(0);
     }
 
     @NotNull
@@ -278,17 +266,8 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         return Optional.ofNullable(cuboid);
     }
 
-    public Optional<Reward> getReward(@NotNull String id) {
-        return Optional.ofNullable(this.getRewardsMap().get(id.toLowerCase()));
-    }
-
-    public @NotNull Collection<Reward> getRewards() {
-        return this.getRewardsMap().values();
-    }
-
-    public int getNextStageTime() {
-        StageSettings settings = this.getStageSettings();
-        return settings.getTime(this.getStage()) - this.getSelfTick().get();
+    public @NotNull Collection<Reward> getRewardCollection() {
+        return getRewards().getRewardsMap().values();
     }
 
     @Override
@@ -296,85 +275,19 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
         return placeholderMap;
     }
 
-    public void setKeyIds(@NotNull Set<String> keyIds) {
-        this.keyIds = keyIds.stream()
-                .filter(Predicate.not(String::isEmpty))
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
-    }
-
-    public void setSelfTick(int tick) {
-        this.selfTick.set(tick);
-    }
-
-    public void setRewards(@NotNull List<Reward> rewards) {
-        this.setRewardsMap(
-                rewards.stream()
-                        .collect(Collectors.toMap(Reward::getId, Function.identity(), (has, add) -> add, LinkedHashMap::new))
-        );
-    }
-
-    public void addReward(@NotNull Reward Reward) {
-        this.getRewardsMap().put(Reward.getId(), Reward);
-    }
-
-    public void removeReward(@NotNull Reward Reward) {
-        this.removeReward(Reward.getId());
-    }
-
-    public void removeReward(@NotNull String id) {
-        this.getRewardsMap().remove(id);
-    }
-
-    public void reboot() {
-        this.plugin().warn("Starting the reboot '" + this.getId() + "' dungeon!");
-
-        CompletableFuture.runAsync(() -> {
-            DungeonStage.call(this, REBOOTED, "Reboot from gui");
-            DungeonStage.call(this, CANCELLED, "Reboot start");
-        });
-    }
-
-    public void cancel(boolean shutdown) {
-        if (!shutdown) DungeonStage.call(this, FREEZE, "cancelled and refresh");
-
-        RegionHandler regionHandler = this.plugin().getRegionHandler();
-        GenerationType generationType = this.getGenerationSettings().getGenerationType();
-        AbstractModule.ActionType actionType = AbstractModule.ActionType.of(shutdown);
-
-        this.getModuleManager()
-                .getModules()
-                .forEach(module -> module.tryDeactivate(actionType));
-        if (regionHandler != null && this.getRegion().isCreated())
-            regionHandler.delete(this);
-
-        if (generationType.isDynamic()) {
-            this.setLocation(null);
-            this.setCuboid(null);
-        }
-        this.setSelfTick(0);
-    }
-
-    public void tick() {
-        for (AbstractModule module : this.getModuleManager().getModules()) {
-            module.update();
-        }
-        this.getStage().tick(this);
-    }
-
     private @NotNull PlaceholderMap generatePlaceholderMap() {
         return new PlaceholderMap()
                 .add(Placeholders.DUNGEON_NAME, () -> Colorizer.apply(this.getName()))
                 .add(Placeholders.DUNGEON_WORLD, () -> LangManager.getWorld(this.getWorld()))
                 .add(Placeholders.DUNGEON_ID, this.getId())
+                .add(Placeholders.DUNGEON_NEXT_STAGE_IN, () -> TimeUtil.formatTime(getTimer().getTimeToNextStageInMillis()))
                 .add(Placeholders.DUNGEON_KEY_IDS, () -> {
-                    String keys = String.join(Colors2.GRAY + ", " + Colors2.LIGHT_PURPLE, this.getKeyIds());
+                    String keys = String.join(Colors2.GRAY + ", " + Colors2.LIGHT_PURPLE, getKeys().getKeyIds());
                     return Colorizer.apply(Colors2.LIGHT_PURPLE + keys);
                 })
-                .add(Placeholders.DUNGEON_NEXT_STAGE_IN, () -> TimeUtil.formatTimeLeft(System.currentTimeMillis() + this.getNextStageTime() * 1000L))
                 .add(Placeholders.DUNGEON_KEY_NAMES, () -> {
                     KeyManager keyManager = plugin.getKeyManager();
-                    return Colorizer.apply(Colors2.LIGHT_PURPLE + this.getKeyIds()
+                    return Colorizer.apply(Colors2.LIGHT_PURPLE + getKeys().getKeyIds()
                             .stream()
                             .filter(founder -> keyManager.getKeyById(founder) != null)
                             .map(f -> Objects.requireNonNull(keyManager.getKeyById(f)).getName())
@@ -459,19 +372,19 @@ public class Dungeon extends AbstractConfigHolder<DungeonPlugin> implements ICle
                         CANCELLED, Collections.emptySet(),
                         REBOOTED, Collections.emptySet())
         );
-        this.setHologramSettings(hologramSettings);
-        this.setSettings(mainSettings);
+        setHologramSettings(hologramSettings);
+        setSettings(mainSettings);
         setAccessSettings(accessSettings);
-        this.setSchematicSettings(schematicSettings);
-        this.setModuleSettings(moduleSettings);
-        this.setStageSettings(stageSettings);
-        this.setChestSettings(chestSettings);
-        this.setCommandsSettings(commandsSettings);
-        this.setPartySettings(new PartySettings(this, false, 2));
-        this.setGenerationSettings(new GenerationSettings(this, GenerationType.DYNAMIC, null));
-        this.setAnnounceSettings(new AnnounceSettings(this, defaultAnnounceMap));
-        this.setEffectSettings(new EffectSettings(this, false, new ArrayList<>()));
-        this.setRewardSettings(new RewardSettings(this, UniInt.of(1, 10)));
-        this.setMobsSettings(new MobsSettings(this, false, new HashMap<>()));
+        setSchematicSettings(schematicSettings);
+        setModuleSettings(moduleSettings);
+        setStageSettings(stageSettings);
+        setChestSettings(chestSettings);
+        setCommandsSettings(commandsSettings);
+        setPartySettings(new PartySettings(this, false, 2));
+        setGenerationSettings(new GenerationSettings(this, GenerationType.DYNAMIC, null));
+        setAnnounceSettings(new AnnounceSettings(this, defaultAnnounceMap));
+        setEffectSettings(new EffectSettings(this, false, new ArrayList<>()));
+        setRewardSettings(new RewardSettings(this, UniInt.of(1, 10)));
+        setMobsSettings(new MobsSettings(this, false, new HashMap<>()));
     }
 }

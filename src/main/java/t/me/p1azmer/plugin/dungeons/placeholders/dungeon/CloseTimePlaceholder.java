@@ -25,7 +25,7 @@ public class CloseTimePlaceholder extends AbstractPlaceholder<DungeonPlugin> {
         if (dungeon == null) return "";
 
         if (dungeon.getStage().isOpened())
-            return NumberUtil.format(dungeon.getStageSettings().getTime(DungeonStage.OPENED) - dungeon.getNextStageTime());
+            return NumberUtil.format(dungeon.getStageSettings().getTime(DungeonStage.OPENED) - dungeon.getTimer().getTimeToNextStageInSeconds());
         return "";
     }
 

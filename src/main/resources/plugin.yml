@@ -3,6 +3,7 @@ version: '${version}'
 main: t.me.p1azmer.plugin.dungeons.DungeonPlugin
 api-version: '1.17'
 author: "plazmer"
+load: POSTWORLD
 description: "Dungeons - Automatic generation in any world"
 folia-supported: true
 depend: [ PLAZMER-ENGINE ]

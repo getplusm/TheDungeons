@@ -24,7 +24,7 @@ public class NearWaitTimePlaceholder extends AbstractPlaceholder<DungeonPlugin> 
         if (dungeon == null) return "";
 
         if (dungeon.getStage().isWaitingPlayers())
-            return NumberUtil.format(dungeon.getStageSettings().getTime(DungeonStage.WAITING_PLAYERS) - dungeon.getNextStageTime());
+            return NumberUtil.format(dungeon.getStageSettings().getTime(DungeonStage.WAITING_PLAYERS) - dungeon.getTimer().getTimeToNextStageInSeconds());
         return "";
     }
 

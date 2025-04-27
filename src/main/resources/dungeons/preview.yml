@@ -53,21 +53,8 @@ Settings:
     Open_Type: CLICK
   Announces:
     Map:
-      CLOSED:
-        Messages:
-          - '            #c71585Attention ❗'
-          - '            #fcf2f8At the coordinates: #ffb6ad⚐ %location_world%, %location_x%, %location_y%, %location_z%'
-          - '            #fcf2f8A dungeon has appeared #ffb6ad%dungeon_name%'
-          - '            #fcf2f8In order to open it you need'
-          - '            #ffe4e0▪ #c71585%dungeon_key_names%'
-        Global: true
-        Times: '0'
-      PREPARE:
-        Messages:
-          - '#fd5e5e&lNOTE:'
-          - '#e39fff&lUntil the new dungeon is spawned: #fdba5e%dungeon_next_stage_in%#e39fff&l sec.'
-        Global: true
-        Times: 26,27,28,29,30
+      CLOSED: {}
+      PREPARE: {}
   Schematics:
     List:
       - dungeon_rotten_mushroom.schem

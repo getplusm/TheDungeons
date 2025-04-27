@@ -80,11 +80,10 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
         if (schematicHandler == null) {
             log.severe("FAWE or WorldEdit not found! Please install them to use this plugin!");
             getPluginManager().disablePlugin(this);
-            onDisable();
             return;
         }
-        this.threadSync = new ThreadSync(this);
         this.locationGenerator = new LocationGenerator(regionHandler);
+        this.threadSync = new ThreadSync(this);
 
         this.keyManager = new KeyManager(this);
         this.keyManager.setup();
@@ -141,6 +140,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
             this.placeholder.shutdown();
             this.placeholder = null;
         }
+        locationGenerator.shutdownExecutor();
     }
 
     @Override
@@ -164,7 +164,7 @@ public final class DungeonPlugin extends NexPlugin<DungeonPlugin> {
     public void registerHooks() {
         try {
             initialIntegrations();
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             getLogger().log(Level.SEVERE, "Got an exception while registering integrations: ", exception);
         }
     }

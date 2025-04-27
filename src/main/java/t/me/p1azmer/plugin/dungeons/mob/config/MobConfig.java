@@ -134,7 +134,7 @@ public class MobConfig extends AbstractConfigHolder<DungeonPlugin> implements Pl
                     }
                 }
             }
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             exception.printStackTrace();
             return false;
         }

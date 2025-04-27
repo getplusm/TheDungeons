@@ -15,4 +15,20 @@ public interface RegionHandler extends Loadable {
     boolean isValidLocation(@NotNull Location location);
 
     boolean isDungeonRegion(@NotNull Location location, @NotNull Region region);
+
+    default void createOrThrow(@NotNull Dungeon dungeon) {
+        try {
+            create(dungeon);
+        } catch (Exception exception) {
+            throw new RuntimeException("Got an exception while creating dungeon region", exception);
+        }
+    }
+
+    default boolean isValidLocationOrThrow(@NotNull Location location) {
+        try {
+            return isValidLocation(location);
+        } catch (Exception exception) {
+            throw new RuntimeException("Got an exception while validating location", exception);
+        }
+    }
 }
