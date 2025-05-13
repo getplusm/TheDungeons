@@ -1,2 +1,8 @@
 rootProject.name = 'TheDungeons'
+include 'core'
+include 'api'
+include 'paper'
+include 'integrations'
+include 'modules'
+include 'settings'
 

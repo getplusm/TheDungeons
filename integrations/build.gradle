@@ -1,0 +1,36 @@
+dependencies {
+    compileOnly project(path: ":api", configuration: "default")
+    compileOnly project(path: ":core", configuration: "default")
+    compileOnly project(path: ":settings", configuration: "default")
+
+    // worldedit
+    compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.2.15-SNAPSHOT'
+    compileOnly 'com.sk89q.worldedit:worldedit-core:7.2.15-SNAPSHOT'
+
+    // party
+    compileOnly 'de.simonsator:spigot-party-api-for-party-and-friends:1.0.7-RELEASE'
+    compileOnly 'de.simonsator:Party-and-Friends-MySQL-Edition-Spigot-API:1.5.4-RELEASE'
+    compileOnly 'com.alessiodp.parties:parties-api:3.2.16'
+
+    // access
+    compileOnly 'studio.magemonkey:fabled:1.0.4-R0.17-SNAPSHOT'
+
+    // regions
+    compileOnly 'com.palmergames.bukkit.towny:towny:0.100.0.0'
+    compileOnly 'com.griefdefender:api:2.1.0-SNAPSHOT'
+    compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.2-SNAPSHOT'
+    compileOnly 'com.github.cryptomorin:kingdoms:1.16.8.1.1'
+    compileOnly 'com.github.getplusm:ProtectionBlocks:1.0.7'
+
+    compileOnly 'com.github.TechFortress:GriefPrevention:16.18'
+    compileOnly 'com.github.angeschossen:LandsAPI:6.33.10'
+
+    // holo
+    compileOnly 'me.filoghost.holographicdisplays:holographicdisplays-api:3.0.0'
+    compileOnly 'com.github.decentsoftware-eu:decentholograms:2.8.3'
+    compileOnly 'de.oliver:FancyHolograms:2.2.0'
+
+    compileOnly 'com.github.LoneDev6:API-ItemsAdder:3.5.0b'
+    compileOnly 'net.Indyuce:MMOItems-API:6.9.2-SNAPSHOT'
+    compileOnly 'io.lumine:MythicLib-dist:1.5.2-SNAPSHOT'
+}

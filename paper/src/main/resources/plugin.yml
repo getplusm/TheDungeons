@@ -1,0 +1,34 @@
+name: TheDungeons
+version: '${version}'
+main: t.me.p1azmer.plugin.dungeons.DungeonPlugin
+api-version: '1.17'
+author: "plazmer"
+load: POSTWORLD
+description: "Dungeons - Automatic generation in any world"
+libraries:
+  - 'com.cjcrafter:foliascheduler:0.6.3'
+  - 'cloud.commandframework:cloud-core:1.8.4'
+  - 'org.spongepowered:configurate-core:4.1.2'
+  - 'org.spongepowered:configurate-yaml:4.1.2'
+  - 'cloud.commandframework:cloud-paper:1.8.4'
+  - 'net.kyori:adventure-text-minimessage:4.14.0'
+  - 'com.github.ben-manes.caffeine:caffeine:3.1.6'
+  - 'cloud.commandframework:cloud-minecraft-extras:1.8.4'
+softdepend:
+  - ProtectionBlocks
+  - HolographicDisplays
+  - FancyHolograms
+  - DecentHolograms
+  - WorldEdit
+  - WorldGuard
+  - ItemsAdder
+  - MMOItems
+  - GriefDefender
+  - GriefPrevention
+  - FastAsyncWorldEdit
+  - PlaceholderAPI
+  - KingdomsX
+  - PartyAndFriends
+  - Towny
+  - Parties
+  - Fabled

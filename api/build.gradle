@@ -1,0 +1,68 @@
+plugins {
+    id 'maven-publish'
+}
+
+dependencies {
+    shadow project(path: ":core", configuration: "default")
+}
+
+javadoc {
+    options {
+        encoding = 'UTF-8'
+        charSet = 'UTF-8'
+        version = true
+    }
+}
+
+tasks.register('javadocJar', Jar) {
+    dependsOn javadoc
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+}
+
+tasks.register('sourcesJar', Jar) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            groupId = 'com.github.getplusm' as Publication
+            artifactId = 'dungeons-api' as Publication
+            version = rootProject.version.toString().replaceAll('\\.\\d+$', '')
+
+            artifact javadocJar
+            artifact sourcesJar
+        }
+    }
+    repositories {
+        maven {
+            url = 'https://jitpack.io'
+            name = 'jitpack'
+        }
+    }
+}
+
+configurations {
+    shadowImplementation {
+        canBeResolved = true
+        canBeConsumed = false
+        extendsFrom implementation
+    }
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    configurations = [project.configurations.shadowImplementation]
+}
+
+tasks.build {
+    dependsOn shadowJar
+}

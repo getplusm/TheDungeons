@@ -1,32 +1,33 @@
-package t.me.p1azmer.plugin.dungeons.utils;
+package t.me.p1azmer.plugin.dungeons.integration.impl.schematic;
 
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.internal.cui.CUIEvent;
 import com.sk89q.worldedit.session.SessionKey;
 import com.sk89q.worldedit.util.formatting.text.Component;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import t.me.p1azmer.plugin.dungeons.DungeonPlugin;
 
 import java.io.File;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SessionConsole extends LocalSession implements Actor {
 
-    private final DungeonPlugin plugin;
-
-    public SessionConsole(DungeonPlugin plugin) {
-        this.plugin = plugin;
-    }
+    JavaPlugin plugin;
 
     @Override
     public SessionKey getSessionKey() {
         return new SessionKey() {
             @Override
             public @NotNull String getName() {
-                return "PLAZMER-CONSOLE";
+                return "TheDungeons";
             }
 
             @Override

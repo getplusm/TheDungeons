@@ -4,117 +4,83 @@ plugins {
 }
 
 group = 'com.github.getplusm'
-version = '4.0.9'
+version = '5.0.0'
 
-compileJava.options.encoding = "UTF-8"
-compileTestJava.options.encoding = "UTF-8"
-java.sourceCompatibility = JavaVersion.VERSION_17
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'com.github.johnrengelman.shadow'
 
-repositories {
-    mavenLocal()
-    mavenCentral()
+    compileJava.options.encoding = "UTF-8"
+    compileTestJava.options.encoding = "UTF-8"
+    java.sourceCompatibility = JavaVersion.VERSION_17
 
-    maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
+    repositories {
+        mavenLocal()
+        mavenCentral()
+
+        maven {
+            name = "papermc-repo"
+            url = "https://repo.papermc.io/repository/maven-public/"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/groups/public/"
+        }
+
+        // Holographic Displays
+        maven { url = 'https://repo.codemc.io/repository/maven-public/' }
+        maven { url = 'https://repo.fancyplugins.de/releases' }
+        //WorldGuard API
+        maven { url = 'https://maven.enginehub.org/repo/' }
+        // PAPI
+        maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+
+        maven { url = 'https://jitpack.io' }
+        maven { url = 'https://libraries.minecraft.net/' }
+        maven { url = 'https://nexus.phoenixdevt.fr/repository/maven-public/' }
+
+        // griefdefender
+        maven { url = 'https://repo.glaremasters.me/repository/bloodshot' }
+
+        // PaF
+        maven { url = 'https://simonsator.de/repo/' }
+
+        // Parties
+        maven { url 'https://repo.alessiodp.com/releases/' }
+
+        // towny
+        maven { url = 'https://repo.glaremasters.me/repository/towny/' }
+
+        // ProSkillAPI
+        maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots' }
+
     }
-    maven {
-        name = "sonatype"
-        url = "https://oss.sonatype.org/content/groups/public/"
+
+    dependencies {
+        compileOnly 'io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT'
+
+        compileOnly 'me.clip:placeholderapi:2.11.5'
+        compileOnly 'net.luckperms:api:5.4'
+
+        // Libs
+        compileOnly 'com.github.ben-manes.caffeine:caffeine:3.1.6'
+        compileOnly 'com.github.caseyscarborough:pastebin-api-java:0.1.3'
+        compileOnly 'com.cjcrafter:foliascheduler:0.6.3'
+
+        compileOnly 'net.kyori:adventure-text-minimessage:4.14.0'
+        compileOnly 'com.github.ben-manes.caffeine:caffeine:3.1.6'
+        compileOnly 'org.spongepowered:configurate-yaml:4.1.2'
+        compileOnly 'org.spongepowered:configurate-core:4.1.2'
+        compileOnly 'cloud.commandframework:cloud-core:1.8.4'
+        compileOnly 'cloud.commandframework:cloud-paper:1.8.4'
+        compileOnly 'cloud.commandframework:cloud-minecraft-extras:1.8.4'
+
+        compileOnly 'org.jetbrains:annotations:24.1.0'
+        compileOnly 'org.projectlombok:lombok:1.18.32'
+        annotationProcessor 'org.projectlombok:lombok:1.18.32'
     }
-
-    // Holographic Displays
-    maven { url = 'https://repo.codemc.io/repository/maven-public/' }
-    maven { url = 'https://repo.fancyplugins.de/releases' }
-    //WorldGuard API
-    maven { url = 'https://maven.enginehub.org/repo/' }
-    // PAPI
-    maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
-
-    maven { url = 'https://jitpack.io' }
-    maven { url = 'https://libraries.minecraft.net/' }
-    maven { url = 'https://nexus.phoenixdevt.fr/repository/maven-public/' }
-
-    // griefdefender
-    maven { url = 'https://repo.glaremasters.me/repository/bloodshot' }
-
-    // PaF
-    maven { url = 'https://simonsator.de/repo/' }
-
-    // Parties
-    maven { url 'https://repo.alessiodp.com/releases/' }
-
-    // towny
-    maven { url = 'https://repo.glaremasters.me/repository/towny/' }
-
-    // ProSkillAPI
-    maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots' }
-
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
-
-    // worldedit
-    compileOnly 'com.sk89q.worldedit:worldedit-bukkit:7.2.15-SNAPSHOT'
-    compileOnly 'com.sk89q.worldedit:worldedit-core:7.2.15-SNAPSHOT'
-
-    // party
-    compileOnly 'de.simonsator:spigot-party-api-for-party-and-friends:1.0.7-RELEASE'
-    compileOnly 'de.simonsator:Party-and-Friends-MySQL-Edition-Spigot-API:1.5.4-RELEASE'
-    compileOnly 'com.alessiodp.parties:parties-api:3.2.16'
-
-    // access
-    compileOnly 'studio.magemonkey:fabled:1.0.4-R0.17-SNAPSHOT'
-
-    // regions
-    compileOnly 'com.palmergames.bukkit.towny:towny:0.100.0.0'
-    compileOnly 'com.griefdefender:api:2.1.0-SNAPSHOT'
-    compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.2-SNAPSHOT'
-    compileOnly 'com.github.cryptomorin:kingdoms:1.16.8.1.1'
-    compileOnly 'com.github.getplusm:ProtectionBlocks:1.0.7'
-
-    compileOnly 'com.github.TechFortress:GriefPrevention:16.18'
-    compileOnly 'com.github.angeschossen:LandsAPI:6.33.10'
-
-    // holo
-    compileOnly 'me.filoghost.holographicdisplays:holographicdisplays-api:3.0.0'
-    compileOnly 'com.github.decentsoftware-eu:decentholograms:2.8.3'
-    compileOnly 'de.oliver:FancyHolograms:2.2.0'
-
-    compileOnly 'com.github.LoneDev6:API-ItemsAdder:3.5.0b'
-    compileOnly 'net.Indyuce:MMOItems-API:6.9.2-SNAPSHOT'
-    compileOnly 'io.lumine:MythicLib-dist:1.5.2-SNAPSHOT'
-
-    // PAPI
-    compileOnly 'me.clip:placeholderapi:2.11.5'
-    compileOnly 'com.mojang:authlib:1.5.21'
-
-    // LP
-    compileOnly 'net.luckperms:api:5.4'
-
-    // Engine
-    compileOnly 'com.github.getplusm:PLAZMER-ENGINE:2.4.14'
-
-    // Libs
-    compileOnly 'com.github.ben-manes.caffeine:caffeine:3.1.6'
-    compileOnly 'com.github.caseyscarborough:pastebin-api-java:0.1.3'
-    compileOnly 'com.cjcrafter:foliascheduler:0.6.3'
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
-}
-
-processResources {
-    def props = [version: project.version]
-    inputs.properties props
-    filteringCharset 'UTF-8'
-    filesMatching('plugin.yml') {
-        expand props
-    }
-}
-
-shadowJar {
-    archiveClassifier.set(null)
-    configurations = [project.configurations.runtimeClasspath, project.configurations.shadow]
-    archiveFileName.set(rootProject.name + '-' + project.version + '.jar')
+    shadow project(path: ":paper", configuration: "default")
 }

@@ -1,0 +1,23 @@
+dependencies {
+
+    shadow project(path: ":api", configuration: "default")
+    shadow project(path: ":core", configuration: "default")
+    shadow project(path: ":modules", configuration: "default")
+    shadow project(path: ":settings", configuration: "default")
+    shadow project(path: ":integrations", configuration: "default")
+}
+
+processResources {
+    def props = [version: rootProject.version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}
+
+shadowJar {
+    archiveClassifier.set(null)
+    configurations = [project.configurations.runtimeClasspath, project.configurations.shadow]
+    archiveFileName.set(rootProject.name + '-' + rootProject.version + '.jar')
+}

@@ -1,0 +1,4 @@
+dependencies {
+    compileOnly project(path: ":api", configuration: "default")
+    compileOnly project(path: ":core", configuration: "default")
+}
